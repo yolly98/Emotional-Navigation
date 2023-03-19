@@ -1,0 +1,8 @@
+deepface
+numpy
+SpeechRecognition
+pyaudio
+pygame
+xmltodict
+py2neo
+matplotlib
