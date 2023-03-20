@@ -7,3 +7,4 @@ pygame-textinput
 xmltodict
 py2neo
 matplotlib
+geocoder

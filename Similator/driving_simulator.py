@@ -4,7 +4,8 @@ import sys
 import math
 from Core.map_engine import MapEngine
 from Persistence.map_sql_manager import MapSqlManager
-from Utility.utility import Point, Way, GNode
+from Utility.utility import Point
+from InputModule.gps_simulator import GPS
 import time
 
 
@@ -410,11 +411,9 @@ class DrivingSimulator:
         self.textinput.value = "Insert Destination"
 
     def get_path(self, destination_name):
-        # simulation
-        source = Point('42.3333569', '12.2692692')
 
+        source = GPS.get_coord(True)
         # get destination from input
-        # destination_name = 'Via XXVIII Ottobre'
         sql_map = MapSqlManager.get_instance()
         sql_map.open_connection()
         ways = sql_map.get_way_by_name(destination_name)
@@ -425,6 +424,8 @@ class DrivingSimulator:
         destination_node = sql_map.get_node(way.get('start_node'))
         destination = Point(destination_node.get('lat'), destination_node.get('lon'))
         sql_map.close_connection()
+
+        # destination_name = 'Via XXVIII Ottobre' # test
 
         # destination = Point('42.3295099', '12.2659779')
         self.path = MapEngine.calculate_path(source, destination)['path']
