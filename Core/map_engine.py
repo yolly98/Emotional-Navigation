@@ -67,7 +67,7 @@ class MapEngine:
         sql_manager = MapSqlManager.get_instance()
 
         sql_manager.open_connection()
-        ways = sql_manager.get_instance().get_way_from_name(way_name)
+        ways = sql_manager.get_instance().get_way_by_name(way_name)
         sql_manager.get_instance().close_connection()
 
         graph_manager.open_connection()
@@ -122,7 +122,7 @@ class MapEngine:
         # get points in the map
         sql_manager = MapSqlManager.get_instance()
         sql_manager.open_connection()
-        nodes = sql_manager.get_nodes_from_coord(max(lats), min(lats), max(lons), min(lons))
+        nodes = sql_manager.get_nodes_by_coord(max(lats), min(lats), max(lons), min(lons))
 
         all_lats = lats.copy()
         all_lons = lons.copy()
@@ -134,8 +134,8 @@ class MapEngine:
         lines = dict()
         for node in nodes:
 
-            starting_ways = sql_manager.get_way_from_start_node(node.get('id'))
-            ending_ways = sql_manager.get_way_from_end_node(node.get('id'))
+            starting_ways = sql_manager.get_way_by_start_node(node.get('id'))
+            ending_ways = sql_manager.get_way_by_end_node(node.get('id'))
             ways = starting_ways + ending_ways
             for way in ways:
                 way_id = way.get('id')

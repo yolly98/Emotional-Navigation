@@ -41,7 +41,7 @@ class MapSqlManager:
             res = Way(res[0], res[1], res[2], res[3], res[4], res[5], res[6], res[7])
             return res
 
-    def get_way_from_start_node(self, start_node):
+    def get_way_by_start_node(self, start_node):
         if self.conn is None:
             return False
         else:
@@ -60,7 +60,7 @@ class MapSqlManager:
                 ways.append(way)
             return ways
 
-    def get_way_from_name(self, way_name):
+    def get_way_by_name(self, way_name):
         if self.conn is None:
             return False
         else:
@@ -79,7 +79,7 @@ class MapSqlManager:
                 ways.append(way)
             return ways
 
-    def get_way_from_end_node(self, end_node):
+    def get_way_by_end_node(self, end_node):
         if self.conn is None:
             return False
         else:
@@ -114,7 +114,7 @@ class MapSqlManager:
             res = GNode(res[0], res[1], res[2], res[3], res[4])
             return res
 
-    def get_nodes_from_coord(self, max_lat, min_lat, max_lon, min_lon):
+    def get_nodes_by_coord(self, max_lat, min_lat, max_lon, min_lon):
         if self.conn is None:
             return False
         cursor = self.conn.cursor()

@@ -3,7 +3,8 @@ import pygame_textinput
 import sys
 import math
 from Core.map_engine import MapEngine
-from Utility.utility import Point
+from Persistence.map_sql_manager import MapSqlManager
+from Utility.utility import Point, Way, GNode
 import time
 
 
@@ -389,7 +390,7 @@ class DrivingSimulator:
         self.path_progress = None
         self.textinput = pygame_textinput.TextInputVisualizer(font_object=pygame.font.SysFont('times new roman', 20))
         self.textinput.font_color = (0, 85, 170)
-        self.textinput.value = "ciao"
+        self.textinput.value = "Insert Destination"
         self.textinput.cursor_color = (0, 85, 170)
         self.textinput.cursor_blink_interval = 200
         self.textinput.cursor_width = 2
@@ -406,11 +407,26 @@ class DrivingSimulator:
         self.path_progress = None
         self.input_enabler = True
         self.car_speed_counter = 0
+        self.textinput.value = "Insert Destination"
 
-    def get_path(self):
+    def get_path(self, destination_name):
         # simulation
         source = Point('42.3333569', '12.2692692')
-        destination = Point('42.3295099', '12.2659779')
+
+        # get destination from input
+        # destination_name = 'Via XXVIII Ottobre'
+        sql_map = MapSqlManager.get_instance()
+        sql_map.open_connection()
+        ways = sql_map.get_way_by_name(destination_name)
+        if not ways:
+            self.textinput.value = "Not valid destination"
+            return
+        way = ways[0]
+        destination_node = sql_map.get_node(way.get('start_node'))
+        destination = Point(destination_node.get('lat'), destination_node.get('lon'))
+        sql_map.close_connection()
+
+        # destination = Point('42.3295099', '12.2659779')
         self.path = MapEngine.calculate_path(source, destination)['path']
         MapEngine.print_path(self.path)
         self.old_timestamp = time.time()
@@ -421,6 +437,7 @@ class DrivingSimulator:
         for way in self.path:
             path_length += way['length']
         self.path_progress = PathProgress(self.street_width + (self.win_width - self.street_width - 30)/2, self.street_pos[1], self.block_size, path_length)
+        self.input_enabler = False
 
     def show(self):
         self.win.fill(pygame.Color(self.colors['black']))
@@ -560,9 +577,7 @@ class DrivingSimulator:
         for event in events:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if self.button.collidepoint(event.pos):
-                    print(self.textinput.value)
-                    self.get_path()
-                    self.input_enabler = False
+                    self.get_path(self.textinput.value)
             if self.input_enabler:
                 continue
             else:
