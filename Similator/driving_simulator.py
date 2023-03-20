@@ -6,9 +6,62 @@ from Utility.utility import Point
 import time
 
 
-class PathView:
-    # TODO
-    pass
+class PathProgress:
+
+    def __init__(self, pos_x, pos_y, block_size, length_m):
+        self.pos_x = pos_x
+        self.pos_y = pos_y
+        self.block_size = block_size
+        self.width = 4
+        self.height = 26
+        self.length_m = length_m
+
+    def get_pos_x(self):
+        return self.pos_x
+
+    def get_pos_y(self):
+        return self.pos_y
+
+    def set_pos_x(self, pos_X):
+        self.pos_x = pos_X
+
+    def set_pos_y(self, pos_y):
+        self.pos_y = pos_y
+
+    def get_block_size(self):
+        return self.block_size
+
+    def set_block_size(self, block_size):
+        self.block_size = block_size
+
+    def get_width(self):
+        return self.width
+
+    def get_height(self):
+        return self.height
+
+    def draw(self, win, colors, travelled_m):
+        pos_x = self.pos_x
+        pos_y = self.pos_y
+        block_size = self.block_size
+        i = 0
+        while i < self.height:
+            j = 0
+            while j < self.width:
+                color = None
+                if i == self.height - 1 or i == 0 or j == 0 or j == self.width - 1:
+                    color = colors['white']
+                else:
+                    progress = math.floor(((self.height - 2) * travelled_m) / self.length_m)
+                    print(f"{self.height} {travelled_m} {self.length_m}")
+                    if i > (self.height - 2 - progress):
+                        color = colors['green']
+                    else:
+                        color = colors['white']
+                pygame.draw.rect(win, color,
+                                 pygame.Rect(pos_x + j * block_size, pos_y + i * block_size, block_size, block_size))
+                j += 1
+            i += 1
 
 
 class Alert:
@@ -332,6 +385,7 @@ class DrivingSimulator:
         self.alert = Alert(10, 100, 5, self.colors['white'], self.colors['black'])
         self.arrow = Arrow(270, 100, 5, None, 'right', self.colors['white'], self.colors['black'])
         self.actual_street = None
+        self.path_progress = None
 
     def get_path(self):
         # simulation
@@ -343,15 +397,20 @@ class DrivingSimulator:
         self.old_car_speed = 0
         self.start_time = time.time()
         self.travel_time = 0
+        path_length = 0
+        for way in self.path:
+            path_length += way['length']
+        self.path_progress = PathProgress(self.street_width + (self.win_width - self.street_width - 30)/2, self.street_pos[1], self.block_size, path_length)
 
     def show(self):
         self.win.fill(pygame.Color(self.colors['black']))
 
         self.draw_street()
         self.player_car.draw(self.win, self.colors)
+
         # draw sections
-        pygame.draw.rect(self.win, self.colors['white'], pygame.Rect(self.street_width, 0, self.block_size, self.block_size*self.win_height))
-        pygame.draw.rect(self.win, self.colors['white'], pygame.Rect(self.street_width, self.win_height - 100, self.block_size*200, self.block_size / 2))
+        pygame.draw.rect(self.win, self.colors['white'], pygame.Rect(self.street_width, 0, self.block_size, self.block_size * self.win_height))
+        pygame.draw.rect(self.win, self.colors['white'], pygame.Rect(self.street_width, self.win_height - 100, self.block_size * 200, self.block_size / 2))
         pygame.draw.rect(self.win, self.colors['white'], pygame.Rect(self.street_pos[0], self.street_pos[1], self.street_width, self.block_size / 2))
 
         font = pygame.font.SysFont('times new roman', 25)
@@ -363,7 +422,7 @@ class DrivingSimulator:
         speed_rect.midright = (self.win_width - 50, self.win_height - 50)
         self.win.blit(speed_surface, speed_rect)
 
-        # draw km traveled
+        # draw m traveled
         t = time.time() - self.old_timestamp
         avg_speed = (self.player_car.get_speed() + self.old_car_speed) / 2
         traveled_km = (avg_speed / 3600) * t
@@ -374,6 +433,7 @@ class DrivingSimulator:
         km_rect = km_surface.get_rect()
         km_rect.midtop = (self.street_width / 2, 50)
         self.win.blit(km_surface, km_rect)
+        self.path_progress.draw(self.win, self.colors, math.floor(self.path_km * 1000))
 
         # draw street name
         actual_street = None

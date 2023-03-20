@@ -3,6 +3,7 @@
 ## map engine
 * [x] le deviazioni non funzionano
 * [ ] ricaricare il db togliendo le strade e i nodi di edifici (strade senza name, ref, alt_name)
+* [ ] fare funzione che ricava posizione nella mappa tramite coordinate (trova il nodo con le coordinate piu vicine)
 
 # dashboard
 * [ ] inserire due input per indicare partenza e destinazione
