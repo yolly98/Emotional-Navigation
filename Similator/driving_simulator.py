@@ -53,7 +53,6 @@ class PathProgress:
                     color = colors['white']
                 else:
                     progress = math.floor(((self.height - 2) * travelled_m) / self.length_m)
-                    print(f"{self.height} {travelled_m} {self.length_m}")
                     if i > (self.height - 2 - progress):
                         color = colors['green']
                     else:
