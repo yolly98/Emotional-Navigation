@@ -1,4 +1,5 @@
 import pygame
+import pygame_textinput
 import sys
 import math
 from Core.map_engine import MapEngine
@@ -384,7 +385,27 @@ class DrivingSimulator:
         self.alert = Alert(10, 100, 5, self.colors['white'], self.colors['black'])
         self.arrow = Arrow(270, 100, 5, None, 'right', self.colors['white'], self.colors['black'])
         self.actual_street = None
+
         self.path_progress = None
+        self.textinput = pygame_textinput.TextInputVisualizer(font_object=pygame.font.SysFont('times new roman', 20))
+        self.textinput.font_color = (0, 85, 170)
+        self.textinput.value = "ciao"
+        self.textinput.cursor_color = (0, 85, 170)
+        self.textinput.cursor_blink_interval = 200
+        self.textinput.cursor_width = 2
+        self.input_enabler = True
+        self.button = pygame.Rect(self.street_width + 20, 50, 100, 20)
+
+    def end_path(self):
+        self.path = None
+        self.path_km = 0
+        self.old_car_speed = 0
+        self.old_timestamp = None
+        self.start_time = None
+        self.travel_time = None
+        self.path_progress = None
+        self.input_enabler = True
+        self.car_speed_counter = 0
 
     def get_path(self):
         # simulation
@@ -412,6 +433,15 @@ class DrivingSimulator:
         pygame.draw.rect(self.win, self.colors['white'], pygame.Rect(self.street_width, self.win_height - 100, self.block_size * 200, self.block_size / 2))
         pygame.draw.rect(self.win, self.colors['white'], pygame.Rect(self.street_pos[0], self.street_pos[1], self.street_width, self.block_size / 2))
 
+        # draw inputs
+        if self.input_enabler:
+            self.win.blit(self.textinput.surface, (self.street_width + 20, 10))
+            pygame.draw.rect(self.win, self.colors['blue'], self.button)
+            font = pygame.font.SysFont('times new roman', 20)
+            text_surface = font.render('SUBMIT', True, (255, 255, 255))
+            self.win.blit(text_surface, (self.button.x + (self.button.width - text_surface.get_width()) // 2,
+                                       self.button.y + (self.button.height - text_surface.get_height()) // 2))
+
         font = pygame.font.SysFont('times new roman', 25)
 
         # draw car speed
@@ -422,63 +452,64 @@ class DrivingSimulator:
         self.win.blit(speed_surface, speed_rect)
 
         # draw m traveled
-        t = time.time() - self.old_timestamp
-        avg_speed = (self.player_car.get_speed() + self.old_car_speed) / 2
-        traveled_km = (avg_speed / 3600) * t
-        self.path_km += traveled_km
-        self.old_timestamp = time.time()
-        self.old_car_speed = self.player_car.get_speed()
-        km_surface = font.render(f"{math.floor(self.path_km * 1000)} m", True, self.colors['white'])
-        km_rect = km_surface.get_rect()
-        km_rect.midtop = (self.street_width / 2, 50)
-        self.win.blit(km_surface, km_rect)
-        self.path_progress.draw(self.win, self.colors, math.floor(self.path_km * 1000))
+        if self.path is not None:
+            t = time.time() - self.old_timestamp
+            avg_speed = (self.player_car.get_speed() + self.old_car_speed) / 2
+            traveled_km = (avg_speed / 3600) * t
+            self.path_km += traveled_km
+            self.old_timestamp = time.time()
+            self.old_car_speed = self.player_car.get_speed()
+            km_surface = font.render(f"{math.floor(self.path_km * 1000)} m", True, self.colors['white'])
+            km_rect = km_surface.get_rect()
+            km_rect.midtop = (self.street_width / 2, 50)
+            self.win.blit(km_surface, km_rect)
+            self.path_progress.draw(self.win, self.colors, math.floor(self.path_km * 1000))
 
-        # draw street name
-        actual_street = None
-        traveled_m = (self.path_km * 1000)
-        for street in self.path:
-            if traveled_m < street['length']:
-                actual_street = street
-                break
+            # draw street name
+            actual_street = None
+            traveled_m = (self.path_km * 1000)
+            for street in self.path:
+                if traveled_m < street['length']:
+                    actual_street = street
+                    break
+                else:
+                    traveled_m -= street['length']
+            if actual_street is None:
+                if self.travel_time == 0:
+                    self.travel_time = time.time() - self.start_time
+                message = f"destination reached in {math.floor(self.travel_time / 60)} min {math.floor(self.travel_time % 60)} sec"
+                street_surface = font.render(message, True, self.colors['white'])
+                self.end_path()
             else:
-                traveled_m -= street['length']
-        if actual_street is None:
-            if self.travel_time == 0:
-                self.travel_time = time.time() - self.start_time
-            message = f"destination reached in {math.floor(self.travel_time / 60)} min {math.floor(self.travel_time % 60)} sec"
-            street_surface = font.render(message, True, self.colors['white'])
-            self.end = True
-        else:
-            message = f"{actual_street['name']} ({actual_street['ref']}) lim: {actual_street['speed']} km/h"
-            street_surface = font.render(message, True, self.colors['white'])
-        street_rect = street_surface.get_rect()
-        street_rect.midtop = (self.street_width / 2, 10)
-        self.win.blit(street_surface, street_rect)
-        if not actual_street == self.actual_street:
-            self.actual_street = actual_street
-            self.arrow.set_color(self.colors['white'])
+                message = f"{actual_street['name']} ({actual_street['ref']}) lim: {actual_street['speed']} km/h"
+                street_surface = font.render(message, True, self.colors['white'])
+            street_rect = street_surface.get_rect()
+            street_rect.midtop = (self.street_width / 2, 10)
+            self.win.blit(street_surface, street_rect)
+            if not actual_street == self.actual_street:
+                self.actual_street = actual_street
+                self.arrow.set_color(self.colors['white'])
 
-        # draw arrow
-        if (actual_street is not None) and (actual_street['length'] - traveled_m < 200):
-            if actual_street['length'] - traveled_m <= 50:
-                self.arrow.set_speed(5)
-            elif actual_street['length'] - traveled_m <= 100:
-                self.arrow.set_speed(10)
+            # draw arrow
+            if (actual_street is not None) and (actual_street['length'] - traveled_m < 200):
+                if actual_street['length'] - traveled_m <= 50:
+                    self.arrow.set_speed(5)
+                elif actual_street['length'] - traveled_m <= 100:
+                    self.arrow.set_speed(10)
+                else:
+                    self.arrow.set_speed(None)
+                if len(actual_street['name']) % 2 == 0:
+                    self.arrow.set_type('right')
+                else:
+                    self.arrow.set_type('left')
+                self.arrow.draw(self.win)
             else:
-                self.arrow.set_speed(None)
-            if len(actual_street['name']) % 2 == 0:
-                self.arrow.set_type('right')
-            else:
-                self.arrow.set_type('left')
-            self.arrow.draw(self.win)
-        else:
-            self.arrow.hide()
-            self.arrow.set_color(self.colors['white'])
+                self.arrow.hide()
+                self.arrow.set_color(self.colors['white'])
 
-        # draw alert
-        if (actual_street is not None) and (self.player_car.get_speed() > actual_street['speed']):
-            self.alert.draw(self.win)
+            # draw alert
+            if (actual_street is not None) and (self.player_car.get_speed() > actual_street['speed']):
+                self.alert.draw(self.win)
 
         pygame.display.flip()
 
@@ -525,42 +556,54 @@ class DrivingSimulator:
 
     def get_event(self):
 
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_UP:
-                    self.commands['up'] = True
-                if event.key == pygame.K_DOWN:
-                    self.commands['down'] = True
-                if event.key == pygame.K_LEFT:
-                    if self.arrow.get_showed():
-                        if self.arrow.get_color() == self.colors['white']:
-                            if self.arrow.get_type() == "left":
-                                self.arrow.set_color(self.colors['green'])
-                            else:
-                                self.arrow.set_color(self.colors['red'])
-                    # else:
-                    #    self.commands['left'] = True
-                if event.key == pygame.K_RIGHT:
-                    if self.arrow.get_showed():
-                        if self.arrow.get_color() == self.colors['white']:
-                            if self.arrow.get_type() == "right":
-                                self.arrow.set_color(self.colors['green'])
-                            else:
-                                self.arrow.set_color(self.colors['red'])
-                    # else:
-                    #    self.commands['right'] = True
-            elif event.type == pygame.KEYUP:
-                if event.key == pygame.K_UP:
-                    self.commands['up'] = False
-                if event.key == pygame.K_DOWN:
-                    self.commands['down'] = False
-                if event.key == pygame.K_LEFT:
-                    self.commands['left'] = False
-                if event.key == pygame.K_RIGHT:
-                    self.commands['right'] = False
+        events = pygame.event.get()
+        for event in events:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if self.button.collidepoint(event.pos):
+                    print(self.textinput.value)
+                    self.get_path()
+                    self.input_enabler = False
+            if self.input_enabler:
+                continue
+            else:
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_UP:
+                        self.commands['up'] = True
+                    if event.key == pygame.K_DOWN:
+                        self.commands['down'] = True
+                    if event.key == pygame.K_LEFT:
+                        if self.arrow.get_showed():
+                            if self.arrow.get_color() == self.colors['white']:
+                                if self.arrow.get_type() == "left":
+                                    self.arrow.set_color(self.colors['green'])
+                                else:
+                                    self.arrow.set_color(self.colors['red'])
+                        # else:
+                        #    self.commands['left'] = True
+                    if event.key == pygame.K_RIGHT:
+                        if self.arrow.get_showed():
+                            if self.arrow.get_color() == self.colors['white']:
+                                if self.arrow.get_type() == "right":
+                                    self.arrow.set_color(self.colors['green'])
+                                else:
+                                    self.arrow.set_color(self.colors['red'])
+                        # else:
+                        #    self.commands['right'] = True
+                elif event.type == pygame.KEYUP:
+                    if event.key == pygame.K_UP:
+                        self.commands['up'] = False
+                    if event.key == pygame.K_DOWN:
+                        self.commands['down'] = False
+                    if event.key == pygame.K_LEFT:
+                        self.commands['left'] = False
+                    if event.key == pygame.K_RIGHT:
+                        self.commands['right'] = False
+
+        if self.input_enabler:
+            self.textinput.update(events)
 
         self.player_car.move_car(self.commands, self.street_width)
 
@@ -574,7 +617,7 @@ class DrivingSimulator:
 if __name__ == '__main__':
 
     sim = DrivingSimulator.get_instance()
-    sim.get_path()
+    # sim.get_path()
     while True:
         sim.get_event()
         sim.show()

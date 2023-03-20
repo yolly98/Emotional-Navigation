@@ -3,6 +3,7 @@ numpy
 SpeechRecognition
 pyaudio
 pygame
+pygame-textinput
 xmltodict
 py2neo
 matplotlib
