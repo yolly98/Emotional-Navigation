@@ -633,7 +633,6 @@ class DrivingSimulator:
 if __name__ == '__main__':
 
     sim = DrivingSimulator.get_instance()
-    # sim.get_path()
     while True:
         sim.get_event()
         sim.show()
