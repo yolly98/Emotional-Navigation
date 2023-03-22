@@ -10,6 +10,12 @@ class MapSqlManager:
     def __init__(self):
         self.conn = None
 
+    @staticmethod
+    def get_instance():
+        if MapSqlManager.map_sql_manager is None:
+            MapSqlManager.map_sql_manager = MapSqlManager()
+        return MapSqlManager.map_sql_manager
+
     def open_connection(self):
         db_path = os.path.join(os.path.abspath('..'), 'Persistence', 'sql_smart_navigation.db')
         print(db_path)
@@ -133,12 +139,6 @@ class MapSqlManager:
             node = GNode(row[0], row[1], row[2], row[3], row[4])
             nodes.append(node)
         return nodes
-
-    @staticmethod
-    def get_instance():
-        if MapSqlManager.map_sql_manager is None:
-            MapSqlManager.map_sql_manager = MapSqlManager()
-        return MapSqlManager.map_sql_manager
 
 
 if __name__ == '__main__':

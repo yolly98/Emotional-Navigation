@@ -9,6 +9,12 @@ class GraphManager:
     def __init__(self):
         self.graph = None
 
+    @staticmethod
+    def get_instance():
+        if GraphManager.graph_manager is None:
+            GraphManager.graph_manager = GraphManager()
+        return GraphManager.graph_manager
+
     def open_connection(self):
         try:
             self.graph = Graph("bolt://localhost:7687", auth=("neo4j", "password"))
@@ -20,12 +26,6 @@ class GraphManager:
 
     def close_connection(self):
         self.graph = None
-
-    @staticmethod
-    def get_instance():
-        if GraphManager.graph_manager is None:
-            GraphManager.graph_manager = GraphManager()
-        return GraphManager.graph_manager
 
     def get_path(self, source, dest):
 
