@@ -8,3 +8,4 @@ xmltodict
 py2neo
 matplotlib
 geocoder
+opencv-python

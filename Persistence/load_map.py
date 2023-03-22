@@ -327,5 +327,5 @@ def load_map():
     print("loading map data completed")
 
 
-if __name__=="__main__":
+if __name__ == "__main__":
     load_map()
