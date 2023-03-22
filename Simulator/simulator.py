@@ -215,8 +215,7 @@ class Arrow:
                 elif block == 0:
                     color = self.background_color
                 pygame.draw.rect(win, color,
-                                 pygame.Rect(pos_x + j * block_size, pos_y + i * block_size, block_size,
-                                             block_size))
+                                 pygame.Rect(pos_x + j * block_size, pos_y + i * block_size, block_size, block_size))
                 j += 1
             i += 1
 
@@ -593,7 +592,7 @@ class DrivingSimulator:
                     if event.key == pygame.K_LEFT:
                         if self.arrow.get_showed():
                             if self.arrow.get_color() == self.colors['white']:
-                                if self.arrow.get_type() == "left":
+                                if self.arrow.get_type() == "left" and (self.arrow.get_speed() is not None):
                                     self.arrow.set_color(self.colors['green'])
                                 else:
                                     self.arrow.set_color(self.colors['red'])
@@ -602,7 +601,7 @@ class DrivingSimulator:
                     if event.key == pygame.K_RIGHT:
                         if self.arrow.get_showed():
                             if self.arrow.get_color() == self.colors['white']:
-                                if self.arrow.get_type() == "right":
+                                if self.arrow.get_type() == "right" and (self.arrow.get_speed() is not None):
                                     self.arrow.set_color(self.colors['green'])
                                 else:
                                     self.arrow.set_color(self.colors['red'])
