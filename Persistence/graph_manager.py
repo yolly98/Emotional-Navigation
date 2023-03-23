@@ -27,20 +27,15 @@ class GraphManager:
     def close_connection(self):
         self.graph = None
 
-    def get_path(self, source, dest):
+    def get_path(self, source, destination):
 
         if self.graph is None:
             print("Graph DB not connected")
             return False
 
-        if (not isinstance(source, Point)) and (not isinstance(dest, Point)):
-            print("argument not valid")
-            return None
-
         # query that takes in account weights
         query = f"MATCH (a), (b)\
-                WHERE a.lat = '{source.get_lat()}' and a.lon = '{source.get_lon()}' \
-                and b.lat = '{dest.get_lat()}' and b.lon = '{dest.get_lon()}' \
+                WHERE a.id = '{source}' and b.id = '{destination}' \
                 CALL apoc.algo.dijkstra(a, b, 'TO', 'length') \
                 YIELD path \
                 RETURN nodes(path) as nodes, relationships(path) as ways"

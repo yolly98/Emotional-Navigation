@@ -147,6 +147,22 @@ class MapSqlManager:
             nodes.append(node)
         return nodes
 
+    def get_node_by_coord(self, lat, lon):
+        if self.conn is None:
+            return False
+        cursor = self.conn.cursor(prepared=True)
+        query = "SELECT * FROM node \
+        WHERE lat = %s and lon = %s"
+        try:
+            cursor.execute(query, (lat, lon))
+        except mysql.connector.Error as e:
+            print(f"Mysql Execution Error [{e}]")
+        res = cursor.fetchone()
+        if res is None:
+            return False
+        res = GNode(res[0], res[1], res[2], res[3], res[4])
+        return res
+
 
 if __name__ == '__main__':
     map_sql_manager = MapSqlManager().get_instance()
@@ -154,5 +170,7 @@ if __name__ == '__main__':
     way = map_sql_manager.get_way(115)
     node = map_sql_manager.get_node(248140361)
     print(way)
+    print(node)
+    node = map_sql_manager.get_node_by_coord('42.3300045', '12.2653073')
     print(node)
     map_sql_manager.close_connection()

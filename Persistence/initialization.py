@@ -121,8 +121,8 @@ def load_map():
         id BIGINT, \
         type VARCHAR(100), \
         name VARCHAR(100), \
-        lat FLOAT, \
-        lon FLOAT, \
+        lat DOUBLE, \
+        lon DOUBLE, \
         PRIMARY KEY (id) \
         ) "
     )
@@ -207,7 +207,7 @@ def load_map():
         # create node
         neo4j_node = Node("Node", id=id, lat=lat, lon=lon, name=name)
         # add nodes to dict
-        neo4j_nodes[node["@id"]] = neo4j_node
+        neo4j_nodes[id] = neo4j_node
         # save node to no4j db
         graph.create(neo4j_node)
         # save node to msyql db

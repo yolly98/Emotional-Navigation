@@ -13,7 +13,21 @@ class MapEngine:
 
         graph_manager = GraphManager.get_instance()
         graph_manager.open_connection()
-        ret = graph_manager.get_path(source, destination)
+
+        sql_manager = MapSqlManager.get_instance()
+        sql_manager.open_connection()
+
+        source = (sql_manager.get_node_by_coord(source.get_lat(), source.get_lon()))
+        if source is False:
+            print("Source position not found")
+            return None
+        source_id = source.get('id')
+        destination = (sql_manager.get_node_by_coord(destination.get_lat(), destination.get_lon()))
+        if destination is False:
+            print("Destination position not found")
+            return None
+        destination_id = destination.get('id')
+        ret = graph_manager.get_path(source_id, destination_id)
         graph_manager.close_connection()
 
         if ret is None:
@@ -21,9 +35,6 @@ class MapEngine:
 
         nodes = ret['nodes']
         ways = ret['ways']
-
-        sql_manager = MapSqlManager.get_instance()
-        sql_manager.open_connection()
         path = dict()
         ordered_path = []
         order = 0
@@ -185,13 +196,13 @@ if __name__ == "__main__":
         MapEngine.print_path(res['path'])
     print(f"air distance: {calculate_distance(source, destination)} km")
 
-    if res:
-        MapEngine.visualize_path(res['nodes'])
+    # if res:
+    #     MapEngine.visualize_path(res['nodes'])
 
     res = MapEngine.calculate_path_avoid_street(res['nodes'], source, destination, "Via Santa Maria")
     if res:
         MapEngine.print_path(res['path'])
     print(f"air distance: {calculate_distance(source, destination)} km")
 
-    if res:
-        MapEngine.visualize_path(res['nodes'])
+    # if res:
+    #    MapEngine.visualize_path(res['nodes'])

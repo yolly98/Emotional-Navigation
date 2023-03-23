@@ -59,8 +59,8 @@ class GNode:
         self.node['id'] = id
         self.node['type'] = type
         self.node['name'] = name
-        self.node['lat'] = lat
-        self.node['lon'] = lon
+        self.node['lat'] = str(lat)
+        self.node['lon'] = str(lon)
 
     def get(self, key):
         if key in self.node:

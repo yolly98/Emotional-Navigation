@@ -425,10 +425,12 @@ class DrivingSimulator:
         destination = Point(destination_node.get('lat'), destination_node.get('lon'))
         sql_map.close_connection()
 
-        # destination = Point('42.3295099', '12.2659779')
-        print(source)
-        print(destination)
-        self.path = MapEngine.calculate_path(source, destination)['path']
+        # destination = Point('42.3300045', '12.2653073')
+        self.path = MapEngine.calculate_path(source, destination)
+        if self.path is None:
+            print("Path not found")
+            return False
+        self.path = self.path['path']
         MapEngine.print_path(self.path)
         self.old_timestamp = time.time()
         self.old_car_speed = 0
