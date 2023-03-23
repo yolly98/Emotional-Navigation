@@ -1,6 +1,7 @@
 import sqlite3
 from Utility.utility import Way, GNode
 import os
+import mysql.connector
 
 
 class MapSqlManager:
@@ -17,15 +18,19 @@ class MapSqlManager:
         return MapSqlManager.map_sql_manager
 
     def open_connection(self):
-        db_path = os.path.join(os.path.abspath('..'), 'Persistence', 'sql_smart_navigation.db')
-        print(db_path)
-        if not os.path.exists(db_path):
-            print("Sqlite db doesn't exist")
-            return False
+
         try:
-            self.conn = sqlite3.connect(db_path)
-        except sqlite3.Error as e:
-            print(f"Sqlite Connection Error [{e}]")
+            self.conn = mysql.connector.connect(
+                host="localhost",
+                user="root",
+                password="password",
+                database="smart_navigation"
+            )
+        except mysql.connector.Error as e:
+            print(f"Mysql Execution Error [{e}]")
+            return False
+
+        return True
 
     def close_connection(self):
         self.conn.close()
@@ -35,12 +40,12 @@ class MapSqlManager:
         if self.conn is None:
             return False
         else:
-            cursor = self.conn.cursor()
-            query = "SELECT * FROM way WHERE id = ? LIMIT 1"
+            cursor = self.conn.cursor(prepared=True)
+            query = "SELECT * FROM way WHERE id = %s LIMIT 1"
             try:
                 cursor.execute(query, (way_id,))
-            except sqlite3.Error as e:
-                print(f"Sqlite Execution Error [{e}]")
+            except mysql.connector.Error as e:
+                print(f"Mysql Execution Error [{e}]")
             res = cursor.fetchone()
             if res is None:
                 return False
@@ -51,12 +56,12 @@ class MapSqlManager:
         if self.conn is None:
             return False
         else:
-            cursor = self.conn.cursor()
-            query = "SELECT * FROM way WHERE start_node = ?"
+            cursor = self.conn.cursor(prepared=True)
+            query = "SELECT * FROM way WHERE start_node = %s"
             try:
                 cursor.execute(query, (start_node,))
-            except sqlite3.Error as e:
-                print(f"Sqlite Execution Error [{e}]")
+            except mysql.connector.Error as e:
+                print(f"Mysql Execution Error [{e}]")
             res = cursor.fetchall()
             if res is None:
                 return False
@@ -70,12 +75,13 @@ class MapSqlManager:
         if self.conn is None:
             return False
         else:
-            cursor = self.conn.cursor()
-            query = "SELECT * FROM way WHERE name = ?"
+            cursor = self.conn.cursor(prepared=True)
+            query = "SELECT * FROM way WHERE name = %s"
             try:
                 cursor.execute(query, (way_name,))
-            except sqlite3.Error as e:
-                print(f"Sqlite Execution Error [{e}]")
+            except mysql.connector.Error as e:
+                print(f"Mysql Execution Error [{e}]")
+                return False
             res = cursor.fetchall()
             if res is None:
                 return False
@@ -89,12 +95,13 @@ class MapSqlManager:
         if self.conn is None:
             return False
         else:
-            cursor = self.conn.cursor()
-            query = "SELECT * FROM way WHERE end_node = ?"
+            cursor = self.conn.cursor(prepared=True)
+            query = "SELECT * FROM way WHERE end_node = %s"
             try:
                 cursor.execute(query, (end_node,))
-            except sqlite3.Error as e:
-                print(f"Sqlite Execution Error [{e}]")
+            except mysql.connector.Error as e:
+                print(f"Mysql Execution Error [{e}]")
+                return False
             res = cursor.fetchall()
             if res is None:
                 return False
@@ -108,12 +115,12 @@ class MapSqlManager:
         if self.conn is None:
             return False
         else:
-            cursor = self.conn.cursor()
-            query = "SELECT * FROM node WHERE id = ? LIMIT 1"
+            cursor = self.conn.cursor(prepared=True)
+            query = "SELECT * FROM node WHERE id = %s LIMIT 1"
             try:
                 cursor.execute(query, (node_id,))
-            except sqlite3.Error as e:
-                print(f"Sqlite Execution Error [{e}]")
+            except mysql.connector.Error as e:
+                print(f"Mysql Execution Error [{e}]")
             res = cursor.fetchone()
             if res is None:
                 return False
@@ -123,14 +130,14 @@ class MapSqlManager:
     def get_nodes_by_coord(self, max_lat, min_lat, max_lon, min_lon):
         if self.conn is None:
             return False
-        cursor = self.conn.cursor()
+        cursor = self.conn.cursor(prepared=True)
         query = "SELECT * FROM node \
-        WHERE lat < ? and lat > ? and \
-        lon < ? and lon > ? "
+        WHERE lat < %s and lat > %s and \
+        lon < %s and lon > %s "
         try:
             cursor.execute(query, (max_lat, min_lat, max_lon, min_lon))
-        except sqlite3.Error as e:
-            print(f"Sqlite Execution Error [{e}]")
+        except mysql.connector.Error as e:
+            print(f"Mysql Execution Error [{e}]")
         res = cursor.fetchall()
         if res is None:
             return False

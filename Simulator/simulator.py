@@ -415,6 +415,7 @@ class DrivingSimulator:
         # get destination from input
         sql_map = MapSqlManager.get_instance()
         sql_map.open_connection()
+        # destination_name = 'Via XXVIII Ottobre' # test
         ways = sql_map.get_way_by_name(destination_name)
         if not ways:
             self.textinput.value = "Not valid destination"
@@ -424,9 +425,9 @@ class DrivingSimulator:
         destination = Point(destination_node.get('lat'), destination_node.get('lon'))
         sql_map.close_connection()
 
-        # destination_name = 'Via XXVIII Ottobre' # test
-
         # destination = Point('42.3295099', '12.2659779')
+        print(source)
+        print(destination)
         self.path = MapEngine.calculate_path(source, destination)['path']
         MapEngine.print_path(self.path)
         self.old_timestamp = time.time()

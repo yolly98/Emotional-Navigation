@@ -9,3 +9,4 @@ py2neo
 matplotlib
 geocoder
 opencv-python
+mysql-connector-python

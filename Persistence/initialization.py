@@ -6,9 +6,8 @@ import xmltodict
 import json
 import math
 from Utility.utility import Point, calculate_distance
-import sqlite3
-import os
 from py2neo import Graph, Node, Relationship
+import mysql.connector
 
 # ---------------------------------------------------------------------------
 #  SCRIPT TO BE PERFORMED ONLY ONCE TO LOAD THE DATABASE THROUGH AN osm FILE
@@ -29,7 +28,7 @@ docker run --name neo4j_smart_navigation \
 > docker exec -it neo4j_smart_navigation bash
 > cd /var/lib/neo4j/conf
 > vim neo4j.conf
-add line 'dbms.transaction.timeout=5s'
+add line 'dbms.transaction.timeout=10s'
 '''
 
 # install apoc plugin for neo4j
@@ -40,6 +39,13 @@ of the neo4j main folder
 (then restart)
 '''
 
+# docker command for msyql
+'''
+docker run --name mysql-smart-navigation \
+-p 3306:3306 -d \
+-v mysql_volume:/var/lib/mysql/ \
+-e "MYSQL_ROOT_PASSWORD=password" mysql
+'''
 # -------------------
 
 
@@ -65,63 +71,73 @@ def load_map():
         print('database connected')
     except Exception:
         print('database offline')
+        return
 
     # delete all nodes and relationship in ne4jdb
-    graph.delete_all()
+    graph.run("MATCH (n) DETACH DELETE n")
 
-    # --------------- sqlite db initialization -------------------
+    # --------------- mysql db initialization -------------------
 
-    if os.path.exists("sql_smart_navigation.db"):
-        os.remove("sql_smart_navigation.db")
-    conn = sqlite3.connect("sql_smart_navigation.db")
-    cursor = conn.cursor()
+    mysql_conn = None
+    try:
+        mysql_conn = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="password"
+        )
+    except mysql.connector.Error as e:
+        print(f"Mysql connection error [{e}]")
+        return
+    mysql_cursor = mysql_conn.cursor()
+    mysql_cursor.execute("DROP DATABASE IF EXISTS smart_navigation")
+    mysql_cursor.execute("CREATE DATABASE IF NOT EXISTS smart_navigation")
+    mysql_cursor.execute("USE smart_navigation")
+
     # table creations
-    cursor.execute(
-        "CREATE TABLE user ( \
-        id integer, \
-        username text, \
+    mysql_cursor.execute(
+        "CREATE TABLE IF NOT EXISTS user ( \
+        id BIGINT, \
+        username VARCHAR(100), \
         PRIMARY KEY (id)\
         ) "
     )
-    conn.commit()
 
-    cursor.execute(
+    mysql_cursor.execute(
         "CREATE TABLE IF NOT EXISTS way ( \
-        id integer, \
-        name text, \
-        alt_name text, \
-        ref text, \
-        lim_speed integer, \
-        length integer , \
-        start_node integer, \
-        end_node integer, \
+        id BIGINT, \
+        name VARCHAR(100), \
+        alt_name VARCHAR(100), \
+        ref VARCHAR(100), \
+        lim_speed INT, \
+        length INT , \
+        start_node BIGINT, \
+        end_node BIGINT, \
         PRIMARY KEY (id) \
         ) "
     )
-    conn.commit()
 
-    cursor.execute(
+    mysql_cursor.execute(
         "CREATE TABLE IF NOT EXISTS node ( \
-        id integer, \
-        type text, \
-        name text, \
-        lat float, \
-        lon float, \
+        id BIGINT, \
+        type VARCHAR(100), \
+        name VARCHAR(100), \
+        lat FLOAT, \
+        lon FLOAT, \
         PRIMARY KEY (id) \
         ) "
     )
-    conn.commit()
 
-    cursor.execute(
+    mysql_cursor.execute(
         "CREATE TABLE IF NOT EXISTS history ( \
-        user_id integer, \
-        way_id integer, \
-        emotion text, \
-        timestamp timestamp, \
+        user_id BIGINT, \
+        way_id BIGINT, \
+        emotion VARCHAR(100), \
+        timestamp TIMESTAMP, \
         PRIMARY KEY (user_id, way_id, timestamp) \
         ) "
     )
-    conn.commit()
+    mysql_conn.commit()
+    mysql_cursor = mysql_conn.cursor(prepared=True)
 
     # -----------------------------------------------------------
 
@@ -193,12 +209,12 @@ def load_map():
         # add nodes to dict
         neo4j_nodes[node["@id"]] = neo4j_node
         # save node to no4j db
-        graph.create(Node("Node", id=id, name=name))
-        # save node to sqlite db
+        graph.create(neo4j_node)
+        # save node to msyql db
         sql = "INSERT INTO node (id, type, name, lat, lon ) \
-                VALUES( ?, ?, ?, ?, ?)"
-        cursor.execute(sql, (id, type, name, lat, lon))
-        conn.commit()
+                VALUES( %s, %s, %s, %s, %s)"
+        mysql_cursor.execute(sql, (id, type, name, lat, lon))
+        mysql_conn.commit()
 
     print("nodes loads with success")
 
@@ -314,15 +330,15 @@ def load_map():
             # create the way for mysql
             sql = "INSERT INTO way ( \
                    id, name, alt_name, ref, lim_speed, length, start_node, end_node) \
-                   VALUES( ?, ?, ?, ?, ?, ?, ?, ?)"
-            cursor.execute(sql, (way_id, name, alt_name, ref, lim_speed, length, start_node.get('id'), end_node.get('id')))
-            conn.commit()
+                   VALUES( %s, %s, %s, %s, %s, %s, %s, %s)"
+            mysql_cursor.execute(sql, (way_id, name, alt_name, ref, lim_speed, length, start_node.get('id'), end_node.get('id')))
+            mysql_conn.commit()
 
             # update the starting node
             start_node = end_node
             way_id += 1
 
-    conn.close()
+    mysql_conn.close()
 
     print("loading map data completed")
 

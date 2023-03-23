@@ -1,6 +1,7 @@
 import sqlite3
 import os
 from datetime import datetime, timedelta
+import mysql.connector
 
 
 class HistoryManager:
@@ -17,14 +18,18 @@ class HistoryManager:
         return HistoryManager.history_manager
 
     def open_connection(self):
-        db_path = os.path.join(os.path.abspath('..'), 'Persistence', 'sql_smart_navigation.db')
-        if not os.path.exists(db_path):
-            print("Sqlite db doesn't exist")
-            return False
+
         try:
-            self.conn = sqlite3.connect(db_path)
-        except sqlite3.Error as e:
-            print(f"Sqlite Connection Error [{e}]")
+            self.conn = mysql.connector.connect(
+                host="localhost",
+                user="root",
+                password="password",
+                database="smart_navigation"
+            )
+        except mysql.connector.Error as e:
+            print(f"Mysql Execution Error [{e}]")
+            return False
+
         return True
 
     def close_connection(self):
@@ -35,14 +40,14 @@ class HistoryManager:
         if self.conn is None:
             return False
         else:
-            cursor = self.conn.cursor()
+            cursor = self.conn.cursor(prepared=True)
             query = "INSERT INTO history (user_id, way_id, emotion, timestamp) \
-                            VALUES( ?, ?, ?, ?)"
+                            VALUES( %s, %s, %s, %s)"
             try:
                 cursor.execute(query, (user_id, way_id, emotion, timestamp))
                 self.conn.commit()
-            except sqlite3.Error as e:
-                print(f"Sqlite Execution Error [{e}]")
+            except mysql.connector.Error as e:
+                print(f"Mysql Execution Error [{e}]")
                 return False
             return True
 
@@ -50,12 +55,12 @@ class HistoryManager:
         if self.conn is None:
             return False
         else:
-            cursor = self.conn.cursor()
-            query = "SELECT * FROM history WHERE user_id = ? and way_id = ?"
+            cursor = self.conn.cursor(prepared=True)
+            query = "SELECT * FROM history WHERE user_id = %s and way_id = %s"
             try:
                 cursor.execute(query, (user_id, way_id))
-            except sqlite3.Error as e:
-                print(f"Sqlite Execution Error [{e}]")
+            except mysql.connector.Error as e:
+                print(f"Mysql Execution Error [{e}]")
 
             res = cursor.fetchall()
             if res is None:
@@ -72,13 +77,13 @@ class HistoryManager:
         if self.conn is None:
             return False
         else:
-            cursor = self.conn.cursor()
-            query = "DELETE FROM history WHERE user_id = ?"
+            cursor = self.conn.cursor(prepared=True)
+            query = "DELETE FROM history WHERE user_id = %s"
             try:
                 cursor.execute(query, (user_id,))
                 self.conn.commit()
-            except sqlite3.Error as e:
-                print(f"Sqlite Execution Error [{e}]")
+            except mysql.connector.Error as e:
+                print(f"Mysql Execution Error [{e}]")
                 return False
             return True
 
