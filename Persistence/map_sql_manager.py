@@ -1,6 +1,4 @@
-import sqlite3
 from Utility.utility import Way, GNode
-import os
 import mysql.connector
 
 
@@ -111,6 +109,26 @@ class MapSqlManager:
                 ways.append(way)
             return ways
 
+    def get_way_by_node(self, node):
+        if self.conn is None:
+            return False
+        else:
+            cursor = self.conn.cursor(prepared=True)
+            query = "SELECT * FROM way WHERE end_node = %s or start_node = %s"
+            try:
+                cursor.execute(query, (node, node))
+            except mysql.connector.Error as e:
+                print(f"Mysql Execution Error [{e}]")
+                return False
+            res = cursor.fetchall()
+            if res is None:
+                return False
+            ways = []
+            for row in res:
+                way = Way(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7])
+                ways.append(way)
+            return ways
+
     def get_node(self, node_id):
         if self.conn is None:
             return False
@@ -173,4 +191,9 @@ if __name__ == '__main__':
     print(node)
     node = map_sql_manager.get_node_by_coord('42.3300045', '12.2653073')
     print(node)
+    ways = map_sql_manager.get_way_by_node(844191299)
+    if ways is False:
+        print("Way: Unknown")
+    else:
+        print(f"Way: {ways[0].get('name')}")
     map_sql_manager.close_connection()

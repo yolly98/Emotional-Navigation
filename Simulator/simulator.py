@@ -4,10 +4,9 @@ import sys
 import math
 from Core.map_engine import MapEngine
 from Persistence.map_sql_manager import MapSqlManager
-from Utility.utility import Point
+from Utility.utility import Point, calculate_distance
 from InputModule.gps_simulator import GPS
 import time
-
 
 class PathProgress:
 
@@ -319,6 +318,7 @@ class DrivingSimulator:
     driving_simulator = None
 
     def __init__(self):
+        self.TEST = None
         # pygame initialization
         pygame.init()
 
@@ -473,7 +473,36 @@ class DrivingSimulator:
             self.win.blit(km_surface, km_rect)
             self.path_progress.draw(self.win, self.colors, math.floor(self.path_km * 1000))
 
-            GPS.get_instance().get_coord(True, self.path_km)
+            # get gps position
+            position = GPS.get_instance().get_coord(True, self.path_km)
+            if position is None:
+                print("GPS coordinates not found")
+            # get street name
+            '''
+            distance = None
+            nearest_point = None
+            for node in self.nodes:
+                p = Point(node.get('lat'), node.get('lon'))
+                d = calculate_distance(position, p)
+                if distance is None or distance > d:
+                    nearest_point = node
+                    distance = d
+
+            MapSqlManager.get_instance().open_connection()
+            ways = MapSqlManager.get_instance().get_way_by_node(nearest_point.get('id'))
+            MapSqlManager.get_instance().close_connection()
+            way_name = "Unknown"
+            if not (ways is False):
+                for way in ways:
+                    if way.get('name') in [street['name'] for street in self.path]:
+                        way_name = way.get('name')
+                        break
+            if not self.TEST == way_name:
+                self.TEST = way_name
+                print(f"Position: {position}")
+                print(f"Nearest point: {nearest_point}")
+                print(f"Way: {way_name}")
+            '''
 
             # draw street name
             actual_street = None
