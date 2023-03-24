@@ -364,6 +364,7 @@ class DrivingSimulator:
         self.street_pos = [0, self.win_height / 3]
         self.player_car = Car(self.win_height - 250, self.win_height - 100, self.block_size, self.max_car_speed, 'player')
         self.path = None
+        self.nodes = None
         self.path_km = 0
         self.old_car_speed = 0
         self.old_timestamp = None
@@ -385,6 +386,7 @@ class DrivingSimulator:
 
     def end_path(self):
         self.path = None
+        self.nodes = None
         self.path_km = 0
         self.old_car_speed = 0
         self.old_timestamp = None
@@ -397,11 +399,10 @@ class DrivingSimulator:
 
     def get_path(self, destination_name):
 
-        source = GPS.get_coord(True)
+        source = GPS.get_instance().get_coord(True, -1)
         # get destination from input
         sql_map = MapSqlManager.get_instance()
         sql_map.open_connection()
-        # destination_name = 'Via XXVIII Ottobre' # test
         ways = sql_map.get_way_by_name(destination_name)
         if not ways:
             self.textinput.value = "Not valid destination"
@@ -411,12 +412,13 @@ class DrivingSimulator:
         destination = Point(destination_node.get('lat'), destination_node.get('lon'))
         sql_map.close_connection()
 
-        # destination = Point('42.3300045', '12.2653073')
         self.path = MapEngine.calculate_path(source, destination)
         if self.path is None:
             print("Path not found")
             return False
+        self.nodes = self.path['nodes']
         self.path = self.path['path']
+        GPS.get_instance().set_nodes(self.nodes)
         MapEngine.print_path(self.path)
         self.old_timestamp = time.time()
         self.old_car_speed = 0
@@ -470,6 +472,8 @@ class DrivingSimulator:
             km_rect.midtop = (self.street_width / 2, 50)
             self.win.blit(km_surface, km_rect)
             self.path_progress.draw(self.win, self.colors, math.floor(self.path_km * 1000))
+
+            GPS.get_instance().get_coord(True, self.path_km)
 
             # draw street name
             actual_street = None

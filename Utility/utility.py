@@ -80,7 +80,7 @@ class GNode:
 # -------------------
 
 
-def calculate_distance(Point1, Point2):
+def calculate_distance(Point1, Point2): # in km
 
     lat1 = float(Point1.get_lat())
     lon1 = float(Point1.get_lon())

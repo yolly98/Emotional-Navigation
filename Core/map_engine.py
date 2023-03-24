@@ -36,6 +36,7 @@ class MapEngine:
         ways = ret['ways']
         path = dict()
         ordered_path = []
+        gnodes = []
         order = 0
         for item in ways:
 
@@ -63,12 +64,16 @@ class MapEngine:
             else:
                 path[name]['length'] += length
 
+        for node in nodes:
+            gnode = sql_manager.get_node(node.get('id'))
+            gnodes.append(gnode)
+
         sql_manager.close_connection()
 
         for street_name in path:
             ordered_path[path[street_name]['order']]['length'] = path[street_name]['length']
 
-        return {'nodes': nodes, 'path': ordered_path}
+        return {'nodes': gnodes, 'path': ordered_path}
 
     @staticmethod
     def calculate_path_avoid_street(nodes, source, destination, way_name):
