@@ -1,5 +1,5 @@
 SQL_IMAGE = mysql-smart-navigation
-GRAPH_IMAGE = neo4j_smart_navigation
+GRAPH_IMAGE = neo4j-smart-navigation
 GRAPH_DOCKERFILE = Dockerfile
 
 build:
