@@ -3,7 +3,6 @@ from Utility.utility import Point, calculate_distance
 from Persistence.map_sql_manager import MapSqlManager
 from Persistence.graph_manager import GraphManager
 import matplotlib.pyplot as plt
-import matplotlib.image as mpimage
 
 
 class MapEngine:
@@ -176,12 +175,7 @@ class MapEngine:
         fig.set_facecolor('black')
         ax.set_title("Path")
         ax.axis('off')
-        # ax.set_xlim(min(lons) - 0.0001, max(lons) + 0.0001)
-        # ax.set_ylim(min(lats) - 0.0001, max(lats) + 0.0001)
         plt.show()
-        #plt.savefig('path.png')
-        #plt_matrix = mpimage.imread('path.png')
-        #print(plt_matrix)
 
 # --------------------------------
 
