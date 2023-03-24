@@ -34,7 +34,7 @@ add line 'dbms.transaction.timeout=10s'
 # install apoc plugin for neo4j
 '''
 download apoc from https://github.com/neo4j/apoc/releases
-put apoc-(last-version)-all.jar in plugin folder
+put apoc-(last-version)-all.jar in plugins folder
 of the neo4j main folder
 (then restart)
 '''
