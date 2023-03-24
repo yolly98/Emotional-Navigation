@@ -12,10 +12,9 @@
 ## simulatore di guida
 * [x] aggiungere frecce per curve
 * [x] mettere avanzamento percorso
-* [ ] mettere arre per girare
 
 ## rilevatore emozioni
-* [ ] creare modulo per rilevatore emozioni
+* [x] creare modulo per rilevatore emozioni
 
 ## storico
 * [ ] capire come salvare lo storico

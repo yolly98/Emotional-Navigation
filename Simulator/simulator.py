@@ -274,34 +274,20 @@ class Car:
     def get_speed(self):
         return self.car_speed
 
-    def move_car(self, commands, street_width):
+    def move_car(self, commands):
         up = commands['up']
         down = commands['down']
-        left = commands['left']
-        right = commands['right']
 
         if up:
-            #if self.car_position[1] % 20 == 0:
-            #    self.car_block_size -= self.prospective_car_step
-            #self.car_position[1] -= self.block_size
             if self.car_speed < self.max_car_speed:
                 self.car_speed += 0.5
             else:
                 self.car_speed = self.max_car_speed
         if down:
-            #if self.car_position[1] % 20 == 0:
-            #    self.car_block_size += self.prospective_car_step
-            #self.car_position[1] += self.block_size
             if self.car_speed > 0:
                 self.car_speed -= 0.5
             else:
                 self.car_speed = 0
-        if left:
-            if self.pos_x > street_width / 2:
-                self.pos_x -= self.car_speed / 10
-        if right:
-            if self.pos_x + self.width * self.block_size < street_width:
-                self.pos_x += self.car_speed / 10
 
     def draw(self, win, colors):
         black = colors['black']
@@ -592,24 +578,16 @@ class DrivingSimulator:
                         self.commands['up'] = True
                     if event.key == pygame.K_DOWN:
                         self.commands['down'] = True
-                    if event.key == pygame.K_LEFT:
-                        if self.arrow.get_showed():
-                            if self.arrow.get_color() == self.colors['white']:
-                                if self.arrow.get_type() == "left" and (self.arrow.get_speed() is not None):
-                                    self.arrow.set_color(self.colors['green'])
-                                else:
-                                    self.arrow.set_color(self.colors['red'])
-                        # else:
-                        #    self.commands['left'] = True
-                    if event.key == pygame.K_RIGHT:
-                        if self.arrow.get_showed():
-                            if self.arrow.get_color() == self.colors['white']:
-                                if self.arrow.get_type() == "right" and (self.arrow.get_speed() is not None):
-                                    self.arrow.set_color(self.colors['green'])
-                                else:
-                                    self.arrow.set_color(self.colors['red'])
-                        # else:
-                        #    self.commands['right'] = True
+                    if event.key == pygame.K_LEFT and self.arrow.get_showed() and self.arrow.get_color() == self.colors['white']:
+                        if self.arrow.get_type() == "left" and (self.arrow.get_speed() is not None):
+                            self.arrow.set_color(self.colors['green'])
+                        else:
+                            self.arrow.set_color(self.colors['red'])
+                    if event.key == pygame.K_RIGHT and self.arrow.get_showed() and self.arrow.get_color() == self.colors['white']:
+                        if self.arrow.get_type() == "right" and (self.arrow.get_speed() is not None):
+                            self.arrow.set_color(self.colors['green'])
+                        else:
+                            self.arrow.set_color(self.colors['red'])
                 elif event.type == pygame.KEYUP:
                     if event.key == pygame.K_UP:
                         self.commands['up'] = False
@@ -623,7 +601,7 @@ class DrivingSimulator:
         if self.input_enabler:
             self.textinput.update(events)
 
-        self.player_car.move_car(self.commands, self.street_width)
+        self.player_car.move_car(self.commands)
 
     @staticmethod
     def get_instance():
