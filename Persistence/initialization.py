@@ -146,6 +146,7 @@ def load_map():
 
     # dictionary to map the ID of nodes with no4j's nodes
     neo4j_nodes = {}
+    neo4j_reduced_nodes = {}
 
     # ---- laod nodes ---------
     '''
@@ -206,10 +207,12 @@ def load_map():
 
         # create node
         neo4j_node = Node("Node", id=id, lat=lat, lon=lon, name=name)
+        neo4j_reduced_node = Node("Node", id=id)
         # add nodes to dict
         neo4j_nodes[id] = neo4j_node
+        neo4j_reduced_nodes[id] = neo4j_reduced_node
         # save node to no4j db
-        graph.create(neo4j_node)
+        graph.create(neo4j_reduced_node)
         # save node to msyql db
         sql = "INSERT INTO node (id, type, name, lat, lon ) \
                 VALUES( %s, %s, %s, %s, %s)"
@@ -314,16 +317,18 @@ def load_map():
 
         # take the first node
         start_node = neo4j_nodes[nodes[0]["@ref"]]
+        reduced_start_node = neo4j_reduced_nodes[nodes[0]["@ref"]]
         # take next nodes
         for node in nodes[1:]:
             # take the next node
             end_node = neo4j_nodes[node["@ref"]]
+            reduced_end_node = neo4j_reduced_nodes[node["@ref"]]
             # create a relationship between nodes
             p1 = Point(start_node.get('lat'), start_node.get('lon'))
             p2 = Point(end_node.get('lat'), end_node.get('lon'))
             length = math.floor(calculate_distance(p1, p2) * 1000)  # in meters
             # crate the way in neo4j
-            relationship = Relationship(start_node, "TO", end_node, ref=ref, way_id=way_id,
+            relationship = Relationship(reduced_start_node, "TO", reduced_end_node, ref=ref, way_id=way_id,
                                         length=length, speed=lim_speed)
             graph.create(relationship)
 
@@ -336,6 +341,7 @@ def load_map():
 
             # update the starting node
             start_node = end_node
+            reduced_start_node = reduced_end_node
             way_id += 1
 
     mysql_conn.close()
