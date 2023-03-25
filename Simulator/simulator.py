@@ -470,32 +470,26 @@ class DrivingSimulator:
 
             # get gps position
             position = GPS.get_instance().get_coord(True, self.path_km)
+            actual_street = None
             if position is None:
                 print("GPS coordinates not found")
-            # get street name
-            distance = None
-            nearest_point_index = 0
-            i = 0
-            while i < len(self.path):
-                node = self.path[i]['start_node']
-                p = Point(node.get('lat'), node.get('lon'))
-                d = calculate_distance(position, p)
-                if distance is None or distance > d:
-                    nearest_point_index = i
-                    distance = d
-                i += 1
+            else:
+                # get street name
+                distance = None
+                nearest_point_index = 0
+                i = 0
+                while i < len(self.path):
+                    node = self.path[i]['start_node']
+                    p = Point(node.get('lat'), node.get('lon'))
+                    d = calculate_distance(position, p)
+                    if distance is None or distance > d:
+                        nearest_point_index = i
+                        distance = d
+                    i += 1
 
-            way_name = self.path[nearest_point_index]['way'].get('name')
+                actual_street = self.path[nearest_point_index]
 
             # draw street name
-            actual_street = None
-            traveled_m = (self.path_km * 1000)
-            for way in self.path:
-                if traveled_m < way['way'].get('length'):
-                    actual_street = way
-                    break
-                else:
-                    traveled_m -= way['way'].get('length')
             if actual_street is None:
                 if self.travel_time == 0:
                     self.travel_time = time.time() - self.start_time
@@ -508,9 +502,9 @@ class DrivingSimulator:
             street_rect = street_surface.get_rect()
             street_rect.midtop = (self.street_width / 2, 10)
             self.win.blit(street_surface, street_rect)
-            if not actual_street == self.actual_street:
-                self.actual_street = actual_street
+            if (self.actual_street is None) or (not actual_street['way'].get('name') == self.actual_street['way'].get('name')):
                 self.arrow.set_color(self.colors['white'])
+            self.actual_street = actual_street
 
             # draw arrow
             if (actual_street is not None) and (not self.path.index(actual_street) == len(self.path) - 1):

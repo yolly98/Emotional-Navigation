@@ -9,7 +9,7 @@ class GPS:
     def __init__(self):
         self.path = None
         self.actual_node = 0
-        self.period = 5
+        self.period = 1
         self.time = None
         self.last_pos = None
 
@@ -41,7 +41,6 @@ class GPS:
             i = 0
             ms = 0
             while i < len(self.path):
-
                 if i < self.actual_node:
                     ms += self.path[i]['way'].get('length')
                 else:
@@ -52,6 +51,8 @@ class GPS:
                         ms += distance
                         self.actual_node += 1
                 i += 1
+                if i == len(self.path):
+                    return None
 
             p1 = Point(self.path[self.actual_node]['start_node'].get('lat'), self.path[self.actual_node]['start_node'].get('lon'))
             if self.actual_node >= len(self.path):
