@@ -28,55 +28,28 @@ class MapEngine:
         destination_id = destination.get('id')
         ret = graph_manager.get_path(source_id, destination_id)
         graph_manager.close_connection()
-
         if ret is None:
             return {}
 
-        nodes = ret['nodes']
-        ways = ret['ways']
-        path = dict()
-        ordered_path = []
-        gnodes = []
-        order = 0
-        for item in ways:
+        neo4j_path = ret['ways']
+        path = []
+        for relationship in neo4j_path:
+            r = relationship
+            start_node = sql_manager.get_node(int(r.start_node.get('id')))
+            end_node = sql_manager.get_node(int(r.end_node.get('id')))
+            way_properties = sql_manager.get_way(r['way_id'])
+            way = dict()
+            way['way'] = way_properties
+            way['start_node'] = start_node
+            way['end_node'] = end_node
+            if way_properties.get('name') == "" and way_properties.get('alt_name') == "" and way_properties.get('ref') == "":
+                way_properties.set('name', "Unknown")
+            path.append(way)
 
-            way = sql_manager.get_way(int(item['way_id']))
-            name = way.get('name')
-            alt_name = way.get('alt_name')
-            ref = way.get('ref')
-            speed = way.get('speed')
-            length = way.get('length')
-            if name == "" and alt_name == "" and ref == "":
-                name = "unknown"
-
-            if name not in path:
-                path[name] = dict()
-                street = dict()
-                street['name'] = name
-                street['ref'] = ref
-                street['speed'] = speed
-                path[name]['order'] = order
-                path[name]['ref'] = ref
-                path[name]['speed'] = speed
-                path[name]['length'] = length
-                order += 1
-                ordered_path.append(street)
-            else:
-                path[name]['length'] += length
-
-        for node in nodes:
-            gnode = sql_manager.get_node(node.get('id'))
-            gnodes.append(gnode)
-
-        sql_manager.close_connection()
-
-        for street_name in path:
-            ordered_path[path[street_name]['order']]['length'] = path[street_name]['length']
-
-        return {'nodes': gnodes, 'path': ordered_path}
+        return path
 
     @staticmethod
-    def calculate_path_avoid_street(nodes, source, destination, way_name):
+    def calculate_path_avoid_street(path, source, destination, way_name):
 
         graph_manager = GraphManager.get_instance()
         sql_manager = MapSqlManager.get_instance()
@@ -99,7 +72,7 @@ class MapEngine:
             graph_manager.update_way_length(way.get('id'), way.get('length'))
         graph_manager.close_connection()
 
-        if nodes == res['nodes']:
+        if path == res:
             return None
         return res
 
@@ -107,10 +80,12 @@ class MapEngine:
     def print_path(path):
         time = 0
         length_path = 0
+
         for way in path:
-            name = way['name']
-            speed = way['speed']
-            length = way['length']
+            w = way['way']
+            name = w.get('name')
+            speed = w.get('speed')
+            length = w.get('length')
             length_path += length
             time += (length * 3600) / (speed * 1000)
             print(f"way_name: {name} | length: {length / 1000} km | speed_limit: {speed} km/h")
@@ -120,63 +95,64 @@ class MapEngine:
         print(f"estimated time: {math.floor(time / 60)} minutes {math.floor(time % 60)} seconds")
 
     @staticmethod
-    def visualize_path(nodes):
+    def visualize_path(path, completed=False):
 
         lats = []
         lons = []
         colors = []
         point_sizes = []
-        for node in nodes:
-            lat = float(node['lat'])
-            lon = float(node['lon'])
+        for way in path:
+            node = way['start_node']
+            lat = float(node.get('lat'))
+            lon = float(node.get('lon'))
             lats.append(lat)
             lons.append(lon)
             colors.append('white')
             point_sizes.append(1)
 
-        # get points in the map
-        sql_manager = MapSqlManager.get_instance()
-        sql_manager.open_connection()
-        nodes = sql_manager.get_nodes_by_coord(max(lats), min(lats), max(lons), min(lons))
-
-        all_lats = lats.copy()
-        all_lons = lons.copy()
-        colors[0] = 'blue'
-        colors[len(colors) - 1] = 'red'
-        point_sizes[0] = 100
-        point_sizes[len(point_sizes) - 1] = 100
         fig, ax = plt.subplots()
-        lines = dict()
-        for node in nodes:
 
-            starting_ways = sql_manager.get_way_by_start_node(node.get('id'))
-            ending_ways = sql_manager.get_way_by_end_node(node.get('id'))
-            ways = starting_ways + ending_ways
-            for way in ways:
-                way_id = way.get('id')
-                if way_id not in lines:
-                    lines[way_id] = dict()
-                    lines[way_id]['lat'] = []
-                    lines[way_id]['lon'] = []
-                    lines[way_id]['lat'].append(node.get('lat'))
-                    lines[way_id]['lon'].append(node.get('lon'))
-                else:
-                    lines[way_id]['lat'].append(node.get('lat'))
-                    lines[way_id]['lon'].append(node.get('lon'))
-                    if way.get('ref') == "":
-                        ax.plot(lines[way_id]['lon'], lines[way_id]['lat'], c='white', alpha=1, linewidth=1)
+        if completed:
+            # get points in the map
+            sql_manager = MapSqlManager.get_instance()
+            sql_manager.open_connection()
+            nodes = sql_manager.get_nodes_by_coord(max(lats), min(lats), max(lons), min(lons))
+
+            all_lats = lats.copy()
+            all_lons = lons.copy()
+            colors[0] = 'blue'
+            colors[len(colors) - 1] = 'red'
+            point_sizes[0] = 100
+            point_sizes[len(point_sizes) - 1] = 100
+            lines = dict()
+            for node in nodes:
+
+                ways = sql_manager.get_way_by_node(node.get('id'))
+                for way in ways:
+                    way_id = way.get('id')
+                    if way_id not in lines:
+                        lines[way_id] = dict()
+                        lines[way_id]['lat'] = []
+                        lines[way_id]['lon'] = []
+                        lines[way_id]['lat'].append(float(node.get('lat')))
+                        lines[way_id]['lon'].append(float(node.get('lon')))
                     else:
-                        ax.plot(lines[way_id]['lon'], lines[way_id]['lat'], c='violet', alpha=1, linewidth=2)
+                        lines[way_id]['lat'].append(float(node.get('lat')))
+                        lines[way_id]['lon'].append(float(node.get('lon')))
+                        if way.get('ref') == "":
+                            ax.plot(lines[way_id]['lon'], lines[way_id]['lat'], c='white', alpha=1, linewidth=1)
+                        else:
+                            ax.plot(lines[way_id]['lon'], lines[way_id]['lat'], c='violet', alpha=1, linewidth=2)
 
-            all_lats.append(node.get('lat'))
-            all_lons.append(node.get('lon'))
-            point_sizes.append(1)
-            colors.append('white')
+                all_lats.append(node.get('lat'))
+                all_lons.append(node.get('lon'))
+                point_sizes.append(1)
+                colors.append('white')
 
-        sql_manager.close_connection()
+            sql_manager.close_connection()
+            ax.scatter(all_lons, all_lats, c=colors, alpha=1, s=point_sizes)
 
         ax.plot(lons, lats, c='yellow', alpha=1, linewidth=2)
-        ax.scatter(all_lons, all_lats, c=colors, alpha=1, s=point_sizes)
         fig.set_facecolor('black')
         ax.set_title("Path")
         ax.axis('off')
@@ -190,18 +166,18 @@ if __name__ == "__main__":
     source = Point('42.3333569', '12.2692692')
     destination = Point('42.3295099', '12.2659779')
 
-    res = MapEngine.calculate_path(source, destination)
-    if res:
-        MapEngine.print_path(res['path'])
+    path = MapEngine.calculate_path(source, destination)
+    if path:
+        MapEngine.print_path(path)
     print(f"air distance: {calculate_distance(source, destination)} km")
 
-    # if res:
-    #     MapEngine.visualize_path(res['nodes'])
+    if path:
+        MapEngine.visualize_path(path)
 
-    res = MapEngine.calculate_path_avoid_street(res['nodes'], source, destination, "Via Santa Maria")
-    if res:
-        MapEngine.print_path(res['path'])
+    path = MapEngine.calculate_path_avoid_street(path, source, destination, "Via Santa Maria")
+    if path:
+        MapEngine.print_path(path)
     print(f"air distance: {calculate_distance(source, destination)} km")
 
-    # if res:
-    #    MapEngine.visualize_path(res['nodes'])
+    if path:
+       MapEngine.visualize_path(path)

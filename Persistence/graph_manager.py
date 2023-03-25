@@ -38,7 +38,7 @@ class GraphManager:
                 WHERE a.id = '{source}' and b.id = '{destination}' \
                 CALL apoc.algo.dijkstra(a, b, 'TO', 'length') \
                 YIELD path \
-                RETURN nodes(path) as nodes, relationships(path) as ways"
+                RETURN relationships(path) as ways"
 
         try:
             path = self.graph.run(query)

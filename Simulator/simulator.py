@@ -364,7 +364,6 @@ class DrivingSimulator:
         self.street_pos = [0, self.win_height / 3]
         self.player_car = Car(self.win_height - 250, self.win_height - 100, self.block_size, self.max_car_speed, 'player')
         self.path = None
-        self.nodes = None
         self.path_km = 0
         self.old_car_speed = 0
         self.old_timestamp = None
@@ -386,7 +385,6 @@ class DrivingSimulator:
 
     def end_path(self):
         self.path = None
-        self.nodes = None
         self.path_km = 0
         self.old_car_speed = 0
         self.old_timestamp = None
@@ -416,9 +414,7 @@ class DrivingSimulator:
         if self.path is None:
             print("Path not found")
             return False
-        self.nodes = self.path['nodes']
-        self.path = self.path['path']
-        GPS.get_instance().set_nodes(self.nodes)
+        GPS.get_instance().set_path(self.path)
         MapEngine.print_path(self.path)
         self.old_timestamp = time.time()
         self.old_car_speed = 0
@@ -426,7 +422,7 @@ class DrivingSimulator:
         self.travel_time = 0
         path_length = 0
         for way in self.path:
-            path_length += way['length']
+            path_length += way['way'].get('length')
         self.path_progress = PathProgress(self.street_width + (self.win_width - self.street_width - 30)/2, self.street_pos[1], self.block_size, path_length)
         self.input_enabler = False
 
@@ -507,12 +503,12 @@ class DrivingSimulator:
             # draw street name
             actual_street = None
             traveled_m = (self.path_km * 1000)
-            for street in self.path:
-                if traveled_m < street['length']:
-                    actual_street = street
+            for way in self.path:
+                if traveled_m < way['way'].get('length'):
+                    actual_street = way
                     break
                 else:
-                    traveled_m -= street['length']
+                    traveled_m -= way['way'].get('length')
             if actual_street is None:
                 if self.travel_time == 0:
                     self.travel_time = time.time() - self.start_time
@@ -520,7 +516,7 @@ class DrivingSimulator:
                 street_surface = font.render(message, True, self.colors['white'])
                 self.end_path()
             else:
-                message = f"{actual_street['name']} ({actual_street['ref']}) lim: {actual_street['speed']} km/h"
+                message = f"{actual_street['way'].get('name')} ({actual_street['way'].get('ref')}) lim: {actual_street['way'].get('speed')} km/h"
                 street_surface = font.render(message, True, self.colors['white'])
             street_rect = street_surface.get_rect()
             street_rect.midtop = (self.street_width / 2, 10)
@@ -530,14 +526,17 @@ class DrivingSimulator:
                 self.arrow.set_color(self.colors['white'])
 
             # draw arrow
-            if (actual_street is not None) and (actual_street['length'] - traveled_m < 200):
-                if actual_street['length'] - traveled_m <= 50:
+            if (actual_street is not None) \
+                    and (not self.path.index(actual_street) == len(self.path) - 1) \
+                    and (not self.path[self.path.index(actual_street)]['way'].get('name') == self.path[self.path.index(actual_street) + 1]['way'].get('name')) \
+                    and (actual_street['way'].get('length') - traveled_m < 200):
+                if actual_street['way'].get('length') - traveled_m <= 50:
                     self.arrow.set_speed(5)
-                elif actual_street['length'] - traveled_m <= 100:
+                elif actual_street['way'].get('length') - traveled_m <= 100:
                     self.arrow.set_speed(10)
                 else:
                     self.arrow.set_speed(None)
-                if len(actual_street['name']) % 2 == 0:
+                if len(actual_street['way'].get('name')) % 2 == 0:
                     self.arrow.set_type('right')
                 else:
                     self.arrow.set_type('left')
@@ -547,7 +546,7 @@ class DrivingSimulator:
                 self.arrow.set_color(self.colors['white'])
 
             # draw alert
-            if (actual_street is not None) and (self.player_car.get_speed() > actual_street['speed']):
+            if (actual_street is not None) and (self.player_car.get_speed() > actual_street['way'].get('speed')):
                 self.alert.draw(self.win)
 
         pygame.display.flip()

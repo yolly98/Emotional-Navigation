@@ -8,7 +8,7 @@ class GPS:
     gps_simulator = None
 
     def __init__(self):
-        self.nodes = None
+        self.path = None
         self.actual_node = 0
         self.period = 5
         self.time = None
@@ -20,10 +20,11 @@ class GPS:
             GPS.gps_simulator = GPS()
         return GPS.gps_simulator
 
-    def set_nodes(self, gnodes):
-        self.nodes = gnodes
+    def set_path(self, path):
+        self.path = path
         self.actual_node = 0
-        self.last_pos = Point(self.nodes[self.actual_node].get('lat'), self.nodes[self.actual_node].get('lon'))
+        node = path[0]['start_node']
+        self.last_pos = Point(node.get('lat'), node.get('lon'))
 
     def get_coord(self, sim, travelled_km):
 
@@ -38,11 +39,13 @@ class GPS:
                 print(f"GPS pos: {self.last_pos}")
                 return self.last_pos
 
-            actual_point = Point(self.nodes[self.actual_node].get('lat'), self.nodes[self.actual_node].get('lon'))
+            p = self.path[self.actual_node]['start_node']
+            actual_point = Point(p.get('lat'), p.get('lon'))
             while True:
-                if self.actual_node + 1 >= len(self.nodes):
+                if self.actual_node + 1 >= len(self.path):
                     return
-                next_point = Point(self.nodes[self.actual_node + 1].get('lat'), self.nodes[self.actual_node + 1].get('lon'))
+                p = self.path[self.actual_node + 1]['start_node']
+                next_point = Point(p.get('lat'), p.get('lon'))
                 points_distance = calculate_distance(actual_point, next_point)
                 if travelled_km <= points_distance:
                     break
