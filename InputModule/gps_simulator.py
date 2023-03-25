@@ -1,7 +1,6 @@
 from Utility.utility import Point, calculate_distance
-import math
+from math import radians, sin, cos, asin, atan2, degrees
 import time
-
 
 class GPS:
 
@@ -39,35 +38,42 @@ class GPS:
                 print(f"GPS pos: {self.last_pos}")
                 return self.last_pos
 
-            p = self.path[self.actual_node]['start_node']
-            actual_point = Point(p.get('lat'), p.get('lon'))
-            while True:
-                if self.actual_node + 1 >= len(self.path):
-                    return
-                p = self.path[self.actual_node + 1]['start_node']
-                next_point = Point(p.get('lat'), p.get('lon'))
-                points_distance = calculate_distance(actual_point, next_point)
-                if travelled_km <= points_distance:
-                    break
-                else:
-                    travelled_km -= points_distance
-                    self.actual_node += 1
-                    actual_point = next_point
+            i = 0
+            ms = 0
+            while i < len(self.path):
 
-            p1 = actual_point
-            p2 = next_point
-            phi1, phi2 = math.radians(float(p1.get_lat())), math.radians(float(p2.get_lat()))
-            delta_lambda = math.radians(float(p2.get_lon()) - float(p1.get_lon()))
-            y = math.sin(delta_lambda) * math.cos(phi2)
-            x = math.cos(phi1) * math.sin(phi2) - math.sin(phi1) * math.cos(phi2) * math.cos(delta_lambda)
-            azimuth = math.atan2(y, x)
-            R = 6371  # Earth radius in km
-            d = travelled_km
-            lat1, lon1 = math.radians(float(p1.get_lat())), math.radians(float(p1.get_lon()))
-            lat3 = math.asin(math.sin(lat1) * math.cos(d / R) + math.cos(lat1) * math.sin(d / R) * math.cos(azimuth))
-            lon3 = lon1 + math.atan2(math.sin(azimuth) * math.sin(d / R) * math.cos(lat1),
-                                     math.cos(d / R) - math.sin(lat1) * math.sin(lat3))
-            p3 = Point(str(round(math.degrees(lat3), 7)), str(round(math.degrees(lon3), 7)))
+                if i < self.actual_node:
+                    ms += self.path[i]['way'].get('length')
+                else:
+                    distance = self.path[self.actual_node]['way'].get('length')
+                    if (travelled_km * 1000) <= ms + distance:
+                        break
+                    else:
+                        ms += distance
+                        self.actual_node += 1
+                i += 1
+
+            p1 = Point(self.path[self.actual_node]['start_node'].get('lat'), self.path[self.actual_node]['start_node'].get('lon'))
+            if self.actual_node >= len(self.path):
+                self.last_pos = p1
+                return p1
+            p2 = Point(self.path[self.actual_node + 1]['start_node'].get('lat'), self.path[self.actual_node + 1]['start_node'].get('lon'))
+
+            lat1 = float(p1.get_lat())
+            lon1 = float(p1.get_lon())
+            lat2 = float(p2.get_lat())
+            lon2 = float(p2.get_lon())
+            d = travelled_km - (ms / 1000)
+
+            R = 6371  # raggio della Terra in km
+            lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
+            bearing = atan2(sin(lon2 - lon1) * cos(lat2),
+                            cos(lat1) * sin(lat2) - sin(lat1) * cos(lat2) * cos(lon2 - lon1))
+            lat3 = asin(sin(lat1) * cos(d / R) + cos(lat1) * sin(d / R) * cos(bearing))
+            lon3 = lon1 + atan2(sin(bearing) * sin(d / R) * cos(lat1), cos(d / R) - sin(lat1) * sin(lat3))
+
+            p3 = Point(str(round(degrees(lat3), 7)), str(round(degrees(lon3), 7)))
+
             self.last_pos = p3
             print(f"GPS pos: {self.last_pos}")
             return self.last_pos
