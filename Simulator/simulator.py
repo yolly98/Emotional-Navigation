@@ -526,21 +526,34 @@ class DrivingSimulator:
                 self.arrow.set_color(self.colors['white'])
 
             # draw arrow
-            if (actual_street is not None) \
-                    and (not self.path.index(actual_street) == len(self.path) - 1) \
-                    and (not self.path[self.path.index(actual_street)]['way'].get('name') == self.path[self.path.index(actual_street) + 1]['way'].get('name')) \
-                    and (actual_street['way'].get('length') - traveled_m < 200):
-                if actual_street['way'].get('length') - traveled_m <= 50:
-                    self.arrow.set_speed(5)
-                elif actual_street['way'].get('length') - traveled_m <= 100:
-                    self.arrow.set_speed(10)
-                else:
-                    self.arrow.set_speed(None)
+            if (actual_street is not None) and (not self.path.index(actual_street) == len(self.path) - 1):
+
+                i = 0
+                ms = 0
+                while i < len(self.path):
+                    street = self.path[i]
+                    if i < self.path.index(actual_street) or street['way'].get('name') == actual_street['way'].get('name'):
+                        ms += street['way'].get('length')
+                    i += 1
+
                 if len(actual_street['way'].get('name')) % 2 == 0:
                     self.arrow.set_type('right')
                 else:
                     self.arrow.set_type('left')
-                self.arrow.draw(self.win)
+
+                traveled_m = self.path_km * 1000
+                if ms - traveled_m <= 50:
+                    self.arrow.set_speed(5)
+                    self.arrow.draw(self.win)
+                elif ms - traveled_m <= 100:
+                    self.arrow.set_speed(10)
+                    self.arrow.draw(self.win)
+                elif ms - traveled_m <= 200:
+                    self.arrow.set_speed(None)
+                    self.arrow.draw(self.win)
+                else:
+                    self.arrow.hide()
+                    self.arrow.set_color(self.colors['white'])
             else:
                 self.arrow.hide()
                 self.arrow.set_color(self.colors['white'])
