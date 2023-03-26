@@ -41,7 +41,7 @@ class GPS:
         self.time = time.time()
 
         if sim:
-            if travelled_km == -1:
+            if self.last_pos is None:
                 self.last_pos = Point('42.3333569', '12.2692692')
                 print(f"GPS pos: {self.last_pos}")
                 return self.last_pos

@@ -43,6 +43,11 @@ def post_json():
         source = Point(received_json['source_coord']['lat'], received_json['source_coord']['lon'])
         sql_map = MapSqlManager.get_instance()
         sql_map.open_connection()
+
+        # check if source exists
+        # TODO
+        pass
+        # find destination coordinates
         ways = sql_map.get_way_by_name(destination_name)
         if not ways:
             return {"status": -1} # invalid destination

@@ -25,5 +25,7 @@
 * [ ] integrare simulatore guida con salvataggio nello storico
 
 ## sperimentazione reale
+* [ ] con una sorgente non presente nel db non posso fare il get_path, cercare coordinate più vicine
+* [ ] mettere un controllo che calcola quanto si è distanti dal nodo del path piu vicino, se troppo distante va richiesto il ricalcolo 
 * [ ] testare arduino + gps
 * [ ] adattare simulazione ad uso di GPS
