@@ -8,6 +8,7 @@ from Utility.utility import Point, calculate_distance
 from InputModule.gps_simulator import GPS
 import time
 
+
 class PathProgress:
 
     def __init__(self, pos_x, pos_y, block_size, length_m):
@@ -273,6 +274,9 @@ class Car:
     def get_speed(self):
         return self.car_speed
 
+    def set_speed(self, speed):
+        self.car_speed = speed
+
     def move_car(self, commands):
         up = commands['up']
         down = commands['down']
@@ -318,6 +322,9 @@ class DrivingSimulator:
     driving_simulator = None
 
     def __init__(self):
+
+        self.sim = True
+
         # pygame initialization
         pygame.init()
 
@@ -381,6 +388,9 @@ class DrivingSimulator:
         self.textinput.cursor_width = 2
         self.input_enabler = True
         self.button = pygame.Rect(self.street_width + 20, 50, 100, 20)
+
+    def set_sim(self, simulation):
+        self.sim = simulation
 
     def end_path(self):
         self.path = None
@@ -447,29 +457,29 @@ class DrivingSimulator:
 
         font = pygame.font.SysFont('times new roman', 25)
 
-        # draw car speed
-        speed = self.player_car.get_speed()
-        speed_surface = font.render(f"{math.floor(speed)} km/h", True, self.colors['white'])
-        speed_rect = speed_surface.get_rect()
-        speed_rect.midright = (self.win_width - 50, self.win_height - 50)
-        self.win.blit(speed_surface, speed_rect)
-
         # draw m traveled
         if self.path is not None:
-            t = time.time() - self.old_timestamp
-            avg_speed = (self.player_car.get_speed() + self.old_car_speed) / 2
-            traveled_km = (avg_speed / 3600) * t
-            self.path_km += traveled_km
-            self.old_timestamp = time.time()
-            self.old_car_speed = self.player_car.get_speed()
+            # needed for simulation
+            if self.sim:
+                t = time.time() - self.old_timestamp
+                avg_speed = (self.player_car.get_speed() + self.old_car_speed) / 2
+                traveled_km = (avg_speed / 3600) * t
+                self.path_km += traveled_km
+                self.old_timestamp = time.time()
+                self.old_car_speed = self.player_car.get_speed()
+            # ------
+
+            # get gps position
+            position = GPS.get_instance().get_coord(self.sim, self.path_km)
+            if not self.sim:
+                self.player_car.set_speed(GPS.get_instance().get_speed())
+
             km_surface = font.render(f"{math.floor(self.path_km * 1000)} m", True, self.colors['white'])
             km_rect = km_surface.get_rect()
             km_rect.midtop = (self.street_width / 2, 50)
             self.win.blit(km_surface, km_rect)
             self.path_progress.draw(self.win, self.colors, math.floor(self.path_km * 1000))
 
-            # get gps position
-            position = GPS.get_instance().get_coord(True, self.path_km)
             actual_street = None
             if position is None:
                 print("GPS coordinates not found")
@@ -559,6 +569,13 @@ class DrivingSimulator:
             # draw alert
             if (actual_street is not None) and (self.player_car.get_speed() > actual_street['way'].get('speed')):
                 self.alert.draw(self.win)
+
+        # draw car speed
+        speed = self.player_car.get_speed()
+        speed_surface = font.render(f"{math.floor(speed)} km/h", True, self.colors['white'])
+        speed_rect = speed_surface.get_rect()
+        speed_rect.midright = (self.win_width - 50, self.win_height - 50)
+        self.win.blit(speed_surface, speed_rect)
 
         pygame.display.flip()
 
@@ -656,6 +673,7 @@ class DrivingSimulator:
 if __name__ == '__main__':
 
     sim = DrivingSimulator.get_instance()
+    sim.set_sim(True)
     while True:
         sim.get_event()
         sim.show()

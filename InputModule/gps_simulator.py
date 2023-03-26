@@ -12,12 +12,19 @@ class GPS:
         self.period = 1
         self.time = None
         self.last_pos = None
+        self.speed = 0
 
     @staticmethod
     def get_instance():
         if GPS.gps_simulator is None:
             GPS.gps_simulator = GPS()
         return GPS.gps_simulator
+
+    def get_speed(self):
+        return self.speed
+
+    def get_last_pos(self):
+        return self.last_pos
 
     def set_path(self, path):
         self.path = path
@@ -66,7 +73,7 @@ class GPS:
             lon2 = float(p2.get_lon())
             d = travelled_km - (ms / 1000)
 
-            R = 6371  # raggio della Terra in km
+            R = 6371  # Earth radius in km
             lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
             bearing = atan2(sin(lon2 - lon1) * cos(lat2),
                             cos(lat1) * sin(lat2) - sin(lat1) * cos(lat2) * cos(lon2 - lon1))
@@ -79,7 +86,11 @@ class GPS:
             print(f"GPS pos: {self.last_pos}")
             return self.last_pos
         else:
-            # TODO get from GPS sensor
+            # TODO get from GPS sensor and update travelled km
+            new_pos = Point('42.3333569', '12.2692692')
+            distance = calculate_distance(new_pos, self.last_pos)
+            travelled_km += distance
+            self.speed = (distance / self.period) * 3600
             pass
 
 
