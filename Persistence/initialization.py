@@ -52,13 +52,13 @@ docker run --name mysql-smart-navigation \
 
 def load_map():
     # open osm file in xml format
-    with open("map.osm", "r") as f:
+    with open("Resources/map.osm", "r") as f:
         data = f.read()
 
     # convert data in json format
     json_data = xmltodict.parse(data)
 
-    with open("map.json", "w") as json_file:
+    with open("Resources/map.json", "w") as json_file:
         json.dump(json_data, json_file)
 
     print("The map.json file created with success!")
@@ -142,7 +142,7 @@ def load_map():
 
     # -----------------------------------------------------------
 
-    with open("map.json", "r") as json_file:
+    with open("Resources/map.json", "r") as json_file:
         data = json.load(json_file)
 
     # dictionary to map the ID of nodes with no4j's nodes
