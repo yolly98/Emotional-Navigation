@@ -502,7 +502,8 @@ class DrivingSimulator:
             street_rect = street_surface.get_rect()
             street_rect.midtop = (self.street_width / 2, 10)
             self.win.blit(street_surface, street_rect)
-            if (self.actual_street is None) or (not actual_street['way'].get('name') == self.actual_street['way'].get('name')):
+
+            if (actual_street is None or self.actual_street is None) or (not actual_street['way'].get('name') == self.actual_street['way'].get('name')):
                 self.arrow.set_color(self.colors['white'])
             self.actual_street = actual_street
 
@@ -515,12 +516,28 @@ class DrivingSimulator:
                     street = self.path[i]
                     if i < self.path.index(actual_street) or street['way'].get('name') == actual_street['way'].get('name'):
                         ms += street['way'].get('length')
+                    else:
+                        break
                     i += 1
 
-                if len(actual_street['way'].get('name')) % 2 == 0:
-                    self.arrow.set_type('right')
-                else:
-                    self.arrow.set_type('left')
+                # calculate arrow direction
+                if i < len(self.path) - 1:
+                    lat1 = float(self.path[i-1]['start_node'].get('lat'))
+                    lon1 = float(self.path[i-1]['start_node'].get('lon'))
+                    lat2 = float(self.path[i - 1]['end_node'].get('lat'))
+                    lon2 = float(self.path[i - 1]['end_node'].get('lon'))
+                    lat3 = float(self.path[i]['start_node'].get('lat'))
+                    lon3 = float(self.path[i]['start_node'].get('lon'))
+                    p1 = (lat1, lon1)
+                    p2 = (lat2, lon2)
+                    p3 = (lat3, lon3)
+                    v1 = (p2[0] - p1[0], p2[1] - p1[1])
+                    v2 = (p3[0] - p2[0], p3[1] - p2[1])
+                    cross_product = v1[0] * v2[1] - v1[1] * v2[0]
+                    if cross_product > 0:
+                        self.arrow.set_type('right')
+                    else:
+                        self.arrow.set_type('left')
 
                 traveled_m = self.path_km * 1000
                 if ms - traveled_m <= 50:
