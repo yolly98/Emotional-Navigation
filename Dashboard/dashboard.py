@@ -86,6 +86,12 @@ class Dashboard:
         self.input_enabler = True
         self.button = pygame.Rect(self.street_width + 20, 50, 100, 20)
 
+    @staticmethod
+    def get_instance():
+        if Dashboard.dashboard is None:
+            Dashboard.dashboard = Dashboard()
+        return Dashboard.dashboard
+
     def set_sim(self, simulation):
         self.sim = simulation
 
@@ -359,12 +365,6 @@ class Dashboard:
             self.textinput.update(events)
 
         self.player_car.move_car(self.commands)
-
-    @staticmethod
-    def get_instance():
-        if Dashboard.dashboard is None:
-            Dashboard.dashboard = Dashboard()
-        return Dashboard.dashboard
 
 
 if __name__ == '__main__':
