@@ -44,9 +44,6 @@ def post_json():
         sql_map = MapSqlManager.get_instance()
         sql_map.open_connection()
 
-        # check if source exists
-        # TODO
-        pass
         # find destination coordinates
         ways = sql_map.get_way_by_name(destination_name)
         if not ways:
