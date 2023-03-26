@@ -12,6 +12,7 @@ from Dashboard.View.alert import Alert
 from Dashboard.View.path_progress import PathProgress
 from Dashboard.View.car import Car
 from Dashboard.View.arrow import Arrow
+from Dashboard.View.terminal import Terminal
 
 
 class Dashboard:
@@ -62,18 +63,20 @@ class Dashboard:
         self.street_lines = [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0]
         self.max_car_speed = 200
         self.car_speed_counter = 0
-        self.street_width = self.win_height
-        self.street_height = self.win_height - (self.win_height / 3)
+        self.terminal_height = 100
+        self.terminal_width = 800
+        self.street_width = self.win_width - 200
+        self.street_height = self.win_height / 3
         self.street_pos = [0, self.win_height / 3]
-        self.player_car = Car(self.win_height - 250, self.win_height - 100, self.block_size, self.max_car_speed, 'player')
+        self.player_car = Car(self.street_width - 250, self.win_height - self.terminal_height - 100, self.block_size, self.max_car_speed, 'player')
         self.path = None
         self.path_km = 0
         self.old_car_speed = 0
         self.old_timestamp = None
         self.start_time = None
         self.travel_time = None
-        self.alert = Alert(10, 100, 5, self.colors['white'], self.colors['black'])
-        self.arrow = Arrow(270, 100, 5, None, 'right', self.colors['white'], self.colors['black'])
+        self.alert = Alert(self.street_width - 100, 60, 5, self.colors['white'], self.colors['black'])
+        self.arrow = Arrow(270, 60, 5, None, 'right', self.colors['white'], self.colors['black'])
         self.actual_street = None
 
         self.path_progress = None
@@ -85,6 +88,8 @@ class Dashboard:
         self.textinput.cursor_width = 2
         self.input_enabler = True
         self.button = pygame.Rect(self.street_width + 20, 50, 100, 20)
+
+        self.terminal = Terminal(0, self.win_height - self.terminal_height, self.terminal_height, 20, self.colors)
 
     @staticmethod
     def get_instance():
@@ -135,19 +140,17 @@ class Dashboard:
         path_length = 0
         for way in self.path:
             path_length += way['way'].get('length')
-        self.path_progress = PathProgress(self.street_width + (self.win_width - self.street_width - 30)/2, self.street_pos[1], self.block_size, path_length)
+        self.path_progress = PathProgress(self.street_width + (self.win_width - self.street_width - 30)/2, self.street_pos[1] - 50, self.block_size, path_length)
         self.input_enabler = False
 
     def show(self):
         self.win.fill(pygame.Color(self.colors['black']))
 
-        self.draw_street()
-        self.player_car.draw(self.win, self.colors)
-
         # draw sections
-        pygame.draw.rect(self.win, self.colors['white'], pygame.Rect(self.street_width, 0, self.block_size, self.block_size * self.win_height))
-        pygame.draw.rect(self.win, self.colors['white'], pygame.Rect(self.street_width, self.win_height - 100, self.block_size * 200, self.block_size / 2))
-        pygame.draw.rect(self.win, self.colors['white'], pygame.Rect(self.street_pos[0], self.street_pos[1], self.street_width, self.block_size / 2))
+        pygame.draw.rect(self.win, self.colors['white'], pygame.Rect(self.street_width, 0, self.block_size, self.win_height - self.terminal_height))
+        pygame.draw.rect(self.win, self.colors['white'], pygame.Rect(self.street_width, self.win_height - self.terminal_height - 70, self.win_width - self.street_width, self.block_size / 2))
+        pygame.draw.rect(self.win, self.colors['white'], pygame.Rect(self.street_pos[0], self.street_pos[1] - 50, self.street_width, self.block_size / 2))
+        pygame.draw.rect(self.win, self.colors['white'], pygame.Rect(0, self.win_height - self.terminal_height, self.win_width, self.block_size))
 
         # draw inputs
         if self.input_enabler:
@@ -160,7 +163,6 @@ class Dashboard:
 
         font = pygame.font.SysFont('times new roman', 25)
 
-        # draw m traveled
         if self.path is not None:
             # needed for simulation
             if self.sim:
@@ -177,10 +179,12 @@ class Dashboard:
             if not self.sim:
                 self.player_car.set_speed(GPS.get_instance().get_speed())
 
+            # draw m travelled
             km_surface = font.render(f"{math.floor(self.path_km * 1000)} m", True, self.colors['white'])
             km_rect = km_surface.get_rect()
-            km_rect.midtop = (self.street_width / 2, 50)
+            km_rect.midtop = (100, 80)
             self.win.blit(km_surface, km_rect)
+            # draw path progress
             self.path_progress.draw(self.win, self.colors, math.floor(self.path_km * 1000))
 
             actual_street = None
@@ -277,13 +281,18 @@ class Dashboard:
         speed = self.player_car.get_speed()
         speed_surface = font.render(f"{math.floor(speed)} km/h", True, self.colors['white'])
         speed_rect = speed_surface.get_rect()
-        speed_rect.midright = (self.win_width - 50, self.win_height - 50)
+        speed_rect.midright = (self.win_width - 50, self.win_height - self.terminal_height - 25)
         self.win.blit(speed_surface, speed_rect)
+
+        self.draw_street()
+        self.player_car.draw(self.win, self.colors)
+
+        self.terminal.draw(self.win)
 
         pygame.display.flip()
 
     def draw_street(self):
-        max_height = self.win_height / 3
+        max_height = self.street_height
         i = 0
         block_size = self.block_size
         line_width = block_size
@@ -299,19 +308,19 @@ class Dashboard:
             self.car_speed_counter += car_speed
         while i < len(self.street_lines):
             if self.street_lines[i] == 1:
-                pygame.draw.rect(self.win, self.colors['white'], pygame.Rect(self.street_width / 2, self.win_height - i*line_height, line_width - step, line_height))
+                pygame.draw.rect(self.win, self.colors['white'], pygame.Rect(self.street_width / 2, self.win_height - self.terminal_height - i*line_height, line_width - step, line_height))
             i += 1
             step += (line_width / len(self.street_lines))
 
         # print street edges
-        i = self.win_height
+        i = self.win_height - self.terminal_height
         j = 0
         k = 0
         max_k = 1
         step = self.prospective_street_step
         while i > max_height:
             pygame.draw.rect(self.win, self.colors['white'], pygame.Rect(j, i, block_size - step, block_size - step))
-            pygame.draw.rect(self.win, self.colors['white'], pygame.Rect((self.win_height - j), i, block_size - step, block_size - step))
+            pygame.draw.rect(self.win, self.colors['white'], pygame.Rect((self.street_width - j), i, block_size - step, block_size - step))
 
             i -= step
             k += 1
@@ -363,6 +372,8 @@ class Dashboard:
 
         if self.input_enabler:
             self.textinput.update(events)
+
+        self.terminal.write(events)
 
         self.player_car.move_car(self.commands)
 
