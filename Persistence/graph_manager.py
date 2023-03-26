@@ -1,5 +1,4 @@
 from py2neo import Graph
-from Utility.utility import Point
 
 
 class GraphManager:

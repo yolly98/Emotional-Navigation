@@ -5,7 +5,8 @@
 import xmltodict
 import json
 import math
-from Utility.utility import Point, calculate_distance
+from Utility.utility_functions import calculate_distance
+from Utility.point import Point
 from py2neo import Graph, Node, Relationship
 import mysql.connector
 

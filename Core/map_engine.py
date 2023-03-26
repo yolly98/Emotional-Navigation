@@ -1,5 +1,6 @@
 import math
-from Utility.utility import Point, calculate_distance
+from Utility.utility_functions import calculate_distance
+from Utility.point import Point
 from Persistence.map_sql_manager import MapSqlManager
 from Persistence.graph_manager import GraphManager
 import matplotlib.pyplot as plt

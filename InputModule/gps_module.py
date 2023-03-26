@@ -1,4 +1,5 @@
-from Utility.utility import Point, calculate_distance
+from Utility.utility_functions import calculate_distance
+from Utility.point import Point
 from math import radians, sin, cos, asin, atan2, degrees
 import time
 

@@ -1,5 +1,3 @@
-import sqlite3
-import os
 from datetime import datetime, timedelta
 import mysql.connector
 

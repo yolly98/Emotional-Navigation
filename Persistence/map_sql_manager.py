@@ -1,4 +1,5 @@
-from Utility.utility import Way, GNode
+from Utility.way import Way
+from Utility.gnode import GNode
 import mysql.connector
 
 
