@@ -11,5 +11,8 @@ class Point:
     def get_lon(self):
         return self.lon
 
+    def to_json(self):
+        return { "lat": self.lat, "lon": self.lon}
+
     def __str__(self):
         return str(f"({self.lat}, {self.lon})")

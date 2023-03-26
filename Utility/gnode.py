@@ -9,6 +9,10 @@ class GNode:
         self.node['lat'] = str(lat)
         self.node['lon'] = str(lon)
 
+    @staticmethod
+    def json_to_gnode(json):
+        return GNode(json['id'], json['type'], json['name'], json['lat'], json['lon'])
+
     def get(self, key):
         if key in self.node:
             return self.node[key]
@@ -20,6 +24,9 @@ class GNode:
             return 0
         else:
             return -1
+
+    def to_json(self):
+        return self.node
 
     def __str__(self):
         return self.node.__str__()

@@ -1,9 +1,7 @@
 import pygame
 import sys
 import math
-from Core.map_engine import MapEngine
-from Persistence.map_sql_manager import MapSqlManager
-from Utility.utility_functions import calculate_distance
+from Utility.utility_functions import calculate_distance, print_path, json_to_path
 from Utility.point import Point
 from InputModule.gps_module import GPS
 import time
@@ -12,6 +10,10 @@ from Dashboard.View.path_progress import PathProgress
 from Dashboard.View.car import Car
 from Dashboard.View.arrow import Arrow
 from Dashboard.View.terminal import Terminal
+from Dashboard.comunication_manager import CommunicationManager
+
+SERVER_IP = "127.0.0.1"
+SERVER_PORT = "5000"
 
 
 class Dashboard:
@@ -104,25 +106,33 @@ class Dashboard:
 
     def get_path(self, destination_name):
 
-        source = GPS.get_instance().get_coord(True, -1)
-        # get destination from input
-        sql_map = MapSqlManager.get_instance()
-        sql_map.open_connection()
-        ways = sql_map.get_way_by_name(destination_name)
-        if not ways:
+        request = dict()
+        request['type'] = 'get_path'
+        request['destination_name'] = destination_name
+        request['source_coord'] = (GPS.get_instance().get_coord(self.sim, -1)).to_json()
+
+        res = CommunicationManager.get_instance().send(SERVER_IP, SERVER_PORT, request)
+        if res is None or "":
+            self.terminal.write("Something went wrong")
+            return
+        elif res['status'] == 0:
+            self.path = json_to_path(res['path'])
+        elif res['status'] == -1:
             self.terminal.write("Not valid destination")
             return
-        way = ways[0]
-        destination_node = sql_map.get_node(way.get('start_node'))
-        destination = Point(destination_node.get('lat'), destination_node.get('lon'))
-        sql_map.close_connection()
+        elif res['status'] == -2:
+            self.terminal.write("Path not found")
+            return
+        else:
+            self.terminal.write("Something went wrong")
+            return
 
-        self.path = MapEngine.calculate_path(source, destination)
-        if self.path is None:
-            print("Path not found")
-            return False
+        self.terminal.write("Path found ")
         GPS.get_instance().set_path(self.path)
-        MapEngine.print_path(self.path)
+        msg = print_path(self.path)
+        self.terminal.write(f"length:  {msg['len']} km")
+        self.terminal.write(f"estimated time: {msg['t_m']} minutes {msg['t_s']} seconds")
+
         self.old_timestamp = time.time()
         self.old_car_speed = 0
         self.start_time = time.time()

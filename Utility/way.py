@@ -12,6 +12,10 @@ class Way:
         self.way['start_node'] = start_node
         self.way['end_node'] = end_node
 
+    @staticmethod
+    def json_to_way(json):
+        return Way(json['id'], json['name'], json['alt_name'], json['ref'], json['speed'], json['length'], json['start_node'], json['end_node'])
+
     def get(self, key):
         if key in self.way:
             return self.way[key]
@@ -24,6 +28,9 @@ class Way:
             return 0
         else:
             return -1
+
+    def to_json(self):
+        return self.way
 
     def __str__(self):
         return self.way.__str__()

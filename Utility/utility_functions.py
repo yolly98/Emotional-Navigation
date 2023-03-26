@@ -1,4 +1,8 @@
 import math
+import matplotlib.pyplot as plt
+from Persistence.map_sql_manager import MapSqlManager
+from Utility.gnode import GNode
+from Utility.way import Way
 
 
 def calculate_distance(Point1, Point2): # in km
@@ -20,3 +24,111 @@ def calculate_distance(Point1, Point2): # in km
     distance = R * c
 
     return distance
+
+
+def print_path(path):
+    time = 0
+    length_path = 0
+
+    for way in path:
+        w = way['way']
+        name = w.get('name')
+        speed = w.get('speed')
+        length = w.get('length')
+        length_path += length
+        time += (length * 3600) / (speed * 1000)
+        print(f"way_name: {name} | length: {length / 1000} km | speed_limit: {speed} km/h")
+
+    length = length_path / 1000
+    estimated_time_m = math.floor(time / 60)
+    estimated_time_s = math.floor(time % 60)
+    print()
+    print(f"length:  {length} km")
+    print(f"estimated time: {estimated_time_m} minutes {estimated_time_s} seconds")
+    return {"len": length, "t_m": estimated_time_m, "t_s": estimated_time_s}
+
+
+def visualize_path(path, completed=False):
+
+    lats = []
+    lons = []
+    colors = []
+    point_sizes = []
+    for way in path:
+        node = way['start_node']
+        lat = float(node.get('lat'))
+        lon = float(node.get('lon'))
+        lats.append(lat)
+        lons.append(lon)
+        colors.append('white')
+        point_sizes.append(1)
+
+    fig, ax = plt.subplots()
+
+    if completed:
+        # get points in the map
+        sql_manager = MapSqlManager.get_instance()
+        sql_manager.open_connection()
+        nodes = sql_manager.get_nodes_by_coord(max(lats), min(lats), max(lons), min(lons))
+
+        all_lats = lats.copy()
+        all_lons = lons.copy()
+        colors[0] = 'blue'
+        colors[len(colors) - 1] = 'red'
+        point_sizes[0] = 100
+        point_sizes[len(point_sizes) - 1] = 100
+        lines = dict()
+        for node in nodes:
+
+            ways = sql_manager.get_way_by_node(node.get('id'))
+            for way in ways:
+                way_id = way.get('id')
+                if way_id not in lines:
+                    lines[way_id] = dict()
+                    lines[way_id]['lat'] = []
+                    lines[way_id]['lon'] = []
+                    lines[way_id]['lat'].append(float(node.get('lat')))
+                    lines[way_id]['lon'].append(float(node.get('lon')))
+                else:
+                    lines[way_id]['lat'].append(float(node.get('lat')))
+                    lines[way_id]['lon'].append(float(node.get('lon')))
+                    if way.get('ref') == "":
+                        ax.plot(lines[way_id]['lon'], lines[way_id]['lat'], c='white', alpha=1, linewidth=1)
+                    else:
+                        ax.plot(lines[way_id]['lon'], lines[way_id]['lat'], c='violet', alpha=1, linewidth=2)
+
+            all_lats.append(node.get('lat'))
+            all_lons.append(node.get('lon'))
+            point_sizes.append(1)
+            colors.append('white')
+
+        sql_manager.close_connection()
+        ax.scatter(all_lons, all_lats, c=colors, alpha=1, s=point_sizes)
+
+    ax.plot(lons, lats, c='yellow', alpha=1, linewidth=2)
+    fig.set_facecolor('black')
+    ax.set_title("Path")
+    ax.axis('off')
+    plt.show()
+
+
+def path_to_json(path):
+    json = []
+    for relationship in path:
+        item = {}
+        item['start_node'] = relationship['start_node'].to_json()
+        item['end_node'] = relationship['end_node'].to_json()
+        item['way'] = relationship['way'].to_json()
+        json.append(item)
+    return json
+
+
+def json_to_path(json):
+    path = []
+    for relationship in json:
+        way = dict()
+        way['way'] = Way.json_to_way(relationship['way'])
+        way['start_node'] = GNode.json_to_gnode(relationship['start_node'])
+        way['end_node'] = GNode.json_to_gnode(relationship['end_node'])
+        path.append(way)
+    return path
