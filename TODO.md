@@ -15,6 +15,7 @@
 
 ## rilevatore emozioni
 * [x] creare modulo per rilevatore emozioni
+* [ ] migliorare prestazioni
 
 ## storico
 * [ ] capire come salvare lo storico
@@ -23,6 +24,9 @@
 * [x] integrare calcolo percorsi e simulatore di guida
 * [ ] integrare simulatore guida e raccolta emozioni
 * [ ] integrare simulatore guida con salvataggio nello storico
+
+## emotion_route_selctor
+* [ ] da fare completamente
 
 ## sperimentazione reale
 * [x] con una sorgente non presente nel db non posso fare il get_path, cercare coordinate più vicine
