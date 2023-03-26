@@ -1,7 +1,7 @@
 from Utility.utility_functions import calculate_distance, visualize_path, print_path
 from Utility.point import Point
-from Persistence.map_sql_manager import MapSqlManager
-from Persistence.graph_manager import GraphManager
+from Server.Persistence.map_sql_manager import MapSqlManager
+from Server.Persistence.graph_manager import GraphManager
 
 
 class MapEngine:

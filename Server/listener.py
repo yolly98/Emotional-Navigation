@@ -1,6 +1,6 @@
 from flask import Flask, request
-from Persistence.map_sql_manager import MapSqlManager
-from Core.map_engine import MapEngine
+from Server.Persistence.map_sql_manager import MapSqlManager
+from Server.Core.map_engine import MapEngine
 from Utility.point import Point
 from Utility.utility_functions import path_to_json
 

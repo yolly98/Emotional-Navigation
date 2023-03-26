@@ -3,14 +3,14 @@ import sys
 import math
 from Utility.utility_functions import calculate_distance, print_path, json_to_path
 from Utility.point import Point
-from InputModule.gps_module import GPS
+from Client.InputModule.gps_module import GPS
 import time
-from Dashboard.View.alert import Alert
-from Dashboard.View.path_progress import PathProgress
-from Dashboard.View.car import Car
-from Dashboard.View.arrow import Arrow
-from Dashboard.View.terminal import Terminal
-from Dashboard.comunication_manager import CommunicationManager
+from Client.Dashboard.View.alert import Alert
+from Client.Dashboard.View.path_progress import PathProgress
+from Client.Dashboard.View.car import Car
+from Client.Dashboard.View.arrow import Arrow
+from Client.Dashboard.View.terminal import Terminal
+from Client.Dashboard.comunication_manager import CommunicationManager
 
 SERVER_IP = "127.0.0.1"
 SERVER_PORT = "5000"

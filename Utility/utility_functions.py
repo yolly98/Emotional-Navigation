@@ -1,6 +1,6 @@
 import math
 import matplotlib.pyplot as plt
-from Persistence.map_sql_manager import MapSqlManager
+from Server.Persistence.map_sql_manager import MapSqlManager
 from Utility.gnode import GNode
 from Utility.way import Way
 
