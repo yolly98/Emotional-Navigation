@@ -10,7 +10,7 @@ from Client.Dashboard.View.path_progress import PathProgress
 from Client.Dashboard.View.car import Car
 from Client.Dashboard.View.arrow import Arrow
 from Client.Dashboard.View.terminal import Terminal
-from Client.Dashboard.comunication_manager import CommunicationManager
+from Client.comunication_manager import CommunicationManager
 
 SERVER_IP = "127.0.0.1"
 SERVER_PORT = "5000"
