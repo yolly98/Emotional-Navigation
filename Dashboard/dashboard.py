@@ -1,5 +1,4 @@
 import pygame
-import pygame_textinput
 import sys
 import math
 from Core.map_engine import MapEngine
@@ -80,16 +79,8 @@ class Dashboard:
         self.actual_street = None
 
         self.path_progress = None
-        self.textinput = pygame_textinput.TextInputVisualizer(font_object=pygame.font.SysFont('times new roman', 20))
-        self.textinput.font_color = (0, 85, 170)
-        self.textinput.value = "Insert Destination"
-        self.textinput.cursor_color = (0, 85, 170)
-        self.textinput.cursor_blink_interval = 200
-        self.textinput.cursor_width = 2
-        self.input_enabler = True
-        self.button = pygame.Rect(self.street_width + 20, 50, 100, 20)
-
         self.terminal = Terminal(0, self.win_height - self.terminal_height, self.terminal_height, 20, self.colors)
+        self.terminal.write("Insert Destination")
 
     @staticmethod
     def get_instance():
@@ -108,9 +99,8 @@ class Dashboard:
         self.start_time = None
         self.travel_time = None
         self.path_progress = None
-        self.input_enabler = True
         self.car_speed_counter = 0
-        self.textinput.value = "Insert Destination"
+        self.terminal.write("Insert Destination")
 
     def get_path(self, destination_name):
 
@@ -120,7 +110,7 @@ class Dashboard:
         sql_map.open_connection()
         ways = sql_map.get_way_by_name(destination_name)
         if not ways:
-            self.textinput.value = "Not valid destination"
+            self.terminal.write("Not valid destination")
             return
         way = ways[0]
         destination_node = sql_map.get_node(way.get('start_node'))
@@ -141,7 +131,6 @@ class Dashboard:
         for way in self.path:
             path_length += way['way'].get('length')
         self.path_progress = PathProgress(self.street_width + (self.win_width - self.street_width - 30)/2, self.street_pos[1] - 50, self.block_size, path_length)
-        self.input_enabler = False
 
     def show(self):
         self.win.fill(pygame.Color(self.colors['black']))
@@ -151,15 +140,6 @@ class Dashboard:
         pygame.draw.rect(self.win, self.colors['white'], pygame.Rect(self.street_width, self.win_height - self.terminal_height - 70, self.win_width - self.street_width, self.block_size / 2))
         pygame.draw.rect(self.win, self.colors['white'], pygame.Rect(self.street_pos[0], self.street_pos[1] - 50, self.street_width, self.block_size / 2))
         pygame.draw.rect(self.win, self.colors['white'], pygame.Rect(0, self.win_height - self.terminal_height, self.win_width, self.block_size))
-
-        # draw inputs
-        if self.input_enabler:
-            self.win.blit(self.textinput.surface, (self.street_width + 20, 10))
-            pygame.draw.rect(self.win, self.colors['blue'], self.button)
-            font = pygame.font.SysFont('times new roman', 20)
-            text_surface = font.render('SUBMIT', True, (255, 255, 255))
-            self.win.blit(text_surface, (self.button.x + (self.button.width - text_surface.get_width()) // 2,
-                                       self.button.y + (self.button.height - text_surface.get_height()) // 2))
 
         font = pygame.font.SysFont('times new roman', 25)
 
@@ -342,44 +322,38 @@ class Dashboard:
 
         events = pygame.event.get()
         for event in events:
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if self.button.collidepoint(event.pos):
-                    self.get_path(self.textinput.value)
-            if self.input_enabler:
-                continue
-            else:
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
-                elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_UP:
-                        self.commands['up'] = True
-                    if event.key == pygame.K_DOWN:
-                        self.commands['down'] = True
-                    if event.key == pygame.K_LEFT and self.arrow.get_showed() and self.arrow.get_color() == self.colors['white']:
-                        if self.arrow.get_type() == "left" and (self.arrow.get_speed() is not None):
-                            self.arrow.set_color(self.colors['green'])
-                        else:
-                            self.arrow.set_color(self.colors['red'])
-                    if event.key == pygame.K_RIGHT and self.arrow.get_showed() and self.arrow.get_color() == self.colors['white']:
-                        if self.arrow.get_type() == "right" and (self.arrow.get_speed() is not None):
-                            self.arrow.set_color(self.colors['green'])
-                        else:
-                            self.arrow.set_color(self.colors['red'])
-                elif event.type == pygame.KEYUP:
-                    if event.key == pygame.K_UP:
-                        self.commands['up'] = False
-                    if event.key == pygame.K_DOWN:
-                        self.commands['down'] = False
-                    if event.key == pygame.K_LEFT:
-                        self.commands['left'] = False
-                    if event.key == pygame.K_RIGHT:
-                        self.commands['right'] = False
 
-        if self.input_enabler:
-            self.textinput.update(events)
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
+                    self.get_path(self.terminal.get_value())
+                if event.key == pygame.K_UP:
+                    self.commands['up'] = True
+                if event.key == pygame.K_DOWN:
+                    self.commands['down'] = True
+                if event.key == pygame.K_LEFT and self.arrow.get_showed() and self.arrow.get_color() == self.colors['white']:
+                    if self.arrow.get_type() == "left" and (self.arrow.get_speed() is not None):
+                        self.arrow.set_color(self.colors['green'])
+                    else:
+                        self.arrow.set_color(self.colors['red'])
+                if event.key == pygame.K_RIGHT and self.arrow.get_showed() and self.arrow.get_color() == self.colors['white']:
+                    if self.arrow.get_type() == "right" and (self.arrow.get_speed() is not None):
+                        self.arrow.set_color(self.colors['green'])
+                    else:
+                        self.arrow.set_color(self.colors['red'])
+            elif event.type == pygame.KEYUP:
+                if event.key == pygame.K_UP:
+                    self.commands['up'] = False
+                if event.key == pygame.K_DOWN:
+                    self.commands['down'] = False
+                if event.key == pygame.K_LEFT:
+                    self.commands['left'] = False
+                if event.key == pygame.K_RIGHT:
+                    self.commands['right'] = False
 
-        self.terminal.write(events)
+        self.terminal.listen(events)
 
         self.player_car.move_car(self.commands)
 

@@ -2,6 +2,7 @@ import pygame
 import pygame_textinput
 import math
 
+
 class Terminal:
 
     def __init__(self, pos_x, pos_y, height, font_size, colors):
@@ -13,14 +14,14 @@ class Terminal:
         self.colors = colors
         n_rows = math.floor((height / font_size)) - 2
         for i in range(n_rows):
-            self.rows.append(f"row {i}")
+            self.rows.append("")
 
         font = pygame.font.SysFont('times new roman', font_size)
         self.input = pygame_textinput.TextInputVisualizer(font_object=font)
         self.input.font_color = colors['green']
-        self.input.value = "value"
-        self.input.cursor_color = (0, 85, 170)
-        self.input.cursor_blink_interval = 200
+        self.input.value = ""
+        self.input.cursor_color = colors['green']
+        self.input.cursor_blink_interval = 500
         self.input.cursor_width = 2
 
     def scroll(self):
@@ -34,8 +35,17 @@ class Terminal:
         self.input.value = ""
         return command
 
-    def write(self, events):
+    def listen(self, events):
         self.input.update(events)
+
+    def write(self, value):
+        self.input.value = value
+        self.scroll()
+
+    def get_value(self):
+        value = self.input.value
+        self.scroll()
+        return value
 
     def draw(self, win):
 
