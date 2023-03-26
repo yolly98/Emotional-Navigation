@@ -308,7 +308,7 @@ class Dashboard:
             self.car_speed_counter += car_speed
         while i < len(self.street_lines):
             if self.street_lines[i] == 1:
-                pygame.draw.rect(self.win, self.colors['white'], pygame.Rect(self.street_width / 2, self.win_height - self.terminal_height - i*line_height, line_width - step, line_height))
+                pygame.draw.rect(self.win, self.colors['white'], pygame.Rect(self.street_width / 2, self.win_height - self.terminal_height - i*line_height - 10, line_width - step, line_height))
             i += 1
             step += (line_width / len(self.street_lines))
 
