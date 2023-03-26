@@ -297,7 +297,8 @@ class Dashboard:
         block_size = self.block_size
         line_width = block_size
         line_height = block_size*2
-        step = line_width / len(self.street_lines)
+        step_width = line_width / len(self.street_lines)
+        step_height = line_height / len(self.street_lines)
 
         car_speed = self.player_car.get_speed()
         # print central lines
@@ -308,9 +309,14 @@ class Dashboard:
             self.car_speed_counter += car_speed
         while i < len(self.street_lines):
             if self.street_lines[i] == 1:
-                pygame.draw.rect(self.win, self.colors['white'], pygame.Rect(self.street_width / 2, self.win_height - self.terminal_height - i*line_height - 10, line_width - step, line_height))
+                width = line_width - step_width
+                height = line_height - step_height
+                x = self.street_width / 2 - width / 2
+                y = self.win_height - self.terminal_height - (i + 1) * 1.6 * line_height + (i - 1) * step_height
+                pygame.draw.rect(self.win, self.colors['white'], pygame.Rect(x, y, width, height))
             i += 1
-            step += (line_width / len(self.street_lines))
+            step_width += line_width / len(self.street_lines)
+            step_height += line_height / len(self.street_lines)
 
         # print street edges
         i = self.win_height - self.terminal_height
