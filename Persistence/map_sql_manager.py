@@ -182,6 +182,25 @@ class MapSqlManager:
         res = GNode(res[0], res[1], res[2], res[3], res[4])
         return res
 
+    def get_nearest_node(self, lat, lon):
+        if self.conn is None:
+            return False
+        cursor = self.conn.cursor(prepared=True)
+        query = "SELECT id, type, name, lat, lon,\
+                SQRT(POW(69.1 * (lat - %s), 2) + POW(69.1 * (%s - lon) * COS(lat / 57.3), 2)) AS distance \
+                FROM node \
+                ORDER BY distance \
+                LIMIT 1"
+        try:
+            cursor.execute(query, (lat, lon))
+        except mysql.connector.Error as e:
+            print(f"Mysql Execution Error [{e}]")
+        res = cursor.fetchone()
+        if res is None:
+            return False
+        res = GNode(res[0], res[1], res[2], res[3], res[4])
+        return res
+
 
 if __name__ == '__main__':
     map_sql_manager = MapSqlManager().get_instance()
@@ -197,4 +216,7 @@ if __name__ == '__main__':
         print("Way: Unknown")
     else:
         print(f"Way: {ways[0].get('name')}")
+
+    node = map_sql_manager.get_nearest_node('42.3320362', '12.2679352')
+    print(node)
     map_sql_manager.close_connection()

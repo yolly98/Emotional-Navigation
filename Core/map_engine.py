@@ -15,10 +15,9 @@ class MapEngine:
         sql_manager = MapSqlManager.get_instance()
         sql_manager.open_connection()
 
-        source = (sql_manager.get_node_by_coord(source.get_lat(), source.get_lon()))
+        source = (sql_manager.get_nearest_node(source.get_lat(), source.get_lon()))
         if source is False:
             print("Source position not found")
-            # TODO search the nearest point
             return None
         source_id = source.get('id')
         destination = (sql_manager.get_node_by_coord(destination.get_lat(), destination.get_lon()))

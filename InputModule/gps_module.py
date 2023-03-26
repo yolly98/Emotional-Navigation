@@ -3,6 +3,10 @@ from Utility.point import Point
 from math import radians, sin, cos, asin, atan2, degrees
 import time
 
+DEFAULT_LAT = '42.3333569'
+DEFAULT_LON = '12.2692692'
+
+
 class GPS:
 
     gps_simulator = None
@@ -41,8 +45,8 @@ class GPS:
         self.time = time.time()
 
         if sim:
-            if self.last_pos is None:
-                self.last_pos = Point('42.3333569', '12.2692692')
+            if self.last_pos is None or travelled_km == -1:
+                self.last_pos = Point(DEFAULT_LAT, DEFAULT_LON)
                 print(f"GPS pos: {self.last_pos}")
                 return self.last_pos
 
