@@ -137,6 +137,7 @@ class Dashboard:
         self.old_car_speed = 0
         self.start_time = time.time()
         self.travel_time = 0
+        self.path_km = 0
         path_length = 0
         for way in self.path:
             path_length += way['way'].get('length')

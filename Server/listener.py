@@ -49,8 +49,9 @@ def post_json():
         if not ways:
             return {"status": -1} # invalid destination
 
-        way = ways[0]
+        way = ways[0] # TODO capire come prendere la way in mezzo
         destination_node = sql_map.get_node(way.get('start_node'))
+        print(destination_node)
         destination = Point(destination_node.get('lat'), destination_node.get('lon'))
         sql_map.close_connection()
 
