@@ -117,6 +117,8 @@ def load_map():
         ) "
     )
 
+    mysql_cursor.execute("CREATE INDEX way_name on way(name)")
+
     mysql_cursor.execute(
         "CREATE TABLE IF NOT EXISTS node ( \
         id BIGINT, \
@@ -127,6 +129,19 @@ def load_map():
         PRIMARY KEY (id) \
         ) "
     )
+
+    mysql_cursor.execute(
+        "CREATE TABLE ordered_points_table AS \
+        SELECT node.id as id, node.type as type, node.name as name, node.lat as lat, node.lon as lon \
+        FROM node \
+        INNER JOIN way \
+        ON node.id = way.start_node \
+        WHERE not (way.name = "" and way.alt_name = "" and way.ref = "") \
+        ORDER BY node.lat, node.lon;"
+    )
+
+    mysql_cursor.execute("CREATE INDEX lat_index on ordered_points_table(lat)")
+    mysql_cursor.execute("CREATE INDEX lon_index on ordered_points_table(lon)")
 
     mysql_cursor.execute(
         "CREATE TABLE IF NOT EXISTS history ( \

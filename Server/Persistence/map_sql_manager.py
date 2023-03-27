@@ -183,20 +183,20 @@ class MapSqlManager:
         return res
 
     def get_nearest_node(self, lat, lon):
+
         if self.conn is None:
             return False
         cursor = self.conn.cursor(prepared=True)
-        query = "SELECT id, type, name, lat, lon \
-                FROM ( \
-                SELECT id, type, name, lat, lon,  \
+
+        query = "SELECT id, type, name, lat, lon, \
                 SQRT(POW(69.1 * (lat - %s), 2) + POW(69.1 * (%s - lon) * COS(lat / 57.3), 2)) AS distance \
-                FROM node INNER JOIN way ON node.id  \
-                ) as Temp \
-                WHERE distance < 0.621371 \
+                FROM ordered_points_table \
+                WHERE lat < %s + '0.001' and lat > %s - '0.001' \
+                and lon < %s + '0.001' and lon > %s - '0.001' \
                 ORDER BY distance \
                 LIMIT 1"
         try:
-            cursor.execute(query, (lat, lon))
+            cursor.execute(query, (lat, lon, lat, lat, lon, lon))
         except mysql.connector.Error as e:
             print(f"Mysql Execution Error [{e}]")
         res = cursor.fetchone()
@@ -221,6 +221,6 @@ if __name__ == '__main__':
     else:
         print(f"Way: {ways[0].get('name')}")
 
-    node = map_sql_manager.get_nearest_node('42.3320362', '12.2679352')
+    node = map_sql_manager.get_nearest_node('42.3323892', '12.2695975')
     print(node)
     map_sql_manager.close_connection()

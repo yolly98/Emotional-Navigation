@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from Server.Persistence.map_sql_manager import MapSqlManager
 from Utility.gnode import GNode
 from Utility.way import Way
+from Utility.point import Point
 
 
 def calculate_distance(Point1, Point2): # in km
@@ -132,3 +133,9 @@ def json_to_path(json):
         way['end_node'] = GNode.json_to_gnode(relationship['end_node'])
         path.append(way)
     return path
+
+if __name__ == '__main__':
+
+    p1 = Point('42.3323892', '12.2695975')
+    p2 = Point('43.3323892', '13.2695975')
+    print(calculate_distance(p1, p2))

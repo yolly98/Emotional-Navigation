@@ -80,7 +80,7 @@ class MapEngine:
 
 if __name__ == "__main__":
 
-    source = Point('42.3333569', '12.2692692')
+    source = Point('42.3323892', '12.2695975')
     destination = Point('42.3295099', '12.2659779')
 
     path = MapEngine.calculate_path(source, destination)
