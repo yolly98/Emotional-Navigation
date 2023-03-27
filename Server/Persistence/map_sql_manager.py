@@ -186,9 +186,13 @@ class MapSqlManager:
         if self.conn is None:
             return False
         cursor = self.conn.cursor(prepared=True)
-        query = "SELECT id, type, name, lat, lon,\
+        query = "SELECT id, type, name, lat, lon \
+                FROM ( \
+                SELECT id, type, name, lat, lon,  \
                 SQRT(POW(69.1 * (lat - %s), 2) + POW(69.1 * (%s - lon) * COS(lat / 57.3), 2)) AS distance \
-                FROM node \
+                FROM node INNER JOIN way ON node.id  \
+                ) as Temp \
+                WHERE distance < 0.621371 \
                 ORDER BY distance \
                 LIMIT 1"
         try:

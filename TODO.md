@@ -1,5 +1,8 @@
 # TODO
 
+## importante
+[ ] nATTENZIONE !   qunado prende il nearest point potrebbe prendre un punto di un edificio, e poi non trovare il path!
+
 ## map engine
 * [x] le deviazioni non funzionano
 * [ ] ricaricare il db togliendo le strade e i nodi di edifici (strade senza name, ref, alt_name)
