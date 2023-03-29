@@ -61,13 +61,12 @@ class GPS:
                         break
                     else:
                         ms += distance
-                        self.actual_node += 1
+                        if i + 1 < len(self.path):
+                            self.actual_node += 1
                 i += 1
-                if i == len(self.path):
-                    return None
 
             p1 = Point(self.path[self.actual_node]['start_node'].get('lat'), self.path[self.actual_node]['start_node'].get('lon'))
-            if self.actual_node >= len(self.path):
+            if self.actual_node >= len(self.path) - 1:
                 self.last_pos = p1
                 return p1
             p2 = Point(self.path[self.actual_node + 1]['start_node'].get('lat'), self.path[self.actual_node + 1]['start_node'].get('lon'))
