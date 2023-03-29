@@ -2,7 +2,7 @@ from flask import Flask, request
 from Server.Persistence.map_sql_manager import MapSqlManager
 from Server.Core.map_engine import MapEngine
 from Utility.point import Point
-from Utility.utility_functions import path_to_json
+from Utility.utility_functions import path_to_json, calculate_distance
 
 
 class Listener:
@@ -49,10 +49,17 @@ def post_json():
         if not ways:
             return {"status": -1} # invalid destination
 
-        way = ways[0] # TODO capire come prendere la way in mezzo
-        destination_node = sql_map.get_node(way.get('start_node'))
-        print(destination_node)
-        destination = Point(destination_node.get('lat'), destination_node.get('lon'))
+        # get the way with the start node nearest the source node
+        distance = None
+        destination = None
+        for way in ways:
+            node = sql_map.get_node(way.get('start_node'))
+            node = Point(node.get('lat'), node.get('lon'))
+            d = calculate_distance(source, node)
+            if distance is None or d < distance:
+                distance = d
+                destination = node
+
         sql_map.close_connection()
 
         path = MapEngine.calculate_path(source, destination)

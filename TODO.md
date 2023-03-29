@@ -15,6 +15,7 @@
 ## simulatore di guida
 * [x] aggiungere frecce per curve
 * [x] mettere avanzamento percorso
+* [ ] crash quando finisce il percorso
 
 ## rilevatore emozioni
 * [x] creare modulo per rilevatore emozioni
