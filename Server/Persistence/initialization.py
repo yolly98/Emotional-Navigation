@@ -372,8 +372,7 @@ def load_map():
             p2 = Point(end_node.get('lat'), end_node.get('lon'))
             length = math.floor(calculate_distance(p1, p2) * 1000)  # in meters
             # crate the way and nodes in neo4j
-            relationship = Relationship(reduced_start_node, "TO", reduced_end_node, ref=ref, way_id=way_id,
-                                        length=length, speed=lim_speed)
+            relationship = Relationship(reduced_start_node, "TO", reduced_end_node, way_id=way_id, length=length)
             graph.create(relationship)
 
             # create the way for mysql

@@ -31,7 +31,7 @@ class MapEngine:
             ret = graph_manager.get_path(source_id, destination_id)
         graph_manager.close_connection()
         if ret is None:
-            return {}
+            return None
 
         neo4j_path = ret['ways']
         path = []
@@ -48,10 +48,13 @@ class MapEngine:
                 way_properties.set('name', "Unknown")
             path.append(way)
 
+        if not path:
+            return None
+
         return path
 
     @staticmethod
-    def calculate_path_avoid_street(path, source, destination, way_name, estimated=True):
+    def calculate_path_avoid_street(path, source, destination, way_name):
 
         graph_manager = GraphManager.get_instance()
         sql_manager = MapSqlManager.get_instance()
@@ -66,7 +69,7 @@ class MapEngine:
             graph_manager.update_way_length(way.get('id'), 1000)
         graph_manager.close_connection()
 
-        res = MapEngine.calculate_path(source, destination, estimated)
+        res = MapEngine.calculate_path(source, destination, False)
 
         graph_manager.open_connection()
         # restore updated length
@@ -84,7 +87,7 @@ class MapEngine:
 if __name__ == "__main__":
 
     source = Point('42.3323892', '12.2695975')
-    destination = Point('42.3407439', '12.2397626')
+    destination = Point('42.3358463', '12.3038538')
 
     path = MapEngine.calculate_path(source, destination, True)
     if path:
@@ -100,16 +103,9 @@ if __name__ == "__main__":
     if path:
         visualize_path(path, True)
 
-    path = MapEngine.calculate_path_avoid_street(path, source, destination, "Via Santa Maria", True)
+    path = MapEngine.calculate_path_avoid_street(path, source, destination, "Via Fontanasecca")
     if path:
         print_path(path)
     print(f"air distance: {calculate_distance(source, destination)} km")
     if path:
-       visualize_path(path)
-
-    path = MapEngine.calculate_path_avoid_street(path, source, destination, "Via Santa Maria", False)
-    if path:
-        print_path(path)
-    print(f"air distance: {calculate_distance(source, destination)} km")
-    if path:
-        visualize_path(path)
+       visualize_path(path, True)
