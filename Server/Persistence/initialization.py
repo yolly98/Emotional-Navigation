@@ -10,6 +10,7 @@ from Utility.point import Point
 from py2neo import Graph, Node, Relationship
 import mysql.connector
 
+START_WAY_ID = 0
 # ---------------------------------------------------------------------------
 #  SCRIPT TO BE PERFORMED ONLY ONCE TO LOAD THE DATABASE THROUGH AN osm FILE
 
@@ -131,19 +132,6 @@ def load_map():
     )
 
     mysql_cursor.execute(
-        "CREATE TABLE ordered_points_table AS \
-        SELECT node.id as id, node.type as type, node.name as name, node.lat as lat, node.lon as lon \
-        FROM node \
-        INNER JOIN way \
-        ON node.id = way.start_node \
-        WHERE not (way.name = "" and way.alt_name = "" and way.ref = "") \
-        ORDER BY node.lat, node.lon;"
-    )
-
-    mysql_cursor.execute("CREATE INDEX lat_index on ordered_points_table(lat)")
-    mysql_cursor.execute("CREATE INDEX lon_index on ordered_points_table(lon)")
-
-    mysql_cursor.execute(
         "CREATE TABLE IF NOT EXISTS history ( \
         user_id BIGINT, \
         way_id BIGINT, \
@@ -222,18 +210,11 @@ def load_map():
                     name = elem['@v']
 
         # create node
-        neo4j_node = Node("Node", id=id, lat=lat, lon=lon, name=name)
+        neo4j_node = Node("Node", id=id, lat=lat, lon=lon, name=name, type=type)
         neo4j_reduced_node = Node("Node", id=id)
         # add nodes to dict
         neo4j_nodes[id] = neo4j_node
         neo4j_reduced_nodes[id] = neo4j_reduced_node
-        # save node to no4j db
-        graph.create(neo4j_reduced_node)
-        # save node to msyql db
-        sql = "INSERT INTO node (id, type, name, lat, lon ) \
-                VALUES( %s, %s, %s, %s, %s)"
-        mysql_cursor.execute(sql, (id, type, name, lat, lon))
-        mysql_conn.commit()
 
     print("nodes loads with success")
 
@@ -289,16 +270,44 @@ def load_map():
             {'@k': 'ref', '@v': 'SP35'}
         ]
     }
+    
+    example 3 of way
+    
+    {
+        "@id": "475759834", 
+        "@visible": "true", 
+        "@version": "1", 
+        "@changeset": "46233911", 
+        "@timestamp": "2017-02-20T06:08:43Z", 
+        "@user": "Michele Aquilani", 
+        "@uid": "3860151", 
+        "nd": [
+            {"@ref": "4694735441"}, 
+            {"@ref": "4694735442"}, 
+            {"@ref": "4694735443"}, 
+            {"@ref": "4694735444"}, 
+            {"@ref": "4694735445"}, 
+            {"@ref": "4694735446"}, 
+            {"@ref": "4694735447"}, 
+            {"@ref": "4694735448"}, 
+            {"@ref": "4694735449"}, 
+            {"@ref": "4694735450"}, 
+            {"@ref": "4694735441"}
+        ], 
+        "tag": [
+            {"@k": "building", "@v": "yes"}, 
+            {"@k": "landuse", "@v": "plant_nursery"}
+        ]}
 
 
     '''
     i = 0
-    way_id = 0
+    way_id = START_WAY_ID
     for way in data["osm"]["way"]:
         # take nodes that build the path
         i += 1
         if i % 100 == 0:
-            print(f"way: {i}")
+            print(f"way: {i} / {len(data['osm']['way'])}")
         nodes = way["nd"]
         alt_name = ""
         name = ""
@@ -316,6 +325,9 @@ def load_map():
                     ref = elem['@v']
                 elif elem['@k'] == 'maxspeed':
                     lim_speed = elem['@v']
+
+        if name == "" and alt_name == "" and ref == "":
+            continue
 
         if lim_speed == 0:
             if not ref.find("A") == -1:
@@ -336,14 +348,30 @@ def load_map():
         reduced_start_node = neo4j_reduced_nodes[nodes[0]["@ref"]]
         # take next nodes
         for node in nodes[1:]:
+
             # take the next node
             end_node = neo4j_nodes[node["@ref"]]
             reduced_end_node = neo4j_reduced_nodes[node["@ref"]]
+
+            # save nodes to mysql db
+            sql = "INSERT INTO node (id, type, name, lat, lon ) \
+                            VALUES( %s, %s, %s, %s, %s)"
+            try:
+                mysql_cursor.execute(sql, (start_node.get('id'), start_node.get('type'), start_node.get('name'), start_node.get('lat'), start_node.get('lon')))
+            except mysql.connector.Error as e:
+                pass
+            sql = "INSERT INTO node (id, type, name, lat, lon ) \
+                                        VALUES( %s, %s, %s, %s, %s)"
+            try:
+                mysql_cursor.execute(sql, (end_node.get('id'), end_node.get('type'), end_node.get('name'), end_node.get('lat'), end_node.get('lon')))
+            except mysql.connector.Error as e:
+                pass
+
             # create a relationship between nodes
             p1 = Point(start_node.get('lat'), start_node.get('lon'))
             p2 = Point(end_node.get('lat'), end_node.get('lon'))
             length = math.floor(calculate_distance(p1, p2) * 1000)  # in meters
-            # crate the way in neo4j
+            # crate the way and nodes in neo4j
             relationship = Relationship(reduced_start_node, "TO", reduced_end_node, ref=ref, way_id=way_id,
                                         length=length, speed=lim_speed)
             graph.create(relationship)
@@ -360,10 +388,25 @@ def load_map():
             reduced_start_node = reduced_end_node
             way_id += 1
 
-    mysql_conn.close()
-
     print("loading map data completed")
+
+    mysql_cursor = mysql_conn.cursor()
+    mysql_cursor.execute(
+        "CREATE TABLE ordered_points_table AS \
+        SELECT node.id as id, node.type as type, node.name as name, node.lat as lat, node.lon as lon \
+        FROM node \
+        INNER JOIN way \
+        ON node.id = way.start_node \
+        ORDER BY node.lat, node.lon;"
+    )
+
+    mysql_cursor.execute("CREATE INDEX lat_index on ordered_points_table(lat)")
+    mysql_cursor.execute("CREATE INDEX lon_index on ordered_points_table(lon)")
+    mysql_conn.commit()
+
+    mysql_conn.close()
 
 
 if __name__ == "__main__":
     load_map()
+

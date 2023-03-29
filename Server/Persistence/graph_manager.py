@@ -26,6 +26,33 @@ class GraphManager:
     def close_connection(self):
         self.graph = None
 
+    def get_estimated_path(self, source, destination):
+
+        if self.graph is None:
+            print("Graph DB not connected")
+            return False
+
+        # query that takes in account weights
+        query = f"MATCH (a), (b), \
+                path = shortestPath((a)-[*]-(b)) \
+                WHERE a.id = '{source}' and b.id = '{destination}' \
+                RETURN relationships(path) as ways"
+
+        try:
+            path = self.graph.run(query)
+        except Exception as e:
+            print(f"path not found [{e}]")
+            return []
+
+        path = path.data()
+        if not path:
+            print("Path not found")
+            return None
+
+        path = path[0]
+
+        return path
+
     def get_path(self, source, destination):
 
         if self.graph is None:

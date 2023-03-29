@@ -7,7 +7,7 @@ from Server.Persistence.graph_manager import GraphManager
 class MapEngine:
 
     @staticmethod
-    def calculate_path(source, destination):
+    def calculate_path(source, destination, estimated=True):
 
         graph_manager = GraphManager.get_instance()
         graph_manager.open_connection()
@@ -25,7 +25,10 @@ class MapEngine:
             print("Destination position not found")
             return None
         destination_id = destination.get('id')
-        ret = graph_manager.get_path(source_id, destination_id)
+        if estimated:
+            ret = graph_manager.get_estimated_path(source_id, destination_id)
+        else:
+            ret = graph_manager.get_path(source_id, destination_id)
         graph_manager.close_connection()
         if ret is None:
             return {}
@@ -48,7 +51,7 @@ class MapEngine:
         return path
 
     @staticmethod
-    def calculate_path_avoid_street(path, source, destination, way_name):
+    def calculate_path_avoid_street(path, source, destination, way_name, estimated=True):
 
         graph_manager = GraphManager.get_instance()
         sql_manager = MapSqlManager.get_instance()
@@ -63,7 +66,7 @@ class MapEngine:
             graph_manager.update_way_length(way.get('id'), 1000)
         graph_manager.close_connection()
 
-        res = MapEngine.calculate_path(source, destination)
+        res = MapEngine.calculate_path(source, destination, estimated)
 
         graph_manager.open_connection()
         # restore updated length
@@ -81,20 +84,32 @@ class MapEngine:
 if __name__ == "__main__":
 
     source = Point('42.3323892', '12.2695975')
-    destination = Point('42.3295099', '12.2659779')
+    destination = Point('42.3407439', '12.2397626')
 
-    path = MapEngine.calculate_path(source, destination)
+    path = MapEngine.calculate_path(source, destination, True)
     if path:
         print_path(path)
     print(f"air distance: {calculate_distance(source, destination)} km")
-
     if path:
-        visualize_path(path)
+        visualize_path(path, True)
 
-    path = MapEngine.calculate_path_avoid_street(path, source, destination, "Via Santa Maria")
+    path = MapEngine.calculate_path(source, destination, False)
     if path:
         print_path(path)
     print(f"air distance: {calculate_distance(source, destination)} km")
+    if path:
+        visualize_path(path, True)
 
+    path = MapEngine.calculate_path_avoid_street(path, source, destination, "Via Santa Maria", True)
+    if path:
+        print_path(path)
+    print(f"air distance: {calculate_distance(source, destination)} km")
     if path:
        visualize_path(path)
+
+    path = MapEngine.calculate_path_avoid_street(path, source, destination, "Via Santa Maria", False)
+    if path:
+        print_path(path)
+    print(f"air distance: {calculate_distance(source, destination)} km")
+    if path:
+        visualize_path(path)
