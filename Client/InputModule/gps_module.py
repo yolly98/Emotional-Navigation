@@ -31,9 +31,9 @@ class GPS:
     def get_last_pos(self):
         return self.last_pos
 
-    def set_path(self, path):
+    def sim_init(self):
         self.actual_node = 0
-        node = path[0]['start_node']
+        node = StateManager.get_instance().get_state('path')[0]['start_node']
         self.last_pos = Point(node.get('lat'), node.get('lon'))
 
     def get_coord(self, sim, travelled_km):

@@ -143,6 +143,7 @@ class Dashboard:
             path_length += way['way'].get('length')
         self.path_progress = PathProgress(self.street_width + (self.win_width - self.street_width - 30)/2, self.street_pos[1] - 50, self.block_size, path_length)
         StateManager.get_instance().set_state('path', path)
+        GPS.get_instance().sim_init()
 
     def show(self):
         self.win.fill(pygame.Color(self.colors['black']))
