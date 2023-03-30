@@ -79,7 +79,7 @@ class Dashboard:
         self.travel_time = None
         self.alert = Alert(self.street_width - 100, 60, 5, self.colors['white'], self.colors['black'])
         self.arrow = Arrow(270, 60, 5, None, 'right', self.colors['white'], self.colors['black'])
-        self.actual_street = None
+        StateManager.get_instance().set_state('actual_way', None)
 
         self.path_progress = None
         self.terminal = Terminal(0, self.win_height - self.terminal_height, self.terminal_height, 20, self.colors)
@@ -215,9 +215,10 @@ class Dashboard:
             street_rect.midtop = (self.street_width / 2, 10)
             self.win.blit(street_surface, street_rect)
 
-            if (actual_street is None or self.actual_street is None) or (not actual_street['way'].get('name') == self.actual_street['way'].get('name')):
+            if (actual_street is None or StateManager.get_instance().get_state('actual_way') is None) or \
+                    (not actual_street['way'].get('name') == StateManager.get_instance().get_state('actual_way')['way'].get('name')):
                 self.arrow.set_color(self.colors['white'])
-            self.actual_street = actual_street
+            StateManager.get_instance().set_state('actual_way', actual_street)
 
             # draw arrow
             if (actual_street is not None) and (not path.index(actual_street) == len(path) - 1):

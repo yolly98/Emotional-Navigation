@@ -7,6 +7,8 @@ class StateManager:
 
     def __init__(self):
         self.status = dict()
+        self.status['path'] = None
+        self.actual_way = None
         # using RLock, many thread can read the state in the same time, but only one can write in the same time
         self.lock = RLock()
 
