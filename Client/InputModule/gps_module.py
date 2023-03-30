@@ -4,20 +4,13 @@ from math import radians, sin, cos, asin, atan2, degrees
 import time
 from Client.state_manager import StateManager
 
-DEFAULT_LAT = '42.3333569'
-DEFAULT_LON = '12.2692692'
-
 
 class GPS:
 
     gps_simulator = None
 
     def __init__(self):
-        self.actual_node = 0
         self.period = 1
-        self.time = None
-        self.last_pos = None
-        self.speed = 0
 
     @staticmethod
     def get_instance():
@@ -25,53 +18,35 @@ class GPS:
             GPS.gps_simulator = GPS()
         return GPS.gps_simulator
 
-    def get_speed(self):
-        return self.speed
-
-    def get_last_pos(self):
-        return self.last_pos
-
-    def sim_init(self):
-        self.actual_node = 0
-        node = StateManager.get_instance().get_state('path')[0]['start_node']
-        self.last_pos = Point(node.get('lat'), node.get('lon'))
-
     def get_coord(self, sim, travelled_km):
 
-        if (self.time is not None) and (time.time() - self.time < self.period):
-            return self.last_pos
-
-        self.time = time.time()
+        actual_node_index = StateManager.get_instance().get_state('actual_node_index')
 
         if sim:
 
             path = StateManager.get_instance().get_state('path')
-
-            if self.last_pos is None or travelled_km == -1:
-                self.last_pos = Point(DEFAULT_LAT, DEFAULT_LON)
-                print(f"GPS pos: {self.last_pos}")
-                return self.last_pos
+            if path is None:
+                return StateManager.get_instance().get_state('last_pos')
 
             i = 0
             ms = 0
             while i < len(path):
-                if i < self.actual_node:
+                if i < actual_node_index:
                     ms += path[i]['way'].get('length')
                 else:
-                    distance = path[self.actual_node]['way'].get('length')
+                    distance = path[actual_node_index]['way'].get('length')
                     if (travelled_km * 1000) <= ms + distance:
                         break
                     else:
                         ms += distance
                         if i + 1 < len(path):
-                            self.actual_node += 1
+                            actual_node_index += 1
                 i += 1
 
-            p1 = Point(path[self.actual_node]['start_node'].get('lat'), path[self.actual_node]['start_node'].get('lon'))
-            if self.actual_node >= len(path) - 1:
-                self.last_pos = p1
+            p1 = Point(path[actual_node_index]['start_node'].get('lat'), path[actual_node_index]['start_node'].get('lon'))
+            if actual_node_index >= len(path) - 1:
                 return p1
-            p2 = Point(path[self.actual_node + 1]['start_node'].get('lat'), path[self.actual_node + 1]['start_node'].get('lon'))
+            p2 = Point(path[actual_node_index + 1]['start_node'].get('lat'), path[actual_node_index + 1]['start_node'].get('lon'))
 
             lat1 = float(p1.get_lat())
             lon1 = float(p1.get_lon())
@@ -88,17 +63,23 @@ class GPS:
 
             p3 = Point(str(round(degrees(lat3), 7)), str(round(degrees(lon3), 7)))
 
-            self.last_pos = p3
-            print(f"GPS pos: {self.last_pos}")
-            return self.last_pos
+            print(f"GPS pos: {p3}")
+            return p3
         else:
             # TODO get from GPS sensor and update travelled km
             new_pos = Point('42.3333569', '12.2692692')
-            distance = calculate_distance(new_pos, self.last_pos)
+            last_pos = StateManager.get_instance().get_state('last_pos')
+            distance = calculate_distance(new_pos, last_pos)
             travelled_km += distance
-            self.speed = (distance / self.period) * 3600
+            speed = (distance / self.period) * 3600
+            StateManager.get_instance().set_state('speed', speed)
             pass
 
+    def run(self):
+        while True:
+            is_sim = StateManager.get_instance().get_state('is_sim')
+            travelled_km = StateManager.get_instance().get_state('travelled_km')
+            pos = self.get_coord(is_sim, travelled_km)
+            StateManager.get_instance().set_state('last_pos', pos)
+            time.sleep(self.period)
 
-if __name__ == '__main__':
-    print(GPS.get_instance().get_coord(True, -1))

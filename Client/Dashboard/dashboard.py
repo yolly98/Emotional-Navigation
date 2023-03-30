@@ -3,7 +3,6 @@ import sys
 import math
 from Utility.utility_functions import calculate_distance, print_path, json_to_path
 from Utility.point import Point
-from Client.InputModule.gps_module import GPS
 import time
 from Client.Dashboard.View.alert import Alert
 from Client.Dashboard.View.path_progress import PathProgress
@@ -22,8 +21,6 @@ class Dashboard:
     dashboard = None
 
     def __init__(self):
-
-        self.sim = True
 
         # pygame initialization
         pygame.init()
@@ -72,7 +69,7 @@ class Dashboard:
         self.street_pos = [0, self.win_height / 3]
         self.player_car = Car(self.street_width - 250, self.win_height - self.terminal_height - 100, self.block_size, self.max_car_speed, 'player')
         StateManager.get_instance().set_state('path', None)
-        self.path_km = 0
+        StateManager.get_instance().set_state('travelled_km', None)
         self.old_car_speed = 0
         self.old_timestamp = None
         self.start_time = None
@@ -91,12 +88,9 @@ class Dashboard:
             Dashboard.dashboard = Dashboard()
         return Dashboard.dashboard
 
-    def set_sim(self, simulation):
-        self.sim = simulation
-
     def end_path(self):
         StateManager.get_instance().set_state('path', None)
-        self.path_km = 0
+        StateManager.get_instance().set_state('travelled_km')
         self.old_car_speed = 0
         self.old_timestamp = None
         self.start_time = None
@@ -110,7 +104,9 @@ class Dashboard:
         request = dict()
         request['type'] = 'get_path'
         request['destination_name'] = destination_name
-        request['source_coord'] = (GPS.get_instance().get_coord(self.sim, -1)).to_json()
+        StateManager.get_instance().set_state('travelled_km', -1)
+        StateManager.get_instance().set_state('is_sim', True)
+        request['source_coord'] = StateManager.get_instance().get_state('last_pos').to_json()
 
         res = CommunicationManager.get_instance().send(SERVER_IP, SERVER_PORT, request)
         if res is None or "":
@@ -137,13 +133,13 @@ class Dashboard:
         self.old_car_speed = 0
         self.start_time = time.time()
         self.travel_time = 0
-        self.path_km = 0
+        StateManager.get_instance().set_state('travelled_km', 0)
         path_length = 0
         for way in path:
             path_length += way['way'].get('length')
         self.path_progress = PathProgress(self.street_width + (self.win_width - self.street_width - 30)/2, self.street_pos[1] - 50, self.block_size, path_length)
         StateManager.get_instance().set_state('path', path)
-        GPS.get_instance().sim_init()
+        StateManager.get_instance().path_init()
 
     def show(self):
         self.win.fill(pygame.Color(self.colors['black']))
@@ -158,27 +154,30 @@ class Dashboard:
 
         if StateManager.get_instance().get_state('path') is not None:
             # needed for simulation
-            if self.sim:
+            path_km = StateManager.get_instance().get_state('travelled_km')
+            if StateManager.get_instance().get_state('is_sim'):
                 t = time.time() - self.old_timestamp
                 avg_speed = (self.player_car.get_speed() + self.old_car_speed) / 2
                 traveled_km = (avg_speed / 3600) * t
-                self.path_km += traveled_km
+                path_km += traveled_km
                 self.old_timestamp = time.time()
                 self.old_car_speed = self.player_car.get_speed()
+
+            StateManager.get_instance().set_state('travelled_km', path_km)
             # ------
 
             # get gps position
-            position = GPS.get_instance().get_coord(self.sim, self.path_km)
-            if not self.sim:
-                self.player_car.set_speed(GPS.get_instance().get_speed())
+            position = StateManager.get_instance().get_state('last_pos')
+            if not StateManager.get_instance().get_state('is_sim'):
+                self.player_car.set_speed(StateManager.get_instance().get_state('speed'))
 
             # draw m travelled
-            km_surface = font.render(f"{math.floor(self.path_km * 1000)} m", True, self.colors['white'])
+            km_surface = font.render(f"{math.floor(path_km * 1000)} m", True, self.colors['white'])
             km_rect = km_surface.get_rect()
             km_rect.midtop = (100, 80)
             self.win.blit(km_surface, km_rect)
             # draw path progress
-            self.path_progress.draw(self.win, self.colors, math.floor(self.path_km * 1000))
+            self.path_progress.draw(self.win, self.colors, math.floor(path_km * 1000))
 
             path = StateManager.get_instance().get_state('path')
 
@@ -252,7 +251,7 @@ class Dashboard:
                     else:
                         self.arrow.set_type('left')
 
-                traveled_m = self.path_km * 1000
+                traveled_m = path_km * 1000
                 if ms - traveled_m <= 50:
                     self.arrow.set_speed(5)
                     self.arrow.draw(self.win)
@@ -373,15 +372,11 @@ class Dashboard:
 
         self.player_car.move_car(self.commands)
 
-
-if __name__ == '__main__':
-
-    sim = Dashboard.get_instance()
-    sim.set_sim(True)
-    while True:
-        sim.get_event()
-        sim.show()
-        sim.wait()
+    def run(self):
+        while True:
+            self.get_event()
+            self.show()
+            self.wait()
 
 
 
