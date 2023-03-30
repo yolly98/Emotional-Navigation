@@ -11,6 +11,7 @@ from Client.Dashboard.View.car import Car
 from Client.Dashboard.View.arrow import Arrow
 from Client.Dashboard.View.terminal import Terminal
 from Client.communication_manager import CommunicationManager
+from Client.state_manager import StateManager
 
 SERVER_IP = "127.0.0.1"
 SERVER_PORT = "5000"
@@ -70,7 +71,7 @@ class Dashboard:
         self.street_height = self.win_height / 3
         self.street_pos = [0, self.win_height / 3]
         self.player_car = Car(self.street_width - 250, self.win_height - self.terminal_height - 100, self.block_size, self.max_car_speed, 'player')
-        self.path = None
+        StateManager.get_instance().set_state('path', None)
         self.path_km = 0
         self.old_car_speed = 0
         self.old_timestamp = None
@@ -94,7 +95,7 @@ class Dashboard:
         self.sim = simulation
 
     def end_path(self):
-        self.path = None
+        StateManager.get_instance().set_state('path', None)
         self.path_km = 0
         self.old_car_speed = 0
         self.old_timestamp = None
@@ -116,7 +117,7 @@ class Dashboard:
             self.terminal.write("Something went wrong")
             return
         elif res['status'] == 0:
-            self.path = json_to_path(res['path'])
+            path = json_to_path(res['path'])
         elif res['status'] == -1:
             self.terminal.write("Not valid destination")
             return
@@ -128,8 +129,7 @@ class Dashboard:
             return
 
         self.terminal.write("Path found ")
-        GPS.get_instance().set_path(self.path)
-        msg = print_path(self.path)
+        msg = print_path(path)
         self.terminal.write(f"length:  {msg['len']} km")
         self.terminal.write(f"estimated time: {msg['t_m']} minutes {msg['t_s']} seconds")
 
@@ -139,9 +139,10 @@ class Dashboard:
         self.travel_time = 0
         self.path_km = 0
         path_length = 0
-        for way in self.path:
+        for way in path:
             path_length += way['way'].get('length')
         self.path_progress = PathProgress(self.street_width + (self.win_width - self.street_width - 30)/2, self.street_pos[1] - 50, self.block_size, path_length)
+        StateManager.get_instance().set_state('path', path)
 
     def show(self):
         self.win.fill(pygame.Color(self.colors['black']))
@@ -154,7 +155,7 @@ class Dashboard:
 
         font = pygame.font.SysFont('times new roman', 25)
 
-        if self.path is not None:
+        if StateManager.get_instance().get_state('path') is not None:
             # needed for simulation
             if self.sim:
                 t = time.time() - self.old_timestamp
@@ -178,6 +179,8 @@ class Dashboard:
             # draw path progress
             self.path_progress.draw(self.win, self.colors, math.floor(self.path_km * 1000))
 
+            path = StateManager.get_instance().get_state('path')
+
             actual_street = None
             if position is None:
                 print("GPS coordinates not found")
@@ -186,8 +189,8 @@ class Dashboard:
                 distance = None
                 nearest_point_index = 0
                 i = 0
-                while i < len(self.path):
-                    node = self.path[i]['start_node']
+                while i < len(path):
+                    node = path[i]['start_node']
                     p = Point(node.get('lat'), node.get('lon'))
                     d = calculate_distance(position, p)
                     if distance is None or distance > d:
@@ -195,7 +198,7 @@ class Dashboard:
                         distance = d
                     i += 1
 
-                actual_street = self.path[nearest_point_index]
+                actual_street = path[nearest_point_index]
 
             # draw street name
             if actual_street is None:
@@ -216,26 +219,26 @@ class Dashboard:
             self.actual_street = actual_street
 
             # draw arrow
-            if (actual_street is not None) and (not self.path.index(actual_street) == len(self.path) - 1):
+            if (actual_street is not None) and (not path.index(actual_street) == len(path) - 1):
 
                 i = 0
                 ms = 0
-                while i < len(self.path):
-                    street = self.path[i]
-                    if i < self.path.index(actual_street) or street['way'].get('name') == actual_street['way'].get('name'):
+                while i < len(path):
+                    street = path[i]
+                    if i < path.index(actual_street) or street['way'].get('name') == actual_street['way'].get('name'):
                         ms += street['way'].get('length')
                     else:
                         break
                     i += 1
 
                 # calculate arrow direction
-                if i < len(self.path) - 1:
-                    lat1 = float(self.path[i-1]['start_node'].get('lat'))
-                    lon1 = float(self.path[i-1]['start_node'].get('lon'))
-                    lat2 = float(self.path[i - 1]['end_node'].get('lat'))
-                    lon2 = float(self.path[i - 1]['end_node'].get('lon'))
-                    lat3 = float(self.path[i]['start_node'].get('lat'))
-                    lon3 = float(self.path[i]['start_node'].get('lon'))
+                if i < len(path) - 1:
+                    lat1 = float(path[i-1]['start_node'].get('lat'))
+                    lon1 = float(path[i-1]['start_node'].get('lon'))
+                    lat2 = float(path[i - 1]['end_node'].get('lat'))
+                    lon2 = float(path[i - 1]['end_node'].get('lon'))
+                    lat3 = float(path[i]['start_node'].get('lat'))
+                    lon3 = float(path[i]['start_node'].get('lon'))
                     p1 = (lat1, lon1)
                     p2 = (lat2, lon2)
                     p3 = (lat3, lon3)

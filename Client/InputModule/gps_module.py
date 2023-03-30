@@ -2,6 +2,7 @@ from Utility.utility_functions import calculate_distance
 from Utility.point import Point
 from math import radians, sin, cos, asin, atan2, degrees
 import time
+from Client.state_manager import StateManager
 
 DEFAULT_LAT = '42.3333569'
 DEFAULT_LON = '12.2692692'
@@ -12,7 +13,6 @@ class GPS:
     gps_simulator = None
 
     def __init__(self):
-        self.path = None
         self.actual_node = 0
         self.period = 1
         self.time = None
@@ -32,7 +32,6 @@ class GPS:
         return self.last_pos
 
     def set_path(self, path):
-        self.path = path
         self.actual_node = 0
         node = path[0]['start_node']
         self.last_pos = Point(node.get('lat'), node.get('lon'))
@@ -45,6 +44,9 @@ class GPS:
         self.time = time.time()
 
         if sim:
+
+            path = StateManager.get_instance().get_state('path')
+
             if self.last_pos is None or travelled_km == -1:
                 self.last_pos = Point(DEFAULT_LAT, DEFAULT_LON)
                 print(f"GPS pos: {self.last_pos}")
@@ -52,24 +54,24 @@ class GPS:
 
             i = 0
             ms = 0
-            while i < len(self.path):
+            while i < len(path):
                 if i < self.actual_node:
-                    ms += self.path[i]['way'].get('length')
+                    ms += path[i]['way'].get('length')
                 else:
-                    distance = self.path[self.actual_node]['way'].get('length')
+                    distance = path[self.actual_node]['way'].get('length')
                     if (travelled_km * 1000) <= ms + distance:
                         break
                     else:
                         ms += distance
-                        if i + 1 < len(self.path):
+                        if i + 1 < len(path):
                             self.actual_node += 1
                 i += 1
 
-            p1 = Point(self.path[self.actual_node]['start_node'].get('lat'), self.path[self.actual_node]['start_node'].get('lon'))
-            if self.actual_node >= len(self.path) - 1:
+            p1 = Point(path[self.actual_node]['start_node'].get('lat'), path[self.actual_node]['start_node'].get('lon'))
+            if self.actual_node >= len(path) - 1:
                 self.last_pos = p1
                 return p1
-            p2 = Point(self.path[self.actual_node + 1]['start_node'].get('lat'), self.path[self.actual_node + 1]['start_node'].get('lon'))
+            p2 = Point(path[self.actual_node + 1]['start_node'].get('lat'), path[self.actual_node + 1]['start_node'].get('lon'))
 
             lat1 = float(p1.get_lat())
             lon1 = float(p1.get_lon())
