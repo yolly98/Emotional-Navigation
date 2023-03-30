@@ -7,7 +7,7 @@ from Server.Persistence.graph_manager import GraphManager
 class MapEngine:
 
     @staticmethod
-    def calculate_path(source, destination, estimated=True):
+    def calculate_path(source, destination, estimated=True, excluded_way=-1):
 
         graph_manager = GraphManager.get_instance()
         graph_manager.open_connection()
@@ -26,7 +26,7 @@ class MapEngine:
             return None
         destination_id = destination.get('id')
         if estimated:
-            ret = graph_manager.get_estimated_path(source_id, destination_id)
+            ret = graph_manager.get_estimated_path(source_id, destination_id, excluded_way)
         else:
             ret = graph_manager.get_path(source_id, destination_id)
         graph_manager.close_connection()
@@ -54,31 +54,44 @@ class MapEngine:
         return path
 
     @staticmethod
-    def calculate_path_avoid_street(path, source, destination, way_name):
+    def calculate_path_avoid_way_name(source, destination, way_name, estimated=True):
 
         graph_manager = GraphManager.get_instance()
         sql_manager = MapSqlManager.get_instance()
 
         sql_manager.open_connection()
         ways = sql_manager.get_instance().get_way_by_name(way_name)
+
+        graph_manager.open_connection()
+
+        if estimated:
+            distance = None
+            excluded_way_id = None
+            for way in ways:
+                node = sql_manager.get_instance().get_node(way.get('start_node'))
+                node = Point(node.get('lat'), node.get('lon'))
+                d = calculate_distance(source, node)
+                if distance is None or d < distance:
+                    distance = d
+                    excluded_way_id = way.get('id')
+
+            res = MapEngine.calculate_path(source, destination, True, excluded_way_id)
+        else:
+            # update length with big value to avoid the way in the path calculation
+            for way in ways:
+                graph_manager.update_way_length(way.get('id'), 1000)
+            graph_manager.close_connection()
+
+            res = MapEngine.calculate_path(source, destination, False)
+
+            graph_manager.open_connection()
+            # restore updated length
+            for way in ways:
+                graph_manager.update_way_length(way.get('id'), way.get('length'))
+
         sql_manager.get_instance().close_connection()
-
-        graph_manager.open_connection()
-        # update length with big value to avoid the way in the path calculation
-        for way in ways:
-            graph_manager.update_way_length(way.get('id'), 1000)
         graph_manager.close_connection()
 
-        res = MapEngine.calculate_path(source, destination, False)
-
-        graph_manager.open_connection()
-        # restore updated length
-        for way in ways:
-            graph_manager.update_way_length(way.get('id'), way.get('length'))
-        graph_manager.close_connection()
-
-        if path == res:
-            return None
         return res
 
 # --------------------------------
@@ -93,19 +106,26 @@ if __name__ == "__main__":
     if path:
         print_path(path)
     print(f"air distance: {calculate_distance(source, destination)} km")
-    if path:
-        visualize_path(path, True)
+    # if path:
+    #    visualize_path(path, True)
 
     path = MapEngine.calculate_path(source, destination, False)
     if path:
         print_path(path)
     print(f"air distance: {calculate_distance(source, destination)} km")
-    if path:
-        visualize_path(path, True)
+    # if path:
+    #    visualize_path(path, True)
 
-    path = MapEngine.calculate_path_avoid_street(path, source, destination, "Via Fontanasecca")
+    path = MapEngine.calculate_path_avoid_way_name(source, destination, "Via Fontanasecca", True)
     if path:
         print_path(path)
     print(f"air distance: {calculate_distance(source, destination)} km")
+    # if path:
+    #   visualize_path(path, True)
+
+    path = MapEngine.calculate_path_avoid_way_name(source, destination, "Via Fontanasecca", False)
     if path:
-       visualize_path(path, True)
+        print_path(path)
+    print(f"air distance: {calculate_distance(source, destination)} km")
+    # if path:
+    #    visualize_path(path, True)
