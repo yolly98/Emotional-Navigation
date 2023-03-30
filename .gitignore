@@ -1,1 +1,3 @@
 __pycache__/
+**/users_images/*
+!**/users_images/.gitkeep

@@ -1,18 +1,120 @@
 from deepface import DeepFace
 import time
 import cv2
+import os
+
+DEFAULT_USER_ID = 0
 
 
 class EmotionDetector:
 
-    def __init__(self, camera=-1, iterations=1, wait_time=1):
+    emotion_detector = None
+
+    def __init__(self):
+        self.camera = -1
+        self.iterations = 0
+        self.wait_time = 0
+        self.period = 0
+        self.user_detection_attempts = 0
+
+    @staticmethod
+    def get_instance():
+        if EmotionDetector.emotion_detector is None:
+            EmotionDetector.emotion_detector = EmotionDetector()
+        return EmotionDetector.emotion_detector
+
+    def configure(self, camera, iterations, wait_time, period, user_detection_attempts):
         self.camera = camera
         self.iterations = iterations
         self.wait_time = wait_time
-        pass
+        self.period = period
+        self.user_detection_attempts = user_detection_attempts
 
-    def set_camera(self, camera):
-        self.camera = camera
+    def get_picture(self):
+        if self.camera == -1:
+            print("camera not setted")
+            return
+
+        video = cv2.VideoCapture(self.camera)
+        if video.isOpened:
+            pass
+        else:
+            print("cam not available")
+            exit(1)
+
+        while True:
+            _, frame = video.read()
+            cv2.imshow("Your face", frame)
+            key = cv2.waitKey(1)
+            if key == ord("s"):
+                cv2.imwrite(f"users_images/user{DEFAULT_USER_ID}.png", frame)
+                break
+
+        video.release()
+        cv2.destroyAllWindows()
+
+    def find_face(self):
+
+        if self.camera == -1:
+            print("camera not setted")
+            return
+
+        video = cv2.VideoCapture(self.camera)
+        if video.isOpened:
+            pass
+        else:
+            print("cam not available")
+            exit(1)
+
+        while True:
+
+            time.sleep(self.wait_time)
+
+            _, frame = video.read()
+
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            face_cascade = cv2.CascadeClassifier("models/haarcascade_frontalface_default.xml")
+            faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5)
+
+            if len(faces) > 0:
+                break
+
+        video.release()
+
+    def verify_user(self):
+
+        if self.camera == -1:
+            print("camera not setted")
+            return
+
+        video = cv2.VideoCapture(self.camera)
+        if video.isOpened:
+            pass
+        else:
+            print("cam not available")
+            exit(1)
+
+        user = None
+        for file_name in os.listdir('users_images'):
+            if file_name.endswith(".png"):
+                verifications = 0
+                for i in range(self.user_detection_attempts):
+
+                    time.sleep(self.wait_time)
+
+                    _, frame = video.read()
+
+                    res = DeepFace.verify(frame, f"users_images/{file_name}", enforce_detection=False)
+                    if res['verified']:
+                        verifications += 1
+                    if verifications > 3:
+                        user = file_name.replace('.png', '')
+                if user is not None:
+                    break
+
+        video.release()
+
+        return user
 
     def get_emotion(self):
 
@@ -30,6 +132,7 @@ class EmotionDetector:
         emotions = {}
         dominant_emotion = None
         dominant_emotion_value = 0
+
         for i in range(self.iterations):
 
             time.sleep(self.wait_time)
@@ -41,14 +144,16 @@ class EmotionDetector:
             except:
                 print("no face")
                 continue
+            result = analyze[0]
 
-            for emotion in analyze[0]['emotion']:
+            print(result['dominant_emotion'])
+            for emotion in result['emotion']:
                 if emotion in emotions:
-                    emotions[emotion] += analyze[0]['emotion'][emotion]
+                    emotions[emotion] += result['emotion'][emotion]
                 else:
-                    emotions[emotion] = analyze[0]['emotion'][emotion]
+                    emotions[emotion] = result['emotion'][emotion]
 
-                if dominant_emotion is None or  dominant_emotion_value < emotions[emotion]:
+                if dominant_emotion is None or dominant_emotion_value < emotions[emotion]:
                     dominant_emotion = emotion
                     dominant_emotion_value = emotions[emotion]
 
@@ -66,9 +171,26 @@ class EmotionDetector:
                 print(f'Cam {i}: {cam.getBackendName()} not available')
             cam.release()
 
+    def run(self):
+
+        print("Waiting a face ...")
+        self.find_face()
+        print("Face Detected")
+        print("User recognition ...")
+        user = self.verify_user()
+        if user is not None:
+            print(f"Hi {user}")
+        else:
+            print("No User Recognized, save your picture to create a new user (press 's')")
+            self.get_picture()
+            print("Picture saved")
+
+        while True:
+            print(f"Detected: {self.get_emotion()}")
+            time.sleep(self.period)
+
 
 if __name__ == "__main__":
-    emotion_detector = EmotionDetector(1, 20, 0.3)
-    EmotionDetector.print_available_cameras()
-    emotion = emotion_detector.get_emotion()
-    print(f"Detected: {emotion}")
+    EmotionDetector.get_instance().configure(0, 20, 0.3, 60, 20)
+    # EmotionDetector.print_available_cameras()
+    EmotionDetector.get_instance().run()
