@@ -54,7 +54,7 @@ class FaceRecognitionModule:
 
         if self.camera == -1:
             print("camera not setted")
-            return
+            return False
 
         video = cv2.VideoCapture(self.camera)
         if video.isOpened:
@@ -77,6 +77,7 @@ class FaceRecognitionModule:
                 break
 
         video.release()
+        return True
 
     def verify_user(self, username):
 

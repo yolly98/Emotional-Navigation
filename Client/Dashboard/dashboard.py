@@ -82,6 +82,7 @@ class Dashboard:
         self.path_progress = None
         self.terminal = Terminal(0, self.win_height - self.terminal_height, self.terminal_height, 20, self.colors)
         self.terminal.write("Press something to start")
+        FaceRecognitionModule.get_instance().configure(0, 20, 0.3, 60, 20)
 
     @staticmethod
     def get_instance():
