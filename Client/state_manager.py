@@ -2,7 +2,6 @@ from threading import RLock
 from copy import copy
 from Utility.point import Point
 
-
 class StateManager:
 
     state_manager = None
@@ -18,6 +17,8 @@ class StateManager:
         self.status['is_sim'] = True
         # using RLock, many thread can read the state in the same time, but only one can write in the same time
         self.lock = RLock()
+        self.status['state'] = 'init'
+        self.status['username'] = None
 
     @staticmethod
     def get_instance():

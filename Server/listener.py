@@ -3,6 +3,7 @@ from Server.Persistence.map_sql_manager import MapSqlManager
 from Server.Core.map_engine import MapEngine
 from Utility.point import Point
 from Utility.utility_functions import path_to_json, calculate_distance
+from Server.Persistence.history_manager import HistoryManager
 
 
 class Listener:
@@ -67,6 +68,30 @@ def get_path():
     return {"status": 0, "path": path_to_json(path)}
 
 
+@app.get('/user')
+def get_user():
+    if request.json is None:
+        return {'error': 'No JSON request received'}, 500
+
+    received_json = request.json
+    username = received_json['username']
+    image = HistoryManager.get_instance().get_user_image(username)
+    if image is None:
+        return {"status": -1, "image": None}
+    else:
+        return {"status": 0, "image": image}
+
+
+@app.post('/user')
+def post_user():
+    if request.json is None:
+        return {'error': 'No JSON request received'}, 500
+
+    received_json = request.json
+    print(received_json)
+
+    return {"status": 0}
+
 @app.post('/history')
 def post_history():
     if request.json is None:
@@ -74,9 +99,4 @@ def post_history():
 
     received_json = request.json
 
-    if received_json['type'] == "get_path":
-
-        return {"status": 0}
-
-    else:
-        return {"status": -10}, 200
+    return {"status": 0}

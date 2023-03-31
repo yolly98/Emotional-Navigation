@@ -1,14 +1,11 @@
 from deepface import DeepFace
 import time
 import cv2
-import os
-
-DEFAULT_USER_ID = 0
 
 
-class EmotionDetector:
+class FaceRecognitionModule:
 
-    emotion_detector = None
+    face_recognition_module = None
 
     def __init__(self):
         self.camera = -1
@@ -19,18 +16,18 @@ class EmotionDetector:
 
     @staticmethod
     def get_instance():
-        if EmotionDetector.emotion_detector is None:
-            EmotionDetector.emotion_detector = EmotionDetector()
-        return EmotionDetector.emotion_detector
+        if FaceRecognitionModule.face_recognition_module is None:
+            FaceRecognitionModule.face_recognition_module = FaceRecognitionModule()
+        return FaceRecognitionModule.face_recognition_module
 
-    def configure(self, camera, iterations, wait_time, period, user_detection_attempts):
+    def configure(self, camera, iterations, wait_time, period, user_detection_attempts=20):
         self.camera = camera
         self.iterations = iterations
         self.wait_time = wait_time
         self.period = period
         self.user_detection_attempts = user_detection_attempts
 
-    def get_picture(self):
+    def get_picture(self, username):
         if self.camera == -1:
             print("camera not setted")
             return
@@ -47,7 +44,7 @@ class EmotionDetector:
             cv2.imshow("Your face", frame)
             key = cv2.waitKey(1)
             if key == ord("s"):
-                cv2.imwrite(f"users_images/user{DEFAULT_USER_ID}.png", frame)
+                cv2.imwrite(f"users_images/{username}.png", frame)
                 break
 
         video.release()
@@ -81,7 +78,7 @@ class EmotionDetector:
 
         video.release()
 
-    def verify_user(self):
+    def verify_user(self, username):
 
         if self.camera == -1:
             print("camera not setted")
@@ -94,27 +91,22 @@ class EmotionDetector:
             print("cam not available")
             exit(1)
 
-        user = None
-        for file_name in os.listdir('users_images'):
-            if file_name.endswith(".png"):
-                verifications = 0
-                for i in range(self.user_detection_attempts):
+        verifications = 0
+        for i in range(self.user_detection_attempts):
 
-                    time.sleep(self.wait_time)
+            time.sleep(self.wait_time)
 
-                    _, frame = video.read()
+            _, frame = video.read()
 
-                    res = DeepFace.verify(frame, f"users_images/{file_name}", enforce_detection=False)
-                    if res['verified']:
-                        verifications += 1
-                    if verifications > 3:
-                        user = file_name.replace('.png', '')
-                if user is not None:
-                    break
+            res = DeepFace.verify(frame, f"users_images/{username}.png", enforce_detection=False)
+            if res['verified']:
+                verifications += 1
+            if verifications > 3:
+                video.release()
+                return True
 
         video.release()
-
-        return user
+        return False
 
     def get_emotion(self):
 
@@ -172,25 +164,12 @@ class EmotionDetector:
             cam.release()
 
     def run(self):
-
-        print("Waiting a face ...")
-        self.find_face()
-        print("Face Detected")
-        print("User recognition ...")
-        user = self.verify_user()
-        if user is not None:
-            print(f"Hi {user}")
-        else:
-            print("No User Recognized, save your picture to create a new user (press 's')")
-            self.get_picture()
-            print("Picture saved")
-
         while True:
             print(f"Detected: {self.get_emotion()}")
             time.sleep(self.period)
 
 
 if __name__ == "__main__":
-    EmotionDetector.get_instance().configure(0, 20, 0.3, 60, 20)
+    FaceRecognitionModule.get_instance().configure(0, 20, 0.3, 60, 20)
     # EmotionDetector.print_available_cameras()
-    EmotionDetector.get_instance().run()
+    FaceRecognitionModule.get_instance().run()

@@ -11,6 +11,7 @@ from Client.Dashboard.View.arrow import Arrow
 from Client.Dashboard.View.terminal import Terminal
 from Client.communication_manager import CommunicationManager
 from Client.state_manager import StateManager
+from Client.InputModule.face_recognition_module import FaceRecognitionModule
 
 SERVER_IP = "127.0.0.1"
 SERVER_PORT = "5000"
@@ -80,7 +81,7 @@ class Dashboard:
 
         self.path_progress = None
         self.terminal = Terminal(0, self.win_height - self.terminal_height, self.terminal_height, 20, self.colors)
-        self.terminal.write("Insert Destination")
+        self.terminal.write("Press something to start")
 
     @staticmethod
     def get_instance():
@@ -108,7 +109,7 @@ class Dashboard:
         request['source_coord'] = StateManager.get_instance().get_state('last_pos').to_json()
 
         res = CommunicationManager.get_instance().send(SERVER_IP, SERVER_PORT, "GET", request, "path")
-        if res is None or "":
+        if res is None or res == "":
             self.terminal.write("Something went wrong")
             return
         elif res['status'] == 0:
@@ -332,6 +333,70 @@ class Dashboard:
     def wait(self):
         self.clock.tick(self.update_win_rate)
 
+    def autentication(self, username):
+
+        StateManager.get_instance().set_state('username', username)
+        is_stored = True
+        try:
+            with open(f"users_images/{username}.png", "r") as file:
+                pass
+        except FileNotFoundError:
+            is_stored = False
+
+        if not is_stored:
+            request = dict()
+            request['username'] = username
+            res = CommunicationManager.get_instance().send(SERVER_IP, SERVER_PORT, "GET", request, "user")
+            if res is None or res == "":
+                self.terminal.write("Something went wrong")
+                return
+            elif res['status'] == 0:
+                image = res['image']
+                with open(f"users_images/{username}.png", "wb") as file:
+                    file.write(image)
+            if res['status'] == -1:
+                self.terminal.write("User not exists")
+                self.terminal.write("Do you want to create a new user? [y/n]")
+                StateManager.get_instance().set_state('state', 'new_user')
+                return
+            else:
+                self.terminal.write("Something went wrong")
+                return
+
+        if FaceRecognitionModule.get_instance().verify_user(username):
+            self.terminal.write(f"Hi {username}")
+            StateManager.get_instance().set_state('state', 'navigator')
+        else:
+            self.terminal.write("User not recognized")
+            StateManager.get_instance().set_state('state', 'init')
+            return
+
+    def new_user(self, res):
+        if res == 's':
+            username = StateManager.get_instance().get_state('username')
+            self.terminal.write("Press 's' to save a picture")
+            FaceRecognitionModule.get_instance().get_picture(username)
+            image = None
+            with open(f"{username}.png", "rb") as file:
+                image = file.read()
+
+            request = dict()
+            request['username'] = username
+            request['image'] = image
+            res = CommunicationManager.get_instance().send(SERVER_IP, SERVER_PORT, "POST", request, "user")
+            if res is None or res == "" or res < 0:
+                self.terminal.write("Something went wrong")
+                return
+            elif res['status'] == 0:
+                pass
+            StateManager.get_instance().set_state('state', 'aut')
+            self.autentication(username)
+        elif res == 'n':
+            StateManager.get_instance().set_state('state', 'init')
+        else:
+            self.terminal.write("Not valid command, press 'y' or 'n' to create a new user")
+
+
     def get_event(self):
 
         events = pygame.event.get()
@@ -342,7 +407,18 @@ class Dashboard:
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
-                    self.get_path(self.terminal.get_value())
+                    if StateManager.get_instance().get_state('state') == 'init':
+                        self.terminal.write("Waiting a face ...")
+                        FaceRecognitionModule.get_instance().find_face()
+                        self.terminal.write("Face detected")
+                        self.terminal.write("Insert username")
+                        StateManager.get_instance().set_state('state', 'aut')
+                    elif StateManager.get_instance().get_state('state') == 'aut':
+                        self.autentication(self.terminal.get_value())
+                    elif StateManager.get_instance().get_state('state') == 'new_user':
+                        self.new_user(self.terminal.get_value())
+                    elif StateManager.get_instance().get_state('state') == 'navigator':
+                        self.get_path(self.terminal.get_value())
                 if event.key == pygame.K_UP:
                     self.commands['up'] = True
                 if event.key == pygame.K_DOWN:
