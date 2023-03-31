@@ -1,4 +1,4 @@
-from requests import post, exceptions
+from requests import post, get,  exceptions
 
 
 class CommunicationManager:
@@ -14,11 +14,14 @@ class CommunicationManager:
             CommunicationManager._instance = CommunicationManager()
         return CommunicationManager._instance
 
-    def send(self, ip, port, data):
-        connection_string = f'http://{ip}:{port}/json'
+    def send(self, ip, port, type, data, resource):
+        connection_string = f'http://{ip}:{port}/{resource}'
         response = None
         try:
-            response = post(connection_string, json=data)
+            if type == "GET":
+                response = get(connection_string, json=data)
+            elif type == "POST":
+                response = post(connection_string, json=data)
         except exceptions.RequestException:
             print("Endpoint system unreachable")
             return False

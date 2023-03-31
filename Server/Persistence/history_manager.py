@@ -85,6 +85,36 @@ class HistoryManager:
                 return False
             return True
 
+    def create_user(self, username, image):
+        if self.conn is None:
+            return False
+        else:
+            cursor = self.conn.cursor(prepared=True)
+            query = "INSERT INTO user VALUES( %s, %s, %s)"
+            try:
+                cursor.execute(query, (0, username, image))
+                self.conn.commit()
+            except mysql.connector.Error as e:
+                print(f"Mysql Execution Error [{e}]")
+                return False
+            return True
+
+    def get_user_image(self, username):
+        if self.conn is None:
+            return False
+        else:
+            cursor = self.conn.cursor(prepared=True)
+            query = "SELECT image FROM user WHERE username = %s"
+            try:
+                cursor.execute(query, (username))
+                self.conn.commit()
+            except mysql.connector.Error as e:
+                print(f"Mysql Execution Error [{e}]")
+                return None
+
+            image = cursor.fetchone()
+            return image
+
 
 if __name__ == '__main__':
     history = HistoryManager().get_instance()

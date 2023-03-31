@@ -30,8 +30,45 @@ class Listener:
 app = Listener.get_instance().get_app()
 
 
-@app.post('/json')
-def post_json():
+@app.get('/path')
+def get_path():
+    if request.json is None:
+        return {'error': 'No JSON request received'}, 500
+
+    received_json = request.json
+
+    destination_name = received_json['destination_name']
+    source = Point(received_json['source_coord']['lat'], received_json['source_coord']['lon'])
+    sql_map = MapSqlManager.get_instance()
+    sql_map.open_connection()
+
+    # find destination coordinates
+    ways = sql_map.get_way_by_name(destination_name)
+    if not ways:
+        return {"status": -1} # invalid destination
+
+    # get the way with the start node nearest the source node
+    distance = None
+    destination = None
+    for way in ways:
+        node = sql_map.get_node(way.get('start_node'))
+        node = Point(node.get('lat'), node.get('lon'))
+        d = calculate_distance(source, node)
+        if distance is None or d < distance:
+            distance = d
+            destination = node
+
+    sql_map.close_connection()
+
+    path = MapEngine.calculate_path(source, destination)
+    if path is None:
+        return {"status": -2} # path not found
+
+    return {"status": 0, "path": path_to_json(path)}
+
+
+@app.post('/history')
+def post_history():
     if request.json is None:
         return {'error': 'No JSON request received'}, 500
 
@@ -39,34 +76,7 @@ def post_json():
 
     if received_json['type'] == "get_path":
 
-        destination_name = received_json['destination_name']
-        source = Point(received_json['source_coord']['lat'], received_json['source_coord']['lon'])
-        sql_map = MapSqlManager.get_instance()
-        sql_map.open_connection()
-
-        # find destination coordinates
-        ways = sql_map.get_way_by_name(destination_name)
-        if not ways:
-            return {"status": -1} # invalid destination
-
-        # get the way with the start node nearest the source node
-        distance = None
-        destination = None
-        for way in ways:
-            node = sql_map.get_node(way.get('start_node'))
-            node = Point(node.get('lat'), node.get('lon'))
-            d = calculate_distance(source, node)
-            if distance is None or d < distance:
-                distance = d
-                destination = node
-
-        sql_map.close_connection()
-
-        path = MapEngine.calculate_path(source, destination)
-        if path is None:
-            return {"status": -2} # path not found
-
-        return {"status": 0, "path": path_to_json(path)}
+        return {"status": 0}
 
     else:
         return {"status": -10}, 200

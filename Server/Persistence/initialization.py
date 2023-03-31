@@ -98,8 +98,10 @@ def load_map():
     # table creations
     mysql_cursor.execute(
         "CREATE TABLE IF NOT EXISTS user ( \
-        id BIGINT, \
+        id BIGINT AUTO_INCREMENT, \
         username VARCHAR(100), \
+        image BLOB, \
+        UNIQUE(username), \
         PRIMARY KEY (id)\
         ) "
     )
