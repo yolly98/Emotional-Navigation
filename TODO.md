@@ -2,24 +2,28 @@
 
 ## importante
 * [x] nATTENZIONE !   qunado prende il nearest point potrebbe prendre un punto di un edificio, e poi non trovare il path!
+* [ ] sostituire mysql con mongo
 
 ## map engine
 * [x] le deviazioni non funzionano
 * [x] ricaricare il db togliendo le strade e i nodi di edifici (strade senza name, ref, alt_name)
 * [x] fare funzione che ricava posizione nella mappa tramite coordinate (trova il nodo con le coordinate piu vicine)
+* [ ] migliorare prestazioni !!!IMPORTANTE
 
 ## dashboard
 * [x] inserire due input per indicare partenza e destinazione
 * [x] rendere la simulazione la dashboard stessa
+* [ ] integrare riconoscimento comandi vocali
 
 ## simulatore di guida
 * [x] aggiungere frecce per curve
 * [x] mettere avanzamento percorso
 * [x] crash quando finisce il percorso
+* [ ] aggiungere emoji mood attuale (in alto a dx)
 
 ## rilevatore emozioni
 * [x] creare modulo per rilevatore emozioni
-* [ ] migliorare prestazioni
+* [ ] migliorare prestazioni !!!IMPORTANTE
 
 ## storico
 * [x] capire come salvare lo storico
