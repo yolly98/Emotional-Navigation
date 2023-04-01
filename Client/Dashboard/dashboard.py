@@ -12,6 +12,7 @@ from Client.Dashboard.View.terminal import Terminal
 from Client.communication_manager import CommunicationManager
 from Client.state_manager import StateManager
 from Client.InputModule.face_recognition_module import FaceRecognitionModule
+import base64
 
 SERVER_IP = "127.0.0.1"
 SERVER_PORT = "5000"
@@ -337,9 +338,10 @@ class Dashboard:
     def autentication(self, username):
 
         StateManager.get_instance().set_state('username', username)
+        root_path = StateManager.get_instance().get_state('root_path')
         is_stored = True
         try:
-            with open(f"users_images/{username}.png", "r") as file:
+            with open(f"{root_path}/InputModule/UserImages/{username}.png", "r") as file:
                 pass
         except FileNotFoundError:
             is_stored = False
@@ -352,10 +354,10 @@ class Dashboard:
                 self.terminal.write("Something went wrong")
                 return
             elif res['status'] == 0:
-                image = res['image']
-                with open(f"users_images/{username}.png", "wb") as file:
+                image = base64.b64decode(res['image'].encode('utf-8'))
+                with open(f"{root_path}/InputModule/UserImages/{username}.png", "wb") as file:
                     file.write(image)
-            if res['status'] == -1:
+            elif res['status'] == -1:
                 self.terminal.write("User not exists")
                 self.terminal.write("Do you want to create a new user? [y/n]")
                 StateManager.get_instance().set_state('state', 'new_user')
@@ -367,25 +369,28 @@ class Dashboard:
         if FaceRecognitionModule.get_instance().verify_user(username):
             self.terminal.write(f"Hi {username}")
             StateManager.get_instance().set_state('state', 'navigator')
+            self.terminal.write("Where we go?")
         else:
             self.terminal.write("User not recognized")
             StateManager.get_instance().set_state('state', 'init')
             return
 
     def new_user(self, res):
-        if res == 's':
+        if res == 'y':
             username = StateManager.get_instance().get_state('username')
             self.terminal.write("Press 's' to save a picture")
+            self.show()
             FaceRecognitionModule.get_instance().get_picture(username)
             image = None
-            with open(f"{username}.png", "rb") as file:
+            root_path = StateManager.get_instance().get_state('root_path')
+            with open(f"{root_path}/InputModule/UserImages/{username}.png", "rb") as file:
                 image = file.read()
 
             request = dict()
             request['username'] = username
-            request['image'] = image
+            request['image'] = base64.b64encode(image).decode('utf-8')
             res = CommunicationManager.get_instance().send(SERVER_IP, SERVER_PORT, "POST", request, "user")
-            if res is None or res == "" or res < 0:
+            if res is None or res == "" or res['status'] < 0:
                 self.terminal.write("Something went wrong")
                 return
             elif res['status'] == 0:
@@ -393,7 +398,8 @@ class Dashboard:
             StateManager.get_instance().set_state('state', 'aut')
             self.autentication(username)
         elif res == 'n':
-            StateManager.get_instance().set_state('state', 'init')
+            StateManager.get_instance().set_state('emotion_module', True)
+            StateManager.get_instance().set_state('state', 'navigator')
         else:
             self.terminal.write("Not valid command, press 'y' or 'n' to create a new user")
 
@@ -410,6 +416,7 @@ class Dashboard:
                 if event.key == pygame.K_RETURN:
                     if StateManager.get_instance().get_state('state') == 'init':
                         self.terminal.write("Waiting a face ...")
+                        self.show()
                         FaceRecognitionModule.get_instance().find_face()
                         self.terminal.write("Face detected")
                         self.terminal.write("Insert username")

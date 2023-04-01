@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 import mysql.connector
+import base64
 
 
 class HistoryManager:
@@ -90,13 +91,18 @@ class HistoryManager:
             return False
         else:
             cursor = self.conn.cursor(prepared=True)
-            query = "INSERT INTO user VALUES( %s, %s, %s)"
+            query = "INSERT INTO user VALUES( %s, %s)"
             try:
-                cursor.execute(query, (0, username, image))
+                cursor.execute(query, (0, username))
                 self.conn.commit()
             except mysql.connector.Error as e:
                 print(f"Mysql Execution Error [{e}]")
                 return False
+
+            decoded_image = image = base64.b64decode(image.encode('utf-8'))
+            with open(f"Persistence/Resources/UserImages/{username}.png", "wb") as file:
+                file.write(decoded_image)
+
             return True
 
     def get_user_image(self, username):
@@ -104,16 +110,20 @@ class HistoryManager:
             return False
         else:
             cursor = self.conn.cursor(prepared=True)
-            query = "SELECT image FROM user WHERE username = %s"
+            query = "SELECT * FROM user WHERE username = %s"
             try:
-                cursor.execute(query, (username))
-                self.conn.commit()
+                cursor.execute(query, (username,))
             except mysql.connector.Error as e:
                 print(f"Mysql Execution Error [{e}]")
                 return None
 
-            image = cursor.fetchone()
-            return image
+            if cursor.fetchone():
+                image = None
+                with open(f"Persistence/Resources/UserImages/{username}.png", "rb") as file:
+                    image = file.read()
+                return base64.b64encode(image).decode('utf-8')
+            else:
+                return None
 
 
 if __name__ == '__main__':

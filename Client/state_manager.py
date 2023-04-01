@@ -1,6 +1,7 @@
 from threading import RLock
 from copy import copy
 from Utility.point import Point
+import os
 
 class StateManager:
 
@@ -19,6 +20,8 @@ class StateManager:
         self.lock = RLock()
         self.status['state'] = 'init'
         self.status['username'] = None
+        self.status['root_path'] = os.path.abspath(os.getcwd())
+        self.status['emotion_module'] = False
 
     @staticmethod
     def get_instance():

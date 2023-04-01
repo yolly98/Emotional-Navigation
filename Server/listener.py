@@ -75,7 +75,9 @@ def get_user():
 
     received_json = request.json
     username = received_json['username']
+    HistoryManager.get_instance().open_connection()
     image = HistoryManager.get_instance().get_user_image(username)
+    HistoryManager.get_instance().close_connection()
     if image is None:
         return {"status": -1, "image": None}
     else:
@@ -88,9 +90,17 @@ def post_user():
         return {'error': 'No JSON request received'}, 500
 
     received_json = request.json
-    print(received_json)
+    username = received_json['username']
+    image = received_json['image']
+    HistoryManager.get_instance().open_connection()
+    res = HistoryManager.get_instance().create_user(username, image)
+    HistoryManager.get_instance().close_connection()
 
-    return {"status": 0}
+    if res:
+        return {"status": 0}
+    else:
+        return {"status": -1}
+
 
 @app.post('/history')
 def post_history():

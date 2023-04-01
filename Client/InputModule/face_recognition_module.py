@@ -1,6 +1,7 @@
 from deepface import DeepFace
 import time
 import cv2
+from Client.state_manager import StateManager
 
 
 class FaceRecognitionModule:
@@ -39,12 +40,13 @@ class FaceRecognitionModule:
             print("cam not available")
             exit(1)
 
+        root_path = StateManager.get_instance().get_state('root_path')
         while True:
             _, frame = video.read()
             cv2.imshow("Your face", frame)
             key = cv2.waitKey(1)
             if key == ord("s"):
-                cv2.imwrite(f"users_images/{username}.png", frame)
+                cv2.imwrite(f"{root_path}/InputModule/UserImages/{username}.png", frame)
                 break
 
         video.release()
@@ -70,7 +72,8 @@ class FaceRecognitionModule:
             _, frame = video.read()
 
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            face_cascade = cv2.CascadeClassifier("models/haarcascade_frontalface_default.xml")
+            root_path = StateManager.get_instance().get_state('root_path')
+            face_cascade = cv2.CascadeClassifier(f"{root_path}/InputModule/models/haarcascade_frontalface_default.xml")
             faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5)
 
             if len(faces) > 0:
@@ -99,7 +102,8 @@ class FaceRecognitionModule:
 
             _, frame = video.read()
 
-            res = DeepFace.verify(frame, f"users_images/{username}.png", enforce_detection=False)
+            root_path = StateManager.get_instance().get_state('root_path')
+            res = DeepFace.verify(frame, f"{root_path}/InputModule/UserImages/{username}.png", enforce_detection=False)
             if res['verified']:
                 verifications += 1
             if verifications > 3:
@@ -173,4 +177,4 @@ class FaceRecognitionModule:
 if __name__ == "__main__":
     FaceRecognitionModule.get_instance().configure(0, 20, 0.3, 60, 20)
     # EmotionDetector.print_available_cameras()
-    FaceRecognitionModule.get_instance().run()
+    # FaceRecognitionModule.get_instance().run()
