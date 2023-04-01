@@ -1,6 +1,6 @@
 from flask import Flask, request
+from Server.Core.emotional_route_selector import EmotionalRouteSelector
 from Server.Persistence.map_sql_manager import MapSqlManager
-from Server.Core.map_engine import MapEngine
 from Utility.point import Point
 from Utility.utility_functions import path_to_json, calculate_distance
 from Server.Persistence.history_manager import HistoryManager
@@ -38,6 +38,7 @@ def get_path():
 
     received_json = request.json
 
+    username = received_json['username']
     destination_name = received_json['destination_name']
     source = Point(received_json['source_coord']['lat'], received_json['source_coord']['lon'])
     sql_map = MapSqlManager.get_instance()
@@ -61,7 +62,7 @@ def get_path():
 
     sql_map.close_connection()
 
-    path = MapEngine.calculate_path(source, destination)
+    path = EmotionalRouteSelector.get_path(username, source, destination)
     if path is None:
         return {"status": -2} # path not found
 

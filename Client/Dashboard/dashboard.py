@@ -103,9 +103,8 @@ class Dashboard:
     def get_path(self, destination_name):
 
         request = dict()
+        request['username'] = StateManager.get_instance().get_state('username')
         request['destination_name'] = destination_name
-        StateManager.get_instance().set_state('travelled_km', -1)
-        StateManager.get_instance().set_state('is_sim', True)
         request['source_coord'] = StateManager.get_instance().get_state('last_pos').to_json()
 
         server_ip = StateManager.get_instance().get_state('server_ip')

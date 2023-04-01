@@ -63,7 +63,7 @@ class HistoryManager:
 
             res = cursor.fetchall()
             if res is None:
-                return False
+                return None
 
             emotions = []
             for sample in res:

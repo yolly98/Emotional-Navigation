@@ -22,15 +22,18 @@
 * [ ] migliorare prestazioni
 
 ## storico
-* [ ] capire come salvare lo storico
+* [x] capire come salvare lo storico
 
 ## integrazione
 * [x] integrare calcolo percorsi e simulatore di guida
-* [ ] integrare simulatore guida e raccolta emozioni
-* [ ] integrare simulatore guida con salvataggio nello storico
+* [x] integrare simulatore guida e raccolta emozioni
+* [x] integrare simulatore guida con salvataggio nello storico
 
 ## emotion_route_selctor
-* [ ] da fare completamente
+* [x] da fare completamente
+
+## comandi vocali
+* [ ] implementare completamente
 
 ## sperimentazione reale
 * [x] con una sorgente non presente nel db non posso fare il get_path, cercare coordinate più vicine
