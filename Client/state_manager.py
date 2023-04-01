@@ -10,6 +10,7 @@ class StateManager:
 
     def __init__(self):
         self.status = dict()
+        self.status['fullscreen'] = False
         self.status['server_ip'] = None
         self.status['server_port'] = None
         self.status['path'] = None

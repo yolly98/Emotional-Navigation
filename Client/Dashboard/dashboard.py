@@ -28,7 +28,10 @@ class Dashboard:
         self.win_height = 600
 
         # create the window
-        self.win = pygame.display.set_mode((self.win_width, self.win_height))
+        if StateManager.get_instance().get_state('fullscreen'):
+            self.win = pygame.display.set_mode((self.win_width, self.win_height), pygame.FULLSCREEN)
+        else:
+            self.win = pygame.display.set_mode((self.win_width, self.win_height))
 
         # set window title
         pygame.display.set_caption('Smart Navigation')
