@@ -2,6 +2,7 @@ from deepface import DeepFace
 import time
 import cv2
 from Client.state_manager import StateManager
+from Client.communication_manager import CommunicationManager
 
 
 class FaceRecognitionModule:
@@ -170,7 +171,23 @@ class FaceRecognitionModule:
 
     def run(self):
         while True:
-            print(f"Detected: {self.get_emotion()}")
+            if StateManager.get_instance().get_state('emotion_module'):
+                emotion = self.get_emotion()
+                username = StateManager.get_instance().get_state('username')
+                way = StateManager.get_instance().get_state('actual_way')
+                timestamp = time.time()
+                if not (emotion and username and way and timestamp):
+                    pass
+                else:
+                    print("Get emotion success")
+                    request = dict()
+                    request['username'] = username
+                    request['way_id'] = way['way'].get('id')
+                    request['timestamp'] = timestamp
+                    request['emotion'] = emotion
+                    server_ip = StateManager.get_instance().get_state('server_ip')
+                    server_port = StateManager.get_instance().get_state('server_port')
+                    CommunicationManager.get_instance().send(server_ip, server_port, 'POST', request, 'history')
             time.sleep(self.period)
 
 

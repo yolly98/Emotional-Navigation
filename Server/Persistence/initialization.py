@@ -100,7 +100,6 @@ def load_map():
         "CREATE TABLE IF NOT EXISTS user ( \
         id BIGINT AUTO_INCREMENT, \
         username VARCHAR(100), \
-        image BLOB, \
         UNIQUE(username), \
         PRIMARY KEY (id)\
         ) "
@@ -138,7 +137,7 @@ def load_map():
         user_id BIGINT, \
         way_id BIGINT, \
         emotion VARCHAR(100), \
-        timestamp TIMESTAMP, \
+        timestamp BIGINT, \
         PRIMARY KEY (user_id, way_id, timestamp) \
         ) "
     )

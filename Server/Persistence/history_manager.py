@@ -105,6 +105,24 @@ class HistoryManager:
 
             return True
 
+    def get_user_id(self, username):
+        if self.conn is None:
+            return False
+        else:
+            cursor = self.conn.cursor(prepared=True)
+            query = "SELECT * FROM user WHERE username = %s"
+            try:
+                cursor.execute(query, (username,))
+            except mysql.connector.Error as e:
+                print(f"Mysql Execution Error [{e}]")
+                return None
+
+            user = cursor.fetchone()
+            if user:
+                return user[0]
+            else:
+                return None
+
     def get_user_image(self, username):
         if self.conn is None:
             return False
@@ -139,4 +157,5 @@ if __name__ == '__main__':
     emotions = history.get_emotions(0, 1)
     print(f"way_id: {1} emotions: {emotions}")
     history.delete_history_of_a_user(0)
+
     history.close_connection()

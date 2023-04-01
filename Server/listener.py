@@ -108,5 +108,17 @@ def post_history():
         return {'error': 'No JSON request received'}, 500
 
     received_json = request.json
+    username = received_json['username']
+    way_id = received_json['way_id']
+    timestamp = received_json['timestamp']
+    emotion = received_json['emotion']
 
-    return {"status": 0}
+    HistoryManager.get_instance().open_connection()
+    user_id = HistoryManager.get_instance().get_user_id(username)
+    res = HistoryManager.get_instance().store_sample(user_id, way_id, emotion, timestamp)
+    HistoryManager.get_instance().close_connection()
+
+    if res:
+        return {"status": 0}
+    else:
+        return {"status": -1}

@@ -1,11 +1,11 @@
 # TODO
 
 ## importante
-[ ] nATTENZIONE !   qunado prende il nearest point potrebbe prendre un punto di un edificio, e poi non trovare il path!
+* [x] nATTENZIONE !   qunado prende il nearest point potrebbe prendre un punto di un edificio, e poi non trovare il path!
 
 ## map engine
 * [x] le deviazioni non funzionano
-* [ ] ricaricare il db togliendo le strade e i nodi di edifici (strade senza name, ref, alt_name)
+* [x] ricaricare il db togliendo le strade e i nodi di edifici (strade senza name, ref, alt_name)
 * [x] fare funzione che ricava posizione nella mappa tramite coordinate (trova il nodo con le coordinate piu vicine)
 
 ## dashboard
@@ -34,7 +34,7 @@
 
 ## sperimentazione reale
 * [x] con una sorgente non presente nel db non posso fare il get_path, cercare coordinate più vicine
-* [ ] attenzione a crash durante il cambio percorso in corsa
+* [x] attenzione a crash durante il cambio percorso in corsa
 * [ ] mettere un controllo che calcola quanto si è distanti dal nodo del path piu vicino, se troppo distante va richiesto il ricalcolo 
 * [ ] testare arduino + gps
 * [ ] adattare simulazione ad uso di GPS

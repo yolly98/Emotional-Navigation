@@ -3,12 +3,15 @@ from copy import copy
 from Utility.point import Point
 import os
 
+
 class StateManager:
 
     state_manager = None
 
     def __init__(self):
         self.status = dict()
+        self.status['server_ip'] = None
+        self.status['server_port'] = None
         self.status['path'] = None
         self.status['actual_way'] = None
         self.status['last_pos'] = None

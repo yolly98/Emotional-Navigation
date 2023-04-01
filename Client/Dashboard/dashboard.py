@@ -14,10 +14,6 @@ from Client.state_manager import StateManager
 from Client.InputModule.face_recognition_module import FaceRecognitionModule
 import base64
 
-SERVER_IP = "127.0.0.1"
-SERVER_PORT = "5000"
-
-
 class Dashboard:
 
     dashboard = None
@@ -83,7 +79,6 @@ class Dashboard:
         self.path_progress = None
         self.terminal = Terminal(0, self.win_height - self.terminal_height, self.terminal_height, 20, self.colors)
         self.terminal.write("Press something to start")
-        FaceRecognitionModule.get_instance().configure(0, 20, 0.3, 60, 20)
 
     @staticmethod
     def get_instance():
@@ -110,7 +105,9 @@ class Dashboard:
         StateManager.get_instance().set_state('is_sim', True)
         request['source_coord'] = StateManager.get_instance().get_state('last_pos').to_json()
 
-        res = CommunicationManager.get_instance().send(SERVER_IP, SERVER_PORT, "GET", request, "path")
+        server_ip = StateManager.get_instance().get_state('server_ip')
+        server_port = StateManager.get_instance().get_state('server_port')
+        res = CommunicationManager.get_instance().send(server_ip, server_port, "GET", request, "path")
         if res is None or res == "":
             self.terminal.write("Something went wrong")
             return
@@ -335,7 +332,7 @@ class Dashboard:
     def wait(self):
         self.clock.tick(self.update_win_rate)
 
-    def autentication(self, username):
+    def authentication(self, username):
 
         StateManager.get_instance().set_state('username', username)
         root_path = StateManager.get_instance().get_state('root_path')
@@ -349,7 +346,9 @@ class Dashboard:
         if not is_stored:
             request = dict()
             request['username'] = username
-            res = CommunicationManager.get_instance().send(SERVER_IP, SERVER_PORT, "GET", request, "user")
+            server_ip = StateManager.get_instance().get_state('server_ip')
+            server_port = StateManager.get_instance().get_state('server_port')
+            res = CommunicationManager.get_instance().send(server_ip, server_port, "GET", request, "user")
             if res is None or res == "":
                 self.terminal.write("Something went wrong")
                 return
@@ -366,8 +365,12 @@ class Dashboard:
                 self.terminal.write("Something went wrong")
                 return
 
+        self.terminal.write("Verifying user identity ...")
+        self.show()
+
         if FaceRecognitionModule.get_instance().verify_user(username):
             self.terminal.write(f"Hi {username}")
+            StateManager.get_instance().set_state('emotion_module', True)
             StateManager.get_instance().set_state('state', 'navigator')
             self.terminal.write("Where we go?")
         else:
@@ -389,16 +392,18 @@ class Dashboard:
             request = dict()
             request['username'] = username
             request['image'] = base64.b64encode(image).decode('utf-8')
-            res = CommunicationManager.get_instance().send(SERVER_IP, SERVER_PORT, "POST", request, "user")
+            server_ip = StateManager.get_instance().get_state('server_ip')
+            server_port = StateManager.get_instance().get_state('server_port')
+            res = CommunicationManager.get_instance().send(server_ip, server_port, "POST", request, "user")
             if res is None or res == "" or res['status'] < 0:
                 self.terminal.write("Something went wrong")
                 return
             elif res['status'] == 0:
                 pass
             StateManager.get_instance().set_state('state', 'aut')
-            self.autentication(username)
+            self.authentication(username)
         elif res == 'n':
-            StateManager.get_instance().set_state('emotion_module', True)
+            StateManager.get_instance().set_state('emotion_module', False)
             StateManager.get_instance().set_state('state', 'navigator')
         else:
             self.terminal.write("Not valid command, press 'y' or 'n' to create a new user")
@@ -422,7 +427,7 @@ class Dashboard:
                         self.terminal.write("Insert username")
                         StateManager.get_instance().set_state('state', 'aut')
                     elif StateManager.get_instance().get_state('state') == 'aut':
-                        self.autentication(self.terminal.get_value())
+                        self.authentication(self.terminal.get_value())
                     elif StateManager.get_instance().get_state('state') == 'new_user':
                         self.new_user(self.terminal.get_value())
                     elif StateManager.get_instance().get_state('state') == 'navigator':
