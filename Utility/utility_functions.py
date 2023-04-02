@@ -1,6 +1,6 @@
 import math
 import matplotlib.pyplot as plt
-from Server.Persistence.map_sql_manager import MapSqlManager
+from Server.Persistence.mongo_map_manager import MongoMapManager
 from Utility.gnode import GNode
 from Utility.way import Way
 from Utility.point import Point
@@ -68,9 +68,9 @@ def visualize_path(path, completed=False):
 
     if completed:
         # get points in the map
-        sql_manager = MapSqlManager.get_instance()
-        sql_manager.open_connection()
-        nodes = sql_manager.get_nodes_by_coord(max(lats), min(lats), max(lons), min(lons))
+        map = MongoMapManager.get_instance()
+        map.open_connection()
+        nodes = map.get_nodes_by_coord(max(lats), min(lats), max(lons), min(lons))
 
         all_lats = lats.copy()
         all_lons = lons.copy()
@@ -81,7 +81,7 @@ def visualize_path(path, completed=False):
         lines = dict()
         for node in nodes:
 
-            ways = sql_manager.get_way_by_node(node.get('id'))
+            ways = map.get_way_by_node(node.get('id'))
             for way in ways:
                 way_id = way.get('id')
                 if way_id not in lines:
@@ -103,7 +103,7 @@ def visualize_path(path, completed=False):
             point_sizes.append(1)
             colors.append('white')
 
-        sql_manager.close_connection()
+        map.close_connection()
         ax.scatter(all_lons, all_lats, c=colors, alpha=1, s=point_sizes)
 
     ax.plot(lons, lats, c='yellow', alpha=1, linewidth=2)

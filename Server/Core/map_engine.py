@@ -1,6 +1,6 @@
 from Utility.utility_functions import calculate_distance, visualize_path, print_path
 from Utility.point import Point
-from Server.Persistence.map_sql_manager import MapSqlManager
+from Server.Persistence.mongo_map_manager import MongoMapManager
 from Server.Persistence.graph_manager import GraphManager
 
 
@@ -12,15 +12,15 @@ class MapEngine:
         graph_manager = GraphManager.get_instance()
         graph_manager.open_connection()
 
-        sql_manager = MapSqlManager.get_instance()
-        sql_manager.open_connection()
+        map = MongoMapManager.get_instance()
+        map.open_connection()
 
-        source = (sql_manager.get_nearest_node(source.get_lat(), source.get_lon()))
+        source = (map.get_nearest_node(source.get_lat(), source.get_lon()))
         if source is False:
             print("Source position not found")
             return None
         source_id = source.get('id')
-        destination = (sql_manager.get_node_by_coord(destination.get_lat(), destination.get_lon()))
+        destination = (map.get_node_by_coord(destination.get_lat(), destination.get_lon()))
         if destination is False:
             print("Destination position not found")
             return None
@@ -37,9 +37,9 @@ class MapEngine:
         path = []
         for relationship in neo4j_path:
             r = relationship
-            start_node = sql_manager.get_node(int(r.start_node.get('id')))
-            end_node = sql_manager.get_node(int(r.end_node.get('id')))
-            way_properties = sql_manager.get_way(r['way_id'])
+            start_node = map.get_node(int(r.start_node.get('id')))
+            end_node = map.get_node(int(r.end_node.get('id')))
+            way_properties = map.get_way(r['way_id'])
             way = dict()
             way['way'] = way_properties
             way['start_node'] = start_node
@@ -57,10 +57,10 @@ class MapEngine:
     def calculate_path_avoid_way_name(source, destination, way_name, estimated=True):
 
         graph_manager = GraphManager.get_instance()
-        sql_manager = MapSqlManager.get_instance()
+        map = MongoMapManager.get_instance()
 
-        sql_manager.open_connection()
-        ways = sql_manager.get_instance().get_way_by_name(way_name)
+        map.open_connection()
+        ways = map.get_way_by_name(way_name)
 
         graph_manager.open_connection()
 
@@ -68,7 +68,7 @@ class MapEngine:
             distance = None
             excluded_way_id = None
             for way in ways:
-                node = sql_manager.get_instance().get_node(way.get('start_node'))
+                node = map.get_node(way.get('start_node'))
                 node = Point(node.get('lat'), node.get('lon'))
                 d = calculate_distance(source, node)
                 if distance is None or d < distance:
@@ -89,7 +89,7 @@ class MapEngine:
             for way in ways:
                 graph_manager.update_way_length(way.get('id'), way.get('length'))
 
-        sql_manager.get_instance().close_connection()
+        map.close_connection()
         graph_manager.close_connection()
 
         return res

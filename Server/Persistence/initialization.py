@@ -8,47 +8,12 @@ import math
 from Utility.utility_functions import calculate_distance
 from Utility.point import Point
 from py2neo import Graph, Node, Relationship
-import mysql.connector
+from pymongo import MongoClient
+from pymongo.errors import DuplicateKeyError
+from Utility.gnode import GNode
+from Utility.way import Way
 
 START_WAY_ID = 0
-# ---------------------------------------------------------------------------
-#  SCRIPT TO BE PERFORMED ONLY ONCE TO LOAD THE DATABASE THROUGH AN osm FILE
-
-# docker command
-'''
-docker run --name neo4j_smart_navigation \
--p 7474:7474 -p 7687:7687 -d \
--v /mnt/c/Users/gianl/neo4j/data:/data \
--v /mnt/c/Users/gianl/neo4j/logs:/logs \
--v /mnt/c/Users/gianl/neo4j/import:/import \
--v /mnt/c/Users/gianl/neo4j/plugins:/plugins \
---env NEO4J_AUTH=neo4j/password neo4j  
-'''
-
-# configure timeout query in neo4j
-'''
-> docker exec -it neo4j_smart_navigation bash
-> cd /var/lib/neo4j/conf
-> vim neo4j.conf
-add line 'dbms.transaction.timeout=10s'
-'''
-
-# install apoc plugin for neo4j
-'''
-download apoc from https://github.com/neo4j/apoc/releases
-put apoc-(last-version)-all.jar in plugins folder
-of the neo4j main folder
-(then restart)
-'''
-
-# docker command for msyql
-'''
-docker run --name mysql-smart-navigation \
--p 3306:3306 -d \
--v mysql_volume:/var/lib/mysql/ \
--e "MYSQL_ROOT_PASSWORD=password" mysql
-'''
-# -------------------
 
 
 def load_map():
@@ -78,73 +43,24 @@ def load_map():
     # delete all nodes and relationship in ne4jdb
     graph.run("MATCH (n) DETACH DELETE n")
 
-    # --------------- mysql db initialization -------------------
+    # ----------------- mongo db initialization ------------------------------
 
-    mysql_conn = None
-    try:
-        mysql_conn = mysql.connector.connect(
-            host="localhost",
-            user="root",
-            password="password"
-        )
-    except mysql.connector.Error as e:
-        print(f"Mysql connection error [{e}]")
-        return
-    mysql_cursor = mysql_conn.cursor()
-    mysql_cursor.execute("DROP DATABASE IF EXISTS smart_navigation")
-    mysql_cursor.execute("CREATE DATABASE IF NOT EXISTS smart_navigation")
-    mysql_cursor.execute("USE smart_navigation")
+    mongo_client = MongoClient('mongodb://admin:password@localhost:27017/')
+    mongo_client.drop_database('smart_navigation')
+    mongodb = mongo_client['smart_navigation']
+    collection = mongodb['map_node']
+    collection = mongodb['map_way']
+    collection = mongodb['user']
+    collection = mongodb['history']
 
-    # table creations
-    mysql_cursor.execute(
-        "CREATE TABLE IF NOT EXISTS user ( \
-        id BIGINT AUTO_INCREMENT, \
-        username VARCHAR(100), \
-        UNIQUE(username), \
-        PRIMARY KEY (id)\
-        ) "
-    )
+    mongodb.map_node.create_index("id", unique=True)
+    mongodb.map_node.create_index([("lat", 1), ("lon", 1)])
+    mongodb.map_way.create_index("id", unique=True)
+    mongodb.map_way.create_index([("name", "text")])
+    mongodb.user.create_index("username", unique=True)
 
-    mysql_cursor.execute(
-        "CREATE TABLE IF NOT EXISTS way ( \
-        id BIGINT, \
-        name VARCHAR(100), \
-        alt_name VARCHAR(100), \
-        ref VARCHAR(100), \
-        lim_speed INT, \
-        length INT , \
-        start_node BIGINT, \
-        end_node BIGINT, \
-        PRIMARY KEY (id) \
-        ) "
-    )
 
-    mysql_cursor.execute("CREATE INDEX way_name on way(name)")
-
-    mysql_cursor.execute(
-        "CREATE TABLE IF NOT EXISTS node ( \
-        id BIGINT, \
-        type VARCHAR(100), \
-        name VARCHAR(100), \
-        lat DOUBLE, \
-        lon DOUBLE, \
-        PRIMARY KEY (id) \
-        ) "
-    )
-
-    mysql_cursor.execute(
-        "CREATE TABLE IF NOT EXISTS history ( \
-        user_id BIGINT, \
-        way_id BIGINT, \
-        emotion VARCHAR(100), \
-        timestamp BIGINT, \
-        PRIMARY KEY (user_id, way_id, timestamp) \
-        ) "
-    )
-    mysql_conn.commit()
-    mysql_cursor = mysql_conn.cursor(prepared=True)
-
-    # -----------------------------------------------------------
+    # ----------------------------------------------------------------------
 
     with open("Resources/map.json", "r") as json_file:
         data = json.load(json_file)
@@ -354,57 +270,42 @@ def load_map():
             end_node = neo4j_nodes[node["@ref"]]
             reduced_end_node = neo4j_reduced_nodes[node["@ref"]]
 
-            # save nodes to mysql db
-            sql = "INSERT INTO node (id, type, name, lat, lon ) \
-                            VALUES( %s, %s, %s, %s, %s)"
+            # save node to mongodb
+            start_gnode = GNode(start_node.get('id'), start_node.get('type'), start_node.get('name'), start_node.get('lat'), start_node.get('lon'))
             try:
-                mysql_cursor.execute(sql, (start_node.get('id'), start_node.get('type'), start_node.get('name'), start_node.get('lat'), start_node.get('lon')))
-            except mysql.connector.Error as e:
-                pass
-            sql = "INSERT INTO node (id, type, name, lat, lon ) \
-                                        VALUES( %s, %s, %s, %s, %s)"
-            try:
-                mysql_cursor.execute(sql, (end_node.get('id'), end_node.get('type'), end_node.get('name'), end_node.get('lat'), end_node.get('lon')))
-            except mysql.connector.Error as e:
+                mongodb.map_node.insert_one(start_gnode.to_json())
+            except DuplicateKeyError as e:
                 pass
 
             # create a relationship between nodes
             p1 = Point(start_node.get('lat'), start_node.get('lon'))
             p2 = Point(end_node.get('lat'), end_node.get('lon'))
             length = math.floor(calculate_distance(p1, p2) * 1000)  # in meters
-            # crate the way and nodes in neo4j
+
+            # save the way and nodes to neo4j
             relationship = Relationship(reduced_start_node, "TO", reduced_end_node, way_id=way_id, length=length)
             graph.create(relationship)
 
-            # create the way for mysql
-            sql = "INSERT INTO way ( \
-                   id, name, alt_name, ref, lim_speed, length, start_node, end_node) \
-                   VALUES( %s, %s, %s, %s, %s, %s, %s, %s)"
-            mysql_cursor.execute(sql, (way_id, name, alt_name, ref, lim_speed, length, start_node.get('id'), end_node.get('id')))
-            mysql_conn.commit()
+            # save the way to mongodb
+            way = Way(way_id, name, alt_name, ref, lim_speed, length, start_node.get('id'), end_node.get('id'))
+            mongodb.map_way.insert_one(way.to_json())
 
             # update the starting node
             start_node = end_node
             reduced_start_node = reduced_end_node
             way_id += 1
 
+        # store the last node of the way to mongodb
+        start_gnode = GNode(start_node.get('id'), start_node.get('type'), start_node.get('name'), start_node.get('lat'), start_node.get('lon'))
+        try:
+            mongodb.map_node.insert_one(start_gnode.to_json())
+        except DuplicateKeyError as e:
+            pass
+
     print("loading map data completed")
 
-    mysql_cursor = mysql_conn.cursor()
-    mysql_cursor.execute(
-        "CREATE TABLE ordered_points_table AS \
-        SELECT node.id as id, node.type as type, node.name as name, node.lat as lat, node.lon as lon \
-        FROM node \
-        INNER JOIN way \
-        ON node.id = way.start_node \
-        ORDER BY node.lat, node.lon;"
-    )
+    mongo_client.close()
 
-    mysql_cursor.execute("CREATE INDEX lat_index on ordered_points_table(lat)")
-    mysql_cursor.execute("CREATE INDEX lon_index on ordered_points_table(lon)")
-    mysql_conn.commit()
-
-    mysql_conn.close()
 
 
 if __name__ == "__main__":

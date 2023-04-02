@@ -1,4 +1,4 @@
-SQL_IMAGE = mysql-smart-navigation
+MONGO_IMAGE = mongo-smart-navigation
 GRAPH_IMAGE = neo4j-smart-navigation
 GRAPH_DOCKERFILE = Dockerfile
 
@@ -7,8 +7,8 @@ build:
 
 run:
 	docker run --name ${GRAPH_IMAGE} -p 7474:7474 -p 7687:7687 -d --env NEO4J_AUTH=neo4j/password ${GRAPH_IMAGE}
-	docker run --name ${SQL_IMAGE} -p 3306:3306 -d -e "MYSQL_ROOT_PASSWORD=password" mysql
+	docker run --name ${MONGO_IMAGE} -e MONGO_INITDB_ROOT_USERNAME=admin -e MONGO_INITDB_ROOT_PASSWORD=password -p 27017:27017 -d mongo
 
 clean:
-	docker stop ${SQL_IMAGE} ${GRAPH_IMAGE}
-	docker rm ${SQL_IMAGE} ${GRAPH_IMAGE}
+	docker stop ${MONGO_IMAGE} ${GRAPH_IMAGE}
+	docker rm ${MONGO_IMAGE} ${GRAPH_IMAGE}

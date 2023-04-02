@@ -12,3 +12,4 @@ opencv-python
 mysql-connector-python
 flask
 requests
+pymongo

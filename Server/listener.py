@@ -1,9 +1,9 @@
 from flask import Flask, request
 from Server.Core.emotional_route_selector import EmotionalRouteSelector
-from Server.Persistence.map_sql_manager import MapSqlManager
+from Server.Persistence.mongo_map_manager import MongoMapManager
 from Utility.point import Point
 from Utility.utility_functions import path_to_json, calculate_distance
-from Server.Persistence.history_manager import HistoryManager
+from Server.Persistence.mongo_history_manager import MongoHistoryManager
 
 
 class Listener:
@@ -41,11 +41,11 @@ def get_path():
     username = received_json['username']
     destination_name = received_json['destination_name']
     source = Point(received_json['source_coord']['lat'], received_json['source_coord']['lon'])
-    sql_map = MapSqlManager.get_instance()
-    sql_map.open_connection()
+    map = MongoMapManager.get_instance()
+    map.open_connection()
 
     # find destination coordinates
-    ways = sql_map.get_way_by_name(destination_name)
+    ways = map.get_way_by_name(destination_name)
     if not ways:
         return {"status": -1} # invalid destination
 
@@ -53,14 +53,14 @@ def get_path():
     distance = None
     destination = None
     for way in ways:
-        node = sql_map.get_node(way.get('start_node'))
+        node = map.get_node(way.get('start_node'))
         node = Point(node.get('lat'), node.get('lon'))
         d = calculate_distance(source, node)
         if distance is None or d < distance:
             distance = d
             destination = node
 
-    sql_map.close_connection()
+    map.close_connection()
 
     path = EmotionalRouteSelector.get_path(username, source, destination)
     if path is None:
@@ -76,9 +76,9 @@ def get_user():
 
     received_json = request.json
     username = received_json['username']
-    HistoryManager.get_instance().open_connection()
-    image = HistoryManager.get_instance().get_user_image(username)
-    HistoryManager.get_instance().close_connection()
+    MongoHistoryManager.get_instance().open_connection()
+    image = MongoHistoryManager.get_instance().get_user_image(username)
+    MongoHistoryManager.get_instance().close_connection()
     if image is None:
         return {"status": -1, "image": None}
     else:
@@ -93,9 +93,9 @@ def post_user():
     received_json = request.json
     username = received_json['username']
     image = received_json['image']
-    HistoryManager.get_instance().open_connection()
-    res = HistoryManager.get_instance().create_user(username, image)
-    HistoryManager.get_instance().close_connection()
+    MongoHistoryManager.get_instance().open_connection()
+    res = MongoHistoryManager.get_instance().create_user(username, image)
+    MongoHistoryManager.get_instance().close_connection()
 
     if res:
         return {"status": 0}
@@ -114,10 +114,9 @@ def post_history():
     timestamp = received_json['timestamp']
     emotion = received_json['emotion']
 
-    HistoryManager.get_instance().open_connection()
-    user_id = HistoryManager.get_instance().get_user_id(username)
-    res = HistoryManager.get_instance().store_sample(user_id, way_id, emotion, timestamp)
-    HistoryManager.get_instance().close_connection()
+    MongoHistoryManager.get_instance().open_connection()
+    res = MongoHistoryManager.get_instance().store_sample(username, way_id, emotion, timestamp)
+    MongoHistoryManager.get_instance().close_connection()
 
     if res:
         return {"status": 0}

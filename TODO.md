@@ -2,7 +2,7 @@
 
 ## importante
 * [x] nATTENZIONE !   qunado prende il nearest point potrebbe prendre un punto di un edificio, e poi non trovare il path!
-* [ ] sostituire mysql con mongo
+* [x] sostituire mysql con mongo
 
 ## map engine
 * [x] le deviazioni non funzionano

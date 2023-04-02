@@ -1,4 +1,4 @@
-from Server.Persistence.history_manager import HistoryManager
+from Server.Persistence.mongo_history_manager import MongoHistoryManager
 from Server.Core.map_engine import MapEngine
 
 # emotion values for balance
@@ -46,15 +46,14 @@ class EmotionalRouteSelector:
     def evaluate_path(path, username):
 
         # get all emotions related to the path from user's history
-        HistoryManager.get_instance().open_connection()
-        user_id = HistoryManager.get_instance().get_user_id(username)
+        MongoHistoryManager.get_instance().open_connection()
         emotional_path = []
         length = 0
         overall_balance = 0
         for way in path:
             way_id = way['way'].get('id')
             length += way['way'].get('length')
-            emotions = HistoryManager.get_instance().get_emotions(user_id, way_id)
+            emotions = MongoHistoryManager.get_instance().get_emotions(username, way_id)
 
             emotion_balance = 0
             for emotion in emotions:
@@ -77,7 +76,7 @@ class EmotionalRouteSelector:
             overall_balance += emotion_balance
             emotional_path.append({'way_id': way_id, 'balance': emotion_balance})
 
-        HistoryManager.get_instance().close_connection()
+        MongoHistoryManager.get_instance().close_connection()
         res = dict()
         res['length'] = length
         res['overall_balance'] = overall_balance

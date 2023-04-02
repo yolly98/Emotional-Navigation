@@ -3,14 +3,14 @@ class Way:
 
     def __init__(self, id, name, alt_name, ref, speed, length, start_node, end_node):
         self.way = dict()
-        self.way['id'] = id
+        self.way['id'] = int(id)
         self.way['name'] = name
         self.way['alt_name'] = alt_name
         self.way['ref'] = ref
         self.way['speed'] = speed
         self.way['length'] = length
-        self.way['start_node'] = start_node
-        self.way['end_node'] = end_node
+        self.way['start_node'] = int(start_node)
+        self.way['end_node'] = int(end_node)
 
     @staticmethod
     def json_to_way(json):

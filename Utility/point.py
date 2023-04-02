@@ -2,8 +2,8 @@
 class Point:
 
     def __init__(self, lat, lon):
-        self.lat = lat
-        self.lon = lon
+        self.lat = float(lat)
+        self.lon = float(lon)
 
     def get_lat(self):
         return self.lat
