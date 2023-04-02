@@ -19,7 +19,7 @@
 * [x] aggiungere frecce per curve
 * [x] mettere avanzamento percorso
 * [x] crash quando finisce il percorso
-* [ ] aggiungere emoji mood attuale (in alto a dx)
+* [x] aggiungere emoji mood attuale (in alto a dx)
 
 ## rilevatore emozioni
 * [x] creare modulo per rilevatore emozioni

@@ -9,10 +9,12 @@ from Client.Dashboard.View.path_progress import PathProgress
 from Client.Dashboard.View.car import Car
 from Client.Dashboard.View.arrow import Arrow
 from Client.Dashboard.View.terminal import Terminal
+from Client.Dashboard.View.face import Face
 from Client.communication_manager import CommunicationManager
 from Client.state_manager import StateManager
 from Client.InputModule.face_recognition_module import FaceRecognitionModule
 import base64
+
 
 class Dashboard:
 
@@ -282,6 +284,11 @@ class Dashboard:
 
         self.draw_street()
         self.player_car.draw(self.win, self.colors)
+
+        # draw face
+        actual_emotion = StateManager.get_instance().get_state('actual_emotion')
+        face = Face(self.street_width + (self.win_width - self.street_width) / 2 - 30, 20, 6, actual_emotion)
+        face.draw(self.win, self.colors)
 
         self.terminal.draw(self.win)
 

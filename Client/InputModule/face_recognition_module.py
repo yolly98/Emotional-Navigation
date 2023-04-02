@@ -157,6 +157,7 @@ class FaceRecognitionModule:
 
         video.release()
 
+        StateManager.get_instance().set_state('actual_emotion', dominant_emotion)
         return dominant_emotion
 
     @staticmethod
