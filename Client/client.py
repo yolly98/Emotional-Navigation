@@ -20,7 +20,11 @@ if __name__ == '__main__':
 
     FaceRecognitionModule.get_instance().configure(0, 20, 0.3, 20, 20)
 
-    gps_module = Thread(target=GPS.get_instance().run, args=())
+    if StateManager.get_instance().get_state('is_sim'):
+        gps_module = Thread(target=GPS.get_instance().run_simulation, args=())
+    else:
+        gps_module = Thread(target=GPS.get_instance().listener, args=())
+
     history_collector = Thread(target=FaceRecognitionModule.get_instance().run, args=())
     gps_module.setDaemon(False)
     history_collector.setDaemon(False)

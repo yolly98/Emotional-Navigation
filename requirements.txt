@@ -13,3 +13,4 @@ mysql-connector-python
 flask
 requests
 pymongo
+flask-cors

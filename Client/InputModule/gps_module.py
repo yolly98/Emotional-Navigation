@@ -1,8 +1,20 @@
+# if you want to get gps coordinate froma the smartphone,
+# you have to go to 'chrome://flags/#unsafely-treat-insecure-origin-as-secure'
+# in the search bar of your chromium browser on the smartphone,
+# the you have to abilitate the ip of this device
+# (you have to do this because browsers can't share gps position with not https server)
+
+
 from Utility.utility_functions import calculate_distance
 from Utility.point import Point
 from math import radians, sin, cos, asin, atan2, degrees
 import time
 from Client.state_manager import StateManager
+from flask import Flask, request, send_file
+from flask_cors import CORS
+
+GPS_IP = "0.0.0.0"
+GPS_PORT = '4000'
 
 
 class GPS:
@@ -11,6 +23,8 @@ class GPS:
 
     def __init__(self):
         self.period = 1
+        self.app = Flask(__name__)
+        CORS(self.app)
 
     @staticmethod
     def get_instance():
@@ -18,68 +32,96 @@ class GPS:
             GPS.gps_simulator = GPS()
         return GPS.gps_simulator
 
-    def get_coord(self, sim, travelled_km):
+    def get_app(self):
+        return self.app
+
+    def listener(self):
+        self.app.run(host=GPS_IP, port=GPS_PORT, debug=False, threaded=True)
+
+    def get_coord(self, travelled_km):
 
         actual_node_index = StateManager.get_instance().get_state('actual_node_index')
 
-        if sim:
+        path = StateManager.get_instance().get_state('path')
+        if path is None:
+            return StateManager.get_instance().get_state('last_pos')
 
-            path = StateManager.get_instance().get_state('path')
-            if path is None:
-                return StateManager.get_instance().get_state('last_pos')
-
-            i = 0
-            ms = 0
-            while i < len(path):
-                if i < actual_node_index:
-                    ms += path[i]['way'].get('length')
+        i = 0
+        ms = 0
+        while i < len(path):
+            if i < actual_node_index:
+                ms += path[i]['way'].get('length')
+            else:
+                distance = path[actual_node_index]['way'].get('length')
+                if (travelled_km * 1000) <= ms + distance:
+                    break
                 else:
-                    distance = path[actual_node_index]['way'].get('length')
-                    if (travelled_km * 1000) <= ms + distance:
-                        break
-                    else:
-                        ms += distance
-                        if i + 1 < len(path):
-                            actual_node_index += 1
-                i += 1
+                    ms += distance
+                    if i + 1 < len(path):
+                        actual_node_index += 1
+            i += 1
 
-            p1 = Point(path[actual_node_index]['start_node'].get('lat'), path[actual_node_index]['start_node'].get('lon'))
-            if actual_node_index >= len(path) - 1:
-                return p1
-            p2 = Point(path[actual_node_index + 1]['start_node'].get('lat'), path[actual_node_index + 1]['start_node'].get('lon'))
+        p1 = Point(path[actual_node_index]['start_node'].get('lat'), path[actual_node_index]['start_node'].get('lon'))
+        if actual_node_index >= len(path) - 1:
+            return p1
+        p2 = Point(path[actual_node_index + 1]['start_node'].get('lat'), path[actual_node_index + 1]['start_node'].get('lon'))
 
-            lat1 = float(p1.get_lat())
-            lon1 = float(p1.get_lon())
-            lat2 = float(p2.get_lat())
-            lon2 = float(p2.get_lon())
-            d = travelled_km - (ms / 1000)
+        lat1 = float(p1.get_lat())
+        lon1 = float(p1.get_lon())
+        lat2 = float(p2.get_lat())
+        lon2 = float(p2.get_lon())
+        d = travelled_km - (ms / 1000)
 
-            R = 6371  # Earth radius in km
-            lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
-            bearing = atan2(sin(lon2 - lon1) * cos(lat2),
-                            cos(lat1) * sin(lat2) - sin(lat1) * cos(lat2) * cos(lon2 - lon1))
-            lat3 = asin(sin(lat1) * cos(d / R) + cos(lat1) * sin(d / R) * cos(bearing))
-            lon3 = lon1 + atan2(sin(bearing) * sin(d / R) * cos(lat1), cos(d / R) - sin(lat1) * sin(lat3))
+        R = 6371  # Earth radius in km
+        lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
+        bearing = atan2(sin(lon2 - lon1) * cos(lat2),
+                        cos(lat1) * sin(lat2) - sin(lat1) * cos(lat2) * cos(lon2 - lon1))
+        lat3 = asin(sin(lat1) * cos(d / R) + cos(lat1) * sin(d / R) * cos(bearing))
+        lon3 = lon1 + atan2(sin(bearing) * sin(d / R) * cos(lat1), cos(d / R) - sin(lat1) * sin(lat3))
 
-            p3 = Point(str(round(degrees(lat3), 7)), str(round(degrees(lon3), 7)))
+        p3 = Point(str(round(degrees(lat3), 7)), str(round(degrees(lon3), 7)))
 
-            print(f"GPS pos: {p3}")
-            return p3
-        else:
-            # TODO get from GPS sensor and update travelled km
-            new_pos = Point('42.3333569', '12.2692692')
-            last_pos = StateManager.get_instance().get_state('last_pos')
-            distance = calculate_distance(new_pos, last_pos)
-            travelled_km += distance
-            speed = (distance / self.period) * 3600
-            StateManager.get_instance().set_state('speed', speed)
-            pass
+        print(f"GPS pos: {p3}")
+        return p3
 
-    def run(self):
+    def run_simulation(self):
         while True:
-            is_sim = StateManager.get_instance().get_state('is_sim')
             travelled_km = StateManager.get_instance().get_state('travelled_km')
-            pos = self.get_coord(is_sim, travelled_km)
+            pos = self.get_coord(travelled_km)
             StateManager.get_instance().set_state('last_pos', pos)
             time.sleep(self.period)
 
+
+app = GPS.get_instance().get_app()
+
+
+@app.get('/gps')
+def get_gps():
+    return send_file('send_GPS.html')
+
+
+@app.post('/gps')
+def post_gps():
+    if request.json is None:
+        return {'error': 'No JSON request received'}, 500
+
+    received_json = request.json
+    lat = received_json['lat']
+    lon = received_json['lon']
+    new_pos = Point(lat, lon)
+    print(f"GPS pos: {new_pos}")
+    last_pos = StateManager.get_instance().get_state('last_pos')
+    if last_pos is not None:
+        distance = calculate_distance(new_pos, last_pos)
+        travelled_km = StateManager.get_instance().get_state('travelled_km')
+        travelled_km += distance
+        speed = (distance / GPS.get_instance().period) * 3600
+        StateManager.get_instance().set_state('travelled_km', travelled_km)
+        StateManager.get_instance().set_state('speed', speed)
+    else:
+        StateManager.get_instance().set_state('travelled_km', 0)
+        StateManager.get_instance().set_state('speed', 0)
+
+    StateManager.get_instance().set_state('last_pos', new_pos)
+
+    return {"status": 0}

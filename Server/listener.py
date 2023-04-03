@@ -1,4 +1,5 @@
 from flask import Flask, request
+from flask_cors import CORS
 from Server.Core.emotional_route_selector import EmotionalRouteSelector
 from Server.Persistence.mongo_map_manager import MongoMapManager
 from Utility.point import Point
@@ -13,6 +14,7 @@ class Listener:
     def __init__(self):
         # Flask instance to receive data
         self.app = Flask(__name__)
+        CORS(self.app)
 
     @staticmethod
     def get_instance():
