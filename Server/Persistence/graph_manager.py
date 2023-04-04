@@ -1,6 +1,5 @@
 from py2neo import Graph
 
-
 class GraphManager:
 
     graph_manager = None
@@ -26,7 +25,7 @@ class GraphManager:
     def close_connection(self):
         self.graph = None
 
-    def get_estimated_path(self, source, destination, excluded_way=-1):
+    def get_path(self, source, destination, excluded_way=-1):
 
         if self.graph is None:
             print("Graph DB not connected")
@@ -36,7 +35,7 @@ class GraphManager:
         query = f"MATCH (a), (b), \
                 path = shortestPath((a)-[r*]-(b)) \
                 WHERE a.id = '{source}' and b.id = '{destination}' and NONE(rel in r WHERE rel.way_id = {excluded_way}) \
-                RETURN relationships(path) as ways"
+                RETURN relationships(path) as path"
 
         try:
             path = self.graph.run(query)
@@ -49,48 +48,4 @@ class GraphManager:
             print("Path not found")
             return None
 
-        path = path[0]
-
-        return path
-
-    def get_path(self, source, destination):
-
-        if self.graph is None:
-            print("Graph DB not connected")
-            return False
-
-        # query that takes in account weights
-        query = f"MATCH (a), (b)\
-                WHERE a.id = '{source}' and b.id = '{destination}' \
-                CALL apoc.algo.dijkstra(a, b, 'TO', 'length') \
-                YIELD path \
-                RETURN relationships(path) as ways"
-
-        try:
-            path = self.graph.run(query)
-        except Exception as e:
-            print(f"path not found [{e}]")
-            return []
-
-        path = path.data()
-        if not path:
-            print("Path not found")
-            return None
-
-        path = path[0]
-
-        return path
-
-    def update_way_length(self, way_id, new_length):
-        if self.graph is None:
-            print("Graph DB not connected")
-            return False
-
-        query = f"MATCH ()-[r:TO]-() WHERE r.way_id = {way_id} SET r.length = {new_length}"
-        try:
-            self.graph.run(query)
-        except Exception as e:
-            print(f"Update error for way_id: {way_id} [{e}]")
-            return False
-        return True
-
+        return path[0]['path']

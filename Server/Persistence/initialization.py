@@ -277,7 +277,7 @@ def load_map():
             length = math.floor(calculate_distance(p1, p2) * 1000)  # in meters
 
             # save the way and nodes to neo4j
-            relationship = Relationship(start_node, "TO", end_node, way_id=way_id, name=name, alt_name=alt_name, ref=ref, length=length, start_node=start_node.get('id'), end_node=end_node.get('id'))
+            relationship = Relationship(start_node, "TO", end_node, way_id=way_id, name=name, alt_name=alt_name, ref=ref, speed=lim_speed, length=length, start_node=start_node.get('id'), end_node=end_node.get('id'))
             graph.create(relationship)
 
             # save the way to mongodb
