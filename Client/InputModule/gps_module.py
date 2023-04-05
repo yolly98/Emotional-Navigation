@@ -85,6 +85,7 @@ class GPS:
         p3 = Point(str(round(degrees(lat3), 7)), str(round(degrees(lon3), 7)))
 
         print(f"GPS pos: {p3}")
+
         return p3
 
     def run_simulation(self):

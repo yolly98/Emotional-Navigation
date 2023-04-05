@@ -185,8 +185,10 @@ class Dashboard:
                 path_km += traveled_km
                 self.old_timestamp = time.time()
                 self.old_car_speed = self.player_car.get_speed()
+                StateManager.get_instance().set_state('speed', self.player_car.get_speed())
 
                 StateManager.get_instance().set_state('travelled_km', path_km)
+
             # ------
 
             # get gps position
@@ -287,11 +289,12 @@ class Dashboard:
                 self.arrow.hide()
 
             # draw alert
-            if (actual_street is not None) and (self.player_car.get_speed() > actual_street['way'].get('speed')):
+            if (actual_street is not None) and \
+                    (StateManager.get_instance().get_state('speed') > actual_street['way'].get('speed')):
                 self.alert.draw(self.win)
 
         # draw car speed
-        speed = self.player_car.get_speed()
+        speed = StateManager.get_instance().get_state('speed')
         speed_surface = font.render(f"{math.floor(speed)} km/h", True, self.colors['white'])
         speed_rect = speed_surface.get_rect()
         speed_rect.midright = (self.win_width - 50, self.win_height - self.terminal_height - 25)
@@ -318,7 +321,7 @@ class Dashboard:
         step_width = line_width / len(self.street_lines)
         step_height = line_height / len(self.street_lines)
 
-        car_speed = self.player_car.get_speed()
+        car_speed = StateManager.get_instance().get_state('speed')
         # print central lines
         if self.car_speed_counter > self.max_car_speed:
             self.street_lines = self.street_lines[1:] + self.street_lines[:1]
