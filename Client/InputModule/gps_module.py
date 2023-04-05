@@ -7,11 +7,14 @@
 
 from Utility.utility_functions import calculate_distance
 from Utility.point import Point
+from Utility.way import Way
+from Utility.gnode import GNode
 from math import radians, sin, cos, asin, atan2, degrees
 import time
 from Client.state_manager import StateManager
 from flask import Flask, request, send_file
 from flask_cors import CORS
+from Client.communication_manager import CommunicationManager
 
 GPS_IP = "0.0.0.0"
 GPS_PORT = '4000'
@@ -22,7 +25,7 @@ class GPS:
     gps_simulator = None
 
     def __init__(self):
-        self.period = 1
+        self.period = 5
         self.app = Flask(__name__)
         CORS(self.app)
 
@@ -89,6 +92,19 @@ class GPS:
             travelled_km = StateManager.get_instance().get_state('travelled_km')
             pos = self.get_coord(travelled_km)
             StateManager.get_instance().set_state('last_pos', pos)
+
+            server_ip = StateManager.get_instance().get_state('server_ip')
+            server_port = StateManager.get_instance().get_state('server_port')
+            request = pos.to_json()
+            res = CommunicationManager.get_instance().send(server_ip, server_port, 'GET', request, 'way')
+            actual_way = None
+            if res['status'] == 0:
+                actual_way = dict()
+                actual_way['way'] = Way.json_to_way(res['way'])
+                actual_way['start_node'] = GNode.json_to_gnode(res['start_node'])
+                actual_way['end_node'] = GNode.json_to_gnode(res['end_node'])
+            StateManager.get_instance().set_state('actual_way', actual_way)
+
             time.sleep(self.period)
 
 
@@ -111,6 +127,7 @@ def post_gps():
     new_pos = Point(lat, lon)
     print(f"GPS pos: {new_pos}")
     last_pos = StateManager.get_instance().get_state('last_pos')
+
     if last_pos is not None:
         distance = calculate_distance(new_pos, last_pos)
         travelled_km = StateManager.get_instance().get_state('travelled_km')
@@ -123,5 +140,17 @@ def post_gps():
         StateManager.get_instance().set_state('speed', 0)
 
     StateManager.get_instance().set_state('last_pos', new_pos)
+
+    server_ip = StateManager.get_instance().get_state('server_ip')
+    server_port = StateManager.get_instance().get_state('server_port')
+    server_request = last_pos.to_json()
+    res = CommunicationManager.get_instance().send(server_ip, server_port, 'GET', server_request, 'way')
+    actual_way = None
+    if res['status'] == 0:
+        actual_way = dict()
+        actual_way['way'] = Way.json_to_way(res['way'])
+        actual_way['start_node'] = GNode.json_to_gnode(res['start_node'])
+        actual_way['end_node'] = GNode.json_to_gnode(res['end_node'])
+    StateManager.get_instance().set_state('actual_way', actual_way)
 
     return {"status": 0}

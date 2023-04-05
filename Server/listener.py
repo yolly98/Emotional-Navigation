@@ -71,6 +71,37 @@ def get_path():
     return {"status": 0, "path": path_to_json(path)}
 
 
+@app.get('/way')
+def get_way():
+    if request.json is None:
+        return {'error': 'No JSON request received'}, 500
+
+    received_json = request.json
+    lat = received_json['lat']
+    lon = received_json['lon']
+
+    MongoMapManager.get_instance().open_connection()
+    nearest_node = MongoMapManager.get_instance().get_nearest_node(lat, lon)
+    if not nearest_node:
+        MongoMapManager.get_instance().close_connection()
+        return {'status': -1}
+    way = MongoMapManager.get_instance().get_way_by_start_node(nearest_node.get('id'))[0]
+    if not way:
+        MongoMapManager.get_instance().close_connection()
+        return {'status': -1}
+    end_node = MongoMapManager.get_instance().get_node(way.get('end_node'))
+    if not way:
+        MongoMapManager.get_instance().close_connection()
+        return {'status': -1}
+
+    MongoMapManager.get_instance().close_connection()
+    reply = dict()
+    reply['status'] = 0
+    reply['way'] = way.to_json()
+    reply['start_node'] = nearest_node.to_json()
+    reply['end_node'] = end_node.to_json()
+    return reply
+
 @app.get('/user')
 def get_user():
     if request.json is None:

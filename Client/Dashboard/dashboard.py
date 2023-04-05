@@ -3,6 +3,8 @@ import sys
 import math
 from Utility.utility_functions import calculate_distance, print_path, json_to_path
 from Utility.point import Point
+from Utility.way import Way
+from Utility.gnode import GNode
 import time
 from Client.Dashboard.View.alert import Alert
 from Client.Dashboard.View.path_progress import PathProgress
@@ -154,6 +156,25 @@ class Dashboard:
 
         font = pygame.font.SysFont('times new roman', 25)
 
+        actual_street = StateManager.get_instance().get_state('actual_way')
+
+        # draw street name
+        if actual_street is None:
+            '''
+            if self.travel_time == 0:
+                self.travel_time = time.time() - self.start_time
+            message = f"destination reached in {math.floor(self.travel_time / 60)} min {math.floor(self.travel_time % 60)} sec"
+            street_surface = font.render(message, True, self.colors['white'])
+            self.end_path()
+            '''
+            pass
+        else:
+            message = f"{actual_street['way'].get('name')} ({actual_street['way'].get('ref')}) lim: {actual_street['way'].get('speed')} km/h"
+            street_surface = font.render(message, True, self.colors['white'])
+            street_rect = street_surface.get_rect()
+            street_rect.midtop = (self.street_width / 2, 10)
+            self.win.blit(street_surface, street_rect)
+
         if StateManager.get_instance().get_state('path') is not None:
             path_km = StateManager.get_instance().get_state('travelled_km')
             # needed for simulation
@@ -175,6 +196,7 @@ class Dashboard:
 
             path = StateManager.get_instance().get_state('path')
 
+            '''
             actual_street = None
             if position is None:
                 print("GPS coordinates not found")
@@ -193,35 +215,36 @@ class Dashboard:
                     i += 1
 
                 actual_street = path[nearest_point_index]
-
-            # draw street name
-            if actual_street is None:
-                if self.travel_time == 0:
-                    self.travel_time = time.time() - self.start_time
-                message = f"destination reached in {math.floor(self.travel_time / 60)} min {math.floor(self.travel_time % 60)} sec"
-                street_surface = font.render(message, True, self.colors['white'])
-                self.end_path()
-            else:
-                message = f"{actual_street['way'].get('name')} ({actual_street['way'].get('ref')}) lim: {actual_street['way'].get('speed')} km/h"
-                street_surface = font.render(message, True, self.colors['white'])
-            street_rect = street_surface.get_rect()
-            street_rect.midtop = (self.street_width / 2, 10)
-            self.win.blit(street_surface, street_rect)
-
-            StateManager.get_instance().set_state('actual_way', actual_street)
+            '''
 
             # draw arrow
-            if (actual_street is not None) and (not path.index(actual_street) == len(path) - 1):
+            if actual_street is not None:
 
                 i = 0
                 ms = 0
+                is_actual_way = False
                 while i < len(path):
                     street = path[i]
-                    if i < path.index(actual_street) or street['way'].get('name') == actual_street['way'].get('name'):
-                        ms += street['way'].get('length')
-                    else:
+                    ms += street['way'].get('length')
+                    if street['way'].get('name') == actual_street['way'].get('name'):
+                        is_actual_way = True
+                    elif is_actual_way:
                         break
                     i += 1
+
+                traveled_m = path_km * 1000
+
+                # draw m travelled
+                remaining_m = math.floor(ms - traveled_m)
+                if remaining_m < 0:
+                    remaining_m = 0
+                m_surface = font.render(f"{remaining_m} m", True, self.colors['white'])
+                m_rect = m_surface.get_rect()
+                m_rect.midtop = (100, 80)
+                self.win.blit(m_surface, m_rect)
+
+                # draw path progress
+                self.path_progress.draw(self.win, self.colors, math.floor(path_km * 1000))
 
                 # calculate arrow direction
                 if i < len(path) - 1:
@@ -242,31 +265,17 @@ class Dashboard:
                     else:
                         self.arrow.set_type('left')
 
-                traveled_m = path_km * 1000
-
-                # draw m travelled
-                remaining_m = math.floor(ms - traveled_m)
-                if remaining_m < 0:
-                    remaining_m = 0
-                m_surface = font.render(f"{remaining_m} m", True, self.colors['white'])
-                m_rect = m_surface.get_rect()
-                m_rect.midtop = (100, 80)
-                self.win.blit(m_surface, m_rect)
-
-                # draw path progress
-                self.path_progress.draw(self.win, self.colors, math.floor(path_km * 1000))
-
-                if ms - traveled_m <= 50:
-                    self.arrow.set_speed(5)
-                    self.arrow.draw(self.win)
-                elif ms - traveled_m <= 100:
-                    self.arrow.set_speed(10)
-                    self.arrow.draw(self.win)
-                elif ms - traveled_m <= 200:
-                    self.arrow.set_speed(None)
-                    self.arrow.draw(self.win)
-                else:
-                    self.arrow.hide()
+                    if ms - traveled_m <= 50:
+                        self.arrow.set_speed(5)
+                        self.arrow.draw(self.win)
+                    elif ms - traveled_m <= 100:
+                        self.arrow.set_speed(10)
+                        self.arrow.draw(self.win)
+                    elif ms - traveled_m <= 200:
+                        self.arrow.set_speed(None)
+                        self.arrow.draw(self.win)
+                    else:
+                        self.arrow.hide()
             else:
                 self.arrow.hide()
 
