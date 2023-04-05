@@ -155,8 +155,8 @@ class Dashboard:
         font = pygame.font.SysFont('times new roman', 25)
 
         if StateManager.get_instance().get_state('path') is not None:
-            # needed for simulation
             path_km = StateManager.get_instance().get_state('travelled_km')
+            # needed for simulation
             if StateManager.get_instance().get_state('is_sim'):
                 t = time.time() - self.old_timestamp
                 avg_speed = (self.player_car.get_speed() + self.old_car_speed) / 2
@@ -165,7 +165,7 @@ class Dashboard:
                 self.old_timestamp = time.time()
                 self.old_car_speed = self.player_car.get_speed()
 
-            StateManager.get_instance().set_state('travelled_km', path_km)
+                StateManager.get_instance().set_state('travelled_km', path_km)
             # ------
 
             # get gps position
@@ -248,7 +248,10 @@ class Dashboard:
                 traveled_m = path_km * 1000
 
                 # draw m travelled
-                m_surface = font.render(f"{ms - traveled_m} m", True, self.colors['white'])
+                remaining_m = math.floor(ms - traveled_m)
+                if remaining_m < 0:
+                    remaining_m = 0
+                m_surface = font.render(f"{remaining_m} m", True, self.colors['white'])
                 m_rect = m_surface.get_rect()
                 m_rect.midtop = (100, 80)
                 self.win.blit(m_surface, m_rect)
