@@ -359,7 +359,7 @@ class Dashboard:
     def wait(self):
         self.clock.tick(self.update_win_rate)
 
-    def authentication(self, username):
+    def get_user(self, username):
 
         StateManager.get_instance().set_state('username', username)
         root_path = StateManager.get_instance().get_state('root_path')
@@ -392,20 +392,8 @@ class Dashboard:
                 self.terminal.write("Something went wrong")
                 return
 
-        self.terminal.write("Verifying user identity ...")
-        self.show()
+        StateManager.get_instance().set_state('state', 'aut')
 
-        if FaceRecognitionModule.get_instance().verify_user():
-            self.terminal.write(f"Hi {username}")
-            StateManager.get_instance().set_state('emotion_module', True)
-            StateManager.get_instance().set_state('state', 'navigator')
-            self.terminal.write("Where we go?")
-        else:
-            self.terminal.write("User not recognized")
-            self.show()
-            StateManager.get_instance().set_state('state', 'aut')
-            self.terminal.write("Insert again your username")
-            return
 
     def new_user(self, res):
         if res == 'y':
@@ -430,7 +418,6 @@ class Dashboard:
             elif res['status'] == 0:
                 pass
             StateManager.get_instance().set_state('state', 'aut')
-            self.authentication(username)
         elif res == 'n':
             StateManager.get_instance().set_state('emotion_module', False)
             StateManager.get_instance().set_state('state', 'navigator')
@@ -448,8 +435,8 @@ class Dashboard:
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
-                    if StateManager.get_instance().get_state('state') == 'aut':
-                        self.authentication(self.terminal.get_value())
+                    if StateManager.get_instance().get_state('state') == 'get_user':
+                        self.get_user(self.terminal.get_value())
                     elif StateManager.get_instance().get_state('state') == 'new_user':
                         self.new_user(self.terminal.get_value())
                     elif StateManager.get_instance().get_state('state') == 'navigator':
@@ -472,30 +459,34 @@ class Dashboard:
 
     def run(self):
 
-        self.terminal.write("Waiting a face ...")
-        self.show()
-        FaceRecognitionModule.get_instance().find_face()
-        self.terminal.write("Face detected")
-        self.show()
-        StateManager.get_instance().set_state('state', 'init')
-        username = FaceRecognitionModule.get_instance().verify_user()
-        if username is None:
-            self.terminal.write("User not verified")
-            self.show()
-            self.terminal.write("Insert username")
-            self.show()
-            StateManager.get_instance().set_state('state', 'aut')
-        else:
-            self.terminal.write(f"Hi {username}")
-            StateManager.get_instance().set_state('emotion_module', True)
-            StateManager.get_instance().set_state('state', 'navigator')
-            self.terminal.write("Where we go?")
-            self.show()
-
         while True:
-            self.get_event()
-            self.show()
-            self.wait()
+            state = StateManager.get_instance().get_state('state')
+            if state == 'init':
+                self.terminal.write("Waiting a face ...")
+                self.show()
+                FaceRecognitionModule.get_instance().find_face()
+                self.terminal.write("Face detected")
+                self.show()
+                StateManager.get_instance().set_state('state', 'aut')
+            elif state == 'aut':
+                username = FaceRecognitionModule.get_instance().verify_user()
+                if username is None:
+                    self.terminal.write("User not verified")
+                    self.show()
+                    self.terminal.write("Insert username")
+                    self.show()
+                    StateManager.get_instance().set_state('state', 'get_user')
+                else:
+                    self.terminal.write(f"Hi {username}")
+                    StateManager.get_instance().set_state('emotion_module', True)
+                    StateManager.get_instance().set_state('state', 'navigator')
+                    self.terminal.write("Where we go?")
+                    self.show()
+            else:
+
+                self.get_event()
+                self.show()
+                self.wait()
 
 
 

@@ -1,6 +1,7 @@
 deepface
 numpy
 SpeechRecognition
+pyttsx3
 pyaudio
 pygame
 pygame-textinput
