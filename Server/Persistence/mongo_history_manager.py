@@ -89,7 +89,7 @@ class MongoHistoryManager:
     def get_user_image(self, username):
         if self.conn is None:
             return False
-        db = self.conn['smart_navigation'].history
+        db = self.conn['smart_navigation'].user
         user = db.find_one({'username': username})
         if user is None:
             return None
@@ -109,5 +109,4 @@ if __name__ == '__main__':
     emotions = history.get_emotions("user0", 1)
     print(f"way_id: {1} emotions: {emotions}")
     history.delete_history_of_a_user("user0")
-
     history.close_connection()

@@ -83,7 +83,6 @@ class Dashboard:
 
         self.path_progress = None
         self.terminal = Terminal(0, self.win_height - self.terminal_height, self.terminal_height, 20, self.colors)
-        self.terminal.write("Press something to start")
 
     @staticmethod
     def get_instance():
@@ -174,14 +173,6 @@ class Dashboard:
             if not StateManager.get_instance().get_state('is_sim'):
                 self.player_car.set_speed(StateManager.get_instance().get_state('speed'))
 
-            # draw m travelled
-            km_surface = font.render(f"{math.floor(path_km * 1000)} m", True, self.colors['white'])
-            km_rect = km_surface.get_rect()
-            km_rect.midtop = (100, 80)
-            self.win.blit(km_surface, km_rect)
-            # draw path progress
-            self.path_progress.draw(self.win, self.colors, math.floor(path_km * 1000))
-
             path = StateManager.get_instance().get_state('path')
 
             actual_street = None
@@ -255,6 +246,16 @@ class Dashboard:
                         self.arrow.set_type('left')
 
                 traveled_m = path_km * 1000
+
+                # draw m travelled
+                m_surface = font.render(f"{ms - traveled_m} m", True, self.colors['white'])
+                m_rect = m_surface.get_rect()
+                m_rect.midtop = (100, 80)
+                self.win.blit(m_surface, m_rect)
+
+                # draw path progress
+                self.path_progress.draw(self.win, self.colors, math.floor(path_km * 1000))
+
                 if ms - traveled_m <= 50:
                     self.arrow.set_speed(5)
                     self.arrow.draw(self.win)
@@ -377,14 +378,16 @@ class Dashboard:
         self.terminal.write("Verifying user identity ...")
         self.show()
 
-        if FaceRecognitionModule.get_instance().verify_user(username):
+        if FaceRecognitionModule.get_instance().verify_user():
             self.terminal.write(f"Hi {username}")
             StateManager.get_instance().set_state('emotion_module', True)
             StateManager.get_instance().set_state('state', 'navigator')
             self.terminal.write("Where we go?")
         else:
             self.terminal.write("User not recognized")
-            StateManager.get_instance().set_state('state', 'init')
+            self.show()
+            StateManager.get_instance().set_state('state', 'aut')
+            self.terminal.write("Insert again your username")
             return
 
     def new_user(self, res):
@@ -428,23 +431,19 @@ class Dashboard:
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
-                    if StateManager.get_instance().get_state('state') == 'init':
-                        self.terminal.write("Waiting a face ...")
-                        self.show()
-                        FaceRecognitionModule.get_instance().find_face()
-                        self.terminal.write("Face detected")
-                        self.terminal.write("Insert username")
-                        StateManager.get_instance().set_state('state', 'aut')
-                    elif StateManager.get_instance().get_state('state') == 'aut':
+                    if StateManager.get_instance().get_state('state') == 'aut':
                         self.authentication(self.terminal.get_value())
                     elif StateManager.get_instance().get_state('state') == 'new_user':
                         self.new_user(self.terminal.get_value())
                     elif StateManager.get_instance().get_state('state') == 'navigator':
                         self.get_path(self.terminal.get_value())
+                    else:
+                        self.terminal.write('Unknown state')
                 if event.key == pygame.K_UP:
                     self.commands['up'] = True
                 if event.key == pygame.K_DOWN:
                     self.commands['down'] = True
+                '''
                 if event.key == pygame.K_LEFT and self.arrow.get_showed() and self.arrow.get_color() == self.colors['white']:
                     if self.arrow.get_type() == "left" and (self.arrow.get_speed() is not None):
                         self.arrow.set_color(self.colors['green'])
@@ -455,21 +454,39 @@ class Dashboard:
                         self.arrow.set_color(self.colors['green'])
                     else:
                         self.arrow.set_color(self.colors['red'])
+                '''
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_UP:
                     self.commands['up'] = False
                 if event.key == pygame.K_DOWN:
                     self.commands['down'] = False
-                if event.key == pygame.K_LEFT:
-                    self.commands['left'] = False
-                if event.key == pygame.K_RIGHT:
-                    self.commands['right'] = False
 
         self.terminal.listen(events)
 
         self.player_car.move_car(self.commands)
 
     def run(self):
+
+        self.terminal.write("Waiting a face ...")
+        self.show()
+        FaceRecognitionModule.get_instance().find_face()
+        self.terminal.write("Face detected")
+        self.show()
+        StateManager.get_instance().set_state('state', 'init')
+        username = FaceRecognitionModule.get_instance().verify_user()
+        if username is None:
+            self.terminal.write("User not verified")
+            self.show()
+            self.terminal.write("Insert username")
+            self.show()
+            StateManager.get_instance().set_state('state', 'aut')
+        else:
+            self.terminal.write(f"Hi {username}")
+            StateManager.get_instance().set_state('emotion_module', True)
+            StateManager.get_instance().set_state('state', 'navigator')
+            self.terminal.write("Where we go?")
+            self.show()
+
         while True:
             self.get_event()
             self.show()

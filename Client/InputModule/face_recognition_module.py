@@ -3,7 +3,7 @@ import time
 import cv2
 from Client.state_manager import StateManager
 from Client.communication_manager import CommunicationManager
-
+import os
 
 class FaceRecognitionModule:
 
@@ -83,7 +83,7 @@ class FaceRecognitionModule:
         video.release()
         return True
 
-    def verify_user(self, username):
+    def verify_user(self, user_images_dir=None):
 
         if self.camera == -1:
             print("camera not setted")
@@ -96,23 +96,24 @@ class FaceRecognitionModule:
             print("cam not available")
             exit(1)
 
-        verifications = 0
-        for i in range(self.user_detection_attempts):
-
-            time.sleep(self.wait_time)
-
-            _, frame = video.read()
-
+        if user_images_dir is None:
             root_path = StateManager.get_instance().get_state('root_path')
-            res = DeepFace.verify(frame, f"{root_path}/InputModule/UserImages/{username}.png", enforce_detection=False)
-            if res['verified']:
-                verifications += 1
-            if verifications > 3:
-                video.release()
-                return True
+            user_images_dir = f"{root_path}/InputModule/UserImages"
+        for file_name in os.listdir(user_images_dir):
+            if file_name.endswith('.png'):
+                for i in range(self.user_detection_attempts):
+
+                    time.sleep(self.wait_time)
+
+                    _, frame = video.read()
+
+                    res = DeepFace.verify(frame, f"{user_images_dir}/{file_name}", enforce_detection=False)
+                    if res['verified']:
+                        username = file_name.replace('.png', '')
+                        return username
 
         video.release()
-        return False
+        return None
 
     def get_emotion(self):
 
@@ -193,6 +194,8 @@ class FaceRecognitionModule:
 
 
 if __name__ == "__main__":
-    FaceRecognitionModule.get_instance().configure(0, 20, 0.3, 60, 20)
+    FaceRecognitionModule.get_instance().configure(0, 20, 0.3, 60, 5)
     # EmotionDetector.print_available_cameras()
     # FaceRecognitionModule.get_instance().run()
+    username = FaceRecognitionModule.get_instance().verify_user('UserImages')
+    print(username)

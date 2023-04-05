@@ -18,7 +18,12 @@ if __name__ == '__main__':
     StateManager.get_instance().set_state('server_port', SERVER_PORT)
     StateManager.get_instance().set_state('fullscreen', FULLSCREEN)
 
-    FaceRecognitionModule.get_instance().configure(0, 20, 0.3, 20, 20)
+    FaceRecognitionModule.get_instance().configure(
+        camera=0,
+        iterations=20,
+        wait_time=0.3,
+        period=60,
+        user_detection_attempts=5)
 
     if StateManager.get_instance().get_state('is_sim'):
         gps_module = Thread(target=GPS.get_instance().run_simulation, args=())
