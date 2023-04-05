@@ -42,6 +42,6 @@
 ## sperimentazione reale
 * [x] con una sorgente non presente nel db non posso fare il get_path, cercare coordinate più vicine
 * [x] attenzione a crash durante il cambio percorso in corsa
-* [ ] mettere un controllo che calcola quanto si è distanti dal nodo del path piu vicino, se troppo distante va richiesto il ricalcolo 
+* [x] mettere un controllo che calcola quanto si è distanti dal nodo del path piu vicino, se troppo distante va richiesto il ricalcolo 
 * [ ] testare arduino + gps
 * [ ] adattare simulazione ad uso di GPS

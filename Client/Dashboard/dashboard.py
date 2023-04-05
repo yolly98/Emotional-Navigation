@@ -94,7 +94,7 @@ class Dashboard:
 
     def end_path(self):
         StateManager.get_instance().set_state('path', None)
-        StateManager.get_instance().set_state('travelled_km')
+        StateManager.get_instance().set_state('travelled_km', 0)
         self.old_car_speed = 0
         self.old_timestamp = None
         self.start_time = None
@@ -231,6 +231,13 @@ class Dashboard:
                     elif is_actual_way:
                         break
                     i += 1
+
+                if is_actual_way is False:
+                    # the user is out the path, so it's needed a new path calculation
+                    self.terminal.write("You are in a wrong street")
+                    self.end_path()
+                    self.get_path(path[len(path)-1]['way'].get('name'))
+                    return
 
                 traveled_m = path_km * 1000
 
