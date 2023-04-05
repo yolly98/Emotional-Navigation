@@ -15,6 +15,7 @@ from Client.Dashboard.View.face import Face
 from Client.communication_manager import CommunicationManager
 from Client.state_manager import StateManager
 from Client.InputModule.face_recognition_module import FaceRecognitionModule
+from Client.InputModule.vocal_command_module import VocalCommandModule
 import base64
 
 
@@ -427,6 +428,8 @@ class Dashboard:
 
     def get_event(self):
 
+        command = None
+
         events = pygame.event.get()
         for event in events:
 
@@ -435,14 +438,7 @@ class Dashboard:
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
-                    if StateManager.get_instance().get_state('state') == 'get_user':
-                        self.get_user(self.terminal.get_value())
-                    elif StateManager.get_instance().get_state('state') == 'new_user':
-                        self.new_user(self.terminal.get_value())
-                    elif StateManager.get_instance().get_state('state') == 'navigator':
-                        self.get_path(self.terminal.get_value())
-                    else:
-                        self.terminal.write('Unknown state')
+                    command = self.get_path(self.terminal.get_value())
                 if event.key == pygame.K_UP:
                     self.commands['up'] = True
                 if event.key == pygame.K_DOWN:
@@ -452,6 +448,18 @@ class Dashboard:
                     self.commands['up'] = False
                 if event.key == pygame.K_DOWN:
                     self.commands['down'] = False
+
+        if command is None:
+            command = VocalCommandModule.get_instance().get_command()
+        if command is not None:
+            if StateManager.get_instance().get_state('state') == 'get_user':
+                self.get_user(command)
+            elif StateManager.get_instance().get_state('state') == 'new_user':
+                self.new_user(command)
+            elif StateManager.get_instance().get_state('state') == 'navigator':
+                self.get_path(command)
+            else:
+                self.terminal.write('Unknown state')
 
         self.terminal.listen(events)
 
@@ -483,7 +491,6 @@ class Dashboard:
                     self.terminal.write("Where we go?")
                     self.show()
             else:
-
                 self.get_event()
                 self.show()
                 self.wait()

@@ -1,6 +1,8 @@
 import speech_recognition as sr
 import pyttsx3
-from Client.state_manager import StateManager
+from threading import Lock
+import time
+
 
 class VocalCommandModule:
 
@@ -9,7 +11,10 @@ class VocalCommandModule:
     def __init__(self):
         self.v_rec = None
         self.v_synt = None
-        pass
+        self.rec_lock = Lock()
+        self.synt_lock = Lock()
+        self.command = None
+        self.msg = None
 
     @staticmethod
     def get_instance():
@@ -42,8 +47,33 @@ class VocalCommandModule:
         self.v_synt.say(text)
         self.v_synt.runAndWait()
 
-    def run(self):
+    # public
+    def get_command(self):
+        with self.rec_lock:
+            command = self.command
+            self.command = None
+            return command
 
-        command = self.recognize_command()
-        print(command)
-        state = StateManager.get_instance().get_state('state')
+    # public
+    def synt_msg(self, msg):
+        with self.synt_lock:
+            self.msg = msg
+
+    def run_v_rec(self):
+        while True:
+            command = self.recognize_command()
+            print(command)
+            with self.rec_lock:
+                self.command = command
+
+    def run_v_synt(self):
+        while True:
+            with self.synt_lock:
+                if self.msg is None:
+                    continue
+                else:
+                    msg = self.msg
+                    self.msg = None
+                    self.sysntetize_text(msg)
+            time.sleep(1000)
+

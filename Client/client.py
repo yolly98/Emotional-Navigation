@@ -4,6 +4,7 @@ from Utility.point import Point
 from Client.Dashboard.dashboard import Dashboard
 from Client.InputModule.gps_module import GPS
 from Client.InputModule.face_recognition_module import FaceRecognitionModule
+from Client.InputModule.vocal_command_module import VocalCommandModule
 
 DEFAULT_LAT = '42.3333569'
 DEFAULT_LON = '12.2692692'
@@ -17,6 +18,7 @@ if __name__ == '__main__':
     StateManager.get_instance().set_state('server_ip', SERVER_IP)
     StateManager.get_instance().set_state('server_port', SERVER_PORT)
     StateManager.get_instance().set_state('fullscreen', FULLSCREEN)
+    VocalCommandModule.get_instance().init()
 
     FaceRecognitionModule.get_instance().configure(
         camera=0,
