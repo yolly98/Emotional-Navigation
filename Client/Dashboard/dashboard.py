@@ -208,9 +208,6 @@ class Dashboard:
             street_rect.midtop = (self.street_width / 2, 10)
             self.win.blit(street_surface, street_rect)
 
-            if (actual_street is None or StateManager.get_instance().get_state('actual_way') is None) or \
-                    (not actual_street['way'].get('name') == StateManager.get_instance().get_state('actual_way')['way'].get('name')):
-                self.arrow.set_color(self.colors['white'])
             StateManager.get_instance().set_state('actual_way', actual_street)
 
             # draw arrow
@@ -270,10 +267,8 @@ class Dashboard:
                     self.arrow.draw(self.win)
                 else:
                     self.arrow.hide()
-                    self.arrow.set_color(self.colors['white'])
             else:
                 self.arrow.hide()
-                self.arrow.set_color(self.colors['white'])
 
             # draw alert
             if (actual_street is not None) and (self.player_car.get_speed() > actual_street['way'].get('speed')):
@@ -446,18 +441,6 @@ class Dashboard:
                     self.commands['up'] = True
                 if event.key == pygame.K_DOWN:
                     self.commands['down'] = True
-                '''
-                if event.key == pygame.K_LEFT and self.arrow.get_showed() and self.arrow.get_color() == self.colors['white']:
-                    if self.arrow.get_type() == "left" and (self.arrow.get_speed() is not None):
-                        self.arrow.set_color(self.colors['green'])
-                    else:
-                        self.arrow.set_color(self.colors['red'])
-                if event.key == pygame.K_RIGHT and self.arrow.get_showed() and self.arrow.get_color() == self.colors['white']:
-                    if self.arrow.get_type() == "right" and (self.arrow.get_speed() is not None):
-                        self.arrow.set_color(self.colors['green'])
-                    else:
-                        self.arrow.set_color(self.colors['red'])
-                '''
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_UP:
                     self.commands['up'] = False
