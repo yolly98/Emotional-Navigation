@@ -438,7 +438,7 @@ class Dashboard:
                 sys.exit()
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
-                    command = self.get_path(self.terminal.get_value())
+                    command = self.terminal.get_value()
                 if event.key == pygame.K_UP:
                     self.commands['up'] = True
                 if event.key == pygame.K_DOWN:
@@ -450,7 +450,7 @@ class Dashboard:
                     self.commands['down'] = False
 
         if command is None:
-            command = VocalCommandModule.get_instance().get_command()
+             command = VocalCommandModule.get_instance().get_command()
         if command is not None:
             if StateManager.get_instance().get_state('state') == 'get_user':
                 self.get_user(command)

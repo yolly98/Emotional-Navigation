@@ -21,7 +21,7 @@ if __name__ == '__main__':
     VocalCommandModule.get_instance().init()
 
     FaceRecognitionModule.get_instance().configure(
-        camera=0,
+        camera=1,
         iterations=20,
         wait_time=0.3,
         period=60,

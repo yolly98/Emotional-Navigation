@@ -47,13 +47,14 @@ class FaceRecognitionModule:
             cv2.imshow("Your face", frame)
             key = cv2.waitKey(1)
             if key == ord("s"):
-                cv2.imwrite(f"{root_path}/InputModule/UserImages/{username}.png", frame)
+                path = os.path.join(root_path, "InputModule", "UserImages", f"{username}.png")
+                cv2.imwrite(path, frame)
                 break
 
         video.release()
         cv2.destroyAllWindows()
 
-    def find_face(self):
+    def find_face(self, test=False):
 
         if self.camera == -1:
             print("camera not setted")
@@ -73,8 +74,13 @@ class FaceRecognitionModule:
             _, frame = video.read()
 
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            root_path = StateManager.get_instance().get_state('root_path')
-            face_cascade = cv2.CascadeClassifier(f"{root_path}/InputModule/models/haarcascade_frontalface_default.xml")
+            model_path = None
+            if test is False:
+                root_path = StateManager.get_instance().get_state('root_path')
+                model_path = os.path.join(root_path, "InputModule", "models", "haarcascade_frontalface_default.xml")
+            else:
+                model_path = os.path.join("models", "haarcascade_frontalface_default.xml")
+            face_cascade = cv2.CascadeClassifier(model_path)
             faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5)
 
             if len(faces) > 0:
@@ -98,7 +104,7 @@ class FaceRecognitionModule:
 
         if user_images_dir is None:
             root_path = StateManager.get_instance().get_state('root_path')
-            user_images_dir = f"{root_path}/InputModule/UserImages"
+            user_images_dir = os.path.join(root_path, "InputModule", "UserImages")
         for file_name in os.listdir(user_images_dir):
             if file_name.endswith('.png'):
                 for i in range(self.user_detection_attempts):
@@ -107,7 +113,8 @@ class FaceRecognitionModule:
 
                     _, frame = video.read()
 
-                    res = DeepFace.verify(frame, f"{user_images_dir}/{file_name}", enforce_detection=False)
+                    file_path = os.path.join(user_images_dir, file_name)
+                    res = DeepFace.verify(frame, file_path, enforce_detection=False)
                     if res['verified']:
                         username = file_name.replace('.png', '')
                         return username
@@ -194,8 +201,10 @@ class FaceRecognitionModule:
 
 
 if __name__ == "__main__":
-    FaceRecognitionModule.get_instance().configure(0, 20, 0.3, 60, 5)
-    # EmotionDetector.print_available_cameras()
+    FaceRecognitionModule.get_instance().configure(1, 20, 0.3, 60, 5)
+    # FaceRecognitionModule.print_available_cameras()
     # FaceRecognitionModule.get_instance().run()
+    FaceRecognitionModule.get_instance().find_face(True)
+    print("face detected")
     username = FaceRecognitionModule.get_instance().verify_user('UserImages')
     print(username)
