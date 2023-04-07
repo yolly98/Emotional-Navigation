@@ -4,6 +4,7 @@ from Server.Persistence.mongo_map_manager import MongoMapManager
 from Utility.gnode import GNode
 from Utility.way import Way
 from Utility.point import Point
+import math
 
 
 def calculate_distance(Point1, Point2): # in km
@@ -112,6 +113,50 @@ def visualize_path(path, completed=False):
     ax.axis('off')
     plt.show()
 
+def visualize_map():
+
+    fig, ax = plt.subplots()
+
+    # get points in the map
+    map = MongoMapManager.get_instance()
+    map.open_connection()
+    nodes = map.get_all_nodes()
+
+    all_lats = []
+    all_lons = []
+    point_sizes = []
+    lines = dict()
+    i = 0
+    progress = 0
+    for node in nodes:
+        if not progress == math.floor((i * 100) / (len(nodes))):
+            progress = math.floor((i*100)/(len(nodes)))
+            print(f"calculation {progress}%")
+        ways = map.get_way_by_node(node.get('id'))
+        for way in ways:
+            way_id = way.get('id')
+            if way_id not in lines:
+                lines[way_id] = dict()
+                lines[way_id]['lat'] = []
+                lines[way_id]['lon'] = []
+                lines[way_id]['lat'].append(float(node.get('lat')))
+                lines[way_id]['lon'].append(float(node.get('lon')))
+            else:
+                lines[way_id]['lat'].append(float(node.get('lat')))
+                lines[way_id]['lon'].append(float(node.get('lon')))
+                ax.plot(lines[way_id]['lon'], lines[way_id]['lat'], c='white', alpha=1, linewidth=1)
+
+        all_lats.append(node.get('lat'))
+        all_lons.append(node.get('lon'))
+        point_sizes.append(1)
+        i += 1
+
+    map.close_connection()
+    # ax.scatter(all_lons, all_lats, c='white', alpha=1, s=point_sizes)
+    fig.set_facecolor('black')
+    ax.set_title("Path")
+    ax.axis('off')
+    plt.show()
 
 def path_to_json(path):
     json = []
@@ -135,7 +180,4 @@ def json_to_path(json):
     return path
 
 if __name__ == '__main__':
-
-    p1 = Point('42.3323892', '12.2695975')
-    p2 = Point('43.3323892', '13.2695975')
-    print(calculate_distance(p1, p2))
+    visualize_map()

@@ -83,7 +83,7 @@ class MongoMapManager:
         json_ways = db.find(
             {
                 '$or': [
-                    {'end_node': node},
+                    {'start_node': node},
                     {'end_node': node}
                 ]
             }
@@ -120,6 +120,20 @@ class MongoMapManager:
                 ]
             }
         )
+        if json_nodes is None:
+            return None
+        nodes = []
+        for json_node in json_nodes:
+            node = GNode.json_to_gnode(json_node)
+            nodes.append(node)
+        return nodes
+
+    def get_all_nodes(self):
+        if self.conn is None:
+            return False
+
+        db = self.conn['smart_navigation'].map_node
+        json_nodes = db.find()
         if json_nodes is None:
             return None
         nodes = []
