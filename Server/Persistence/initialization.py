@@ -15,19 +15,20 @@ from Utility.way import Way
 
 START_WAY_ID = 0
 
-
-def load_map():
+def convert_osm_to_jsm():
     # open osm file in xml format
-    with open("Resources/map.osm", "r") as f:
+    with open("Resources/map.osm", "r", encoding='utf-8') as f:
         data = f.read()
 
     # convert data in json format
     json_data = xmltodict.parse(data)
 
-    with open("Resources/map.json", "w") as json_file:
+    with open("Resources/map.json", "w", encoding='utf-8') as json_file:
         json.dump(json_data, json_file)
 
     print("The map.json file created with success!")
+
+def load_map():
 
     # -------------- graph db initialization ----------------------
     # create connection to neo4j database
@@ -111,7 +112,7 @@ def load_map():
 
         i += 1
         if i % 100 == 0:
-            print(f"node: {i}")
+            print(f"node: {i} / {len(data['osm']['node'])}")
         id = node["@id"]
         type = ""
         name = "null"
@@ -302,5 +303,6 @@ def load_map():
 
 
 if __name__ == "__main__":
+    # convert_osm_to_jsm()
     load_map()
 
