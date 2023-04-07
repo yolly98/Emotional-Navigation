@@ -1,10 +1,7 @@
 import pygame
 import sys
 import math
-from Utility.utility_functions import calculate_distance, print_path, json_to_path
-from Utility.point import Point
-from Utility.way import Way
-from Utility.gnode import GNode
+from Utility.utility_functions import print_path, json_to_path
 import time
 from Client.Dashboard.View.alert import Alert
 from Client.Dashboard.View.path_progress import PathProgress
@@ -62,8 +59,6 @@ class Dashboard:
         self.commands = dict()
         self.commands['up'] = False
         self.commands['down'] = False
-        self.commands['left'] = False
-        self.commands['right'] = False
 
         self.street_lines = [1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0]
         self.max_car_speed = 200
@@ -116,17 +111,21 @@ class Dashboard:
         res = CommunicationManager.get_instance().send(server_ip, server_port, "GET", request, "path")
         if res is None or res == "":
             self.terminal.write("Something went wrong")
+            VocalCommandModule.get_instance().say("Qualcosa è andato storto, riprova")  # IT
             return
         elif res['status'] == 0:
             path = json_to_path(res['path'])
         elif res['status'] == -1:
             self.terminal.write("Not valid destination")
+            VocalCommandModule.get_instance().say("Destinazione non valida") # IT
             return
         elif res['status'] == -2:
             self.terminal.write("Path not found")
+            VocalCommandModule.get_instance().say("Percorso non trovato") # IT
             return
         else:
             self.terminal.write("Something went wrong")
+            VocalCommandModule.get_instance().say("Qualcosa è andato storto, riprova") # IT
             return
 
         self.terminal.write("Path found ")
@@ -145,6 +144,7 @@ class Dashboard:
         self.path_progress = PathProgress(self.street_width + (self.win_width - self.street_width - 30)/2, self.street_pos[1] - 50, self.block_size, path_length)
         StateManager.get_instance().set_state('path', path)
         StateManager.get_instance().path_init()
+        VocalCommandModule.get_instance().say("Ho trovato il percorso migliore, andiamo!")  # IT
 
     def show(self):
         self.win.fill(pygame.Color(self.colors['black']))
@@ -161,13 +161,6 @@ class Dashboard:
 
         # draw street name
         if actual_street is None:
-            '''
-            if self.travel_time == 0:
-                self.travel_time = time.time() - self.start_time
-            message = f"destination reached in {math.floor(self.travel_time / 60)} min {math.floor(self.travel_time % 60)} sec"
-            street_surface = font.render(message, True, self.colors['white'])
-            self.end_path()
-            '''
             pass
         else:
             message = f"{actual_street['way'].get('name')} ({actual_street['way'].get('ref')}) lim: {actual_street['way'].get('speed')} km/h"
@@ -198,27 +191,6 @@ class Dashboard:
                 self.player_car.set_speed(StateManager.get_instance().get_state('speed'))
 
             path = StateManager.get_instance().get_state('path')
-
-            '''
-            actual_street = None
-            if position is None:
-                print("GPS coordinates not found")
-            else:
-                # get street name
-                distance = None
-                nearest_point_index = 0
-                i = 0
-                while i < len(path):
-                    node = path[i]['start_node']
-                    p = Point(node.get('lat'), node.get('lon'))
-                    d = calculate_distance(position, p)
-                    if distance is None or distance > d:
-                        nearest_point_index = i
-                        distance = d
-                    i += 1
-
-                actual_street = path[nearest_point_index]
-            '''
 
             # draw arrow
             if actual_street is not None:
@@ -270,22 +242,33 @@ class Dashboard:
                     v1 = (p2[0] - p1[0], p2[1] - p1[1])
                     v2 = (p3[0] - p2[0], p3[1] - p2[1])
                     cross_product = v1[0] * v2[1] - v1[1] * v2[0]
+                    turn_to_right = None
                     if cross_product > 0:
                         self.arrow.set_type('right')
+                        turn_to_right = True
                     else:
                         self.arrow.set_type('left')
+                        turn_to_right = False
 
-                    if ms - traveled_m <= 50:
+                    remaining_m = ms - traveled_m
+                    if remaining_m <= 50:
                         self.arrow.set_speed(5)
                         self.arrow.draw(self.win)
-                    elif ms - traveled_m <= 100:
+                    elif remaining_m <= 100:
                         self.arrow.set_speed(10)
                         self.arrow.draw(self.win)
-                    elif ms - traveled_m <= 200:
+                    elif remaining_m <= 200:
                         self.arrow.set_speed(None)
                         self.arrow.draw(self.win)
                     else:
                         self.arrow.hide()
+
+                    if 99 < remaining_m < 100:
+                        if turn_to_right:
+                            VocalCommandModule.get_instance().say(f"Girare a destra") # IT
+                        else:
+                            VocalCommandModule.get_instance().say(f"Girare a sinistra") # IT
+
             else:
                 self.arrow.hide()
 
@@ -388,6 +371,7 @@ class Dashboard:
                 self.terminal.write("User not exists")
                 self.terminal.write("Do you want to create a new user? [y/n]")
                 StateManager.get_instance().set_state('state', 'new_user')
+                VocalCommandModule.get_instance().say("L'utente non esiste, vuoi crearne uno nuovo?") # IT
                 return
             else:
                 self.terminal.write("Something went wrong")
@@ -397,7 +381,8 @@ class Dashboard:
 
 
     def new_user(self, res):
-        if res == 'y':
+        res = res.lower()
+        if res == 'y' or res == 'yes' or res == 'sì':
             username = StateManager.get_instance().get_state('username')
             self.terminal.write("Press 's' to save a picture")
             self.show()
@@ -419,11 +404,12 @@ class Dashboard:
             elif res['status'] == 0:
                 pass
             StateManager.get_instance().set_state('state', 'aut')
-        elif res == 'n':
+        elif res == 'n' or res == 'no':
             StateManager.get_instance().set_state('emotion_module', False)
             StateManager.get_instance().set_state('state', 'navigator')
         else:
             self.terminal.write("Not valid command, press 'y' or 'n' to create a new user")
+            VocalCommandModule.get_instance().say("Comando non valido, si o no?") # IT
 
 
     def get_event(self):
@@ -443,15 +429,20 @@ class Dashboard:
                     self.commands['up'] = True
                 if event.key == pygame.K_DOWN:
                     self.commands['down'] = True
+                if event.key == pygame.K_v:
+                    command = VocalCommandModule.get_instance().recognize_command()
+                    if command is None:
+                        VocalCommandModule.get_instance().say("Non ho capito, riprova")  # IT
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_UP:
                     self.commands['up'] = False
                 if event.key == pygame.K_DOWN:
                     self.commands['down'] = False
 
-        if command is None:
-             command = VocalCommandModule.get_instance().get_command()
         if command is not None:
+            if command == "quit" or command == "esci":
+                self.end_path()
+                StateManager.get_instance().set_state('state', 'init')
             if StateManager.get_instance().get_state('state') == 'get_user':
                 self.get_user(command)
             elif StateManager.get_instance().get_state('state') == 'new_user':
@@ -483,6 +474,7 @@ class Dashboard:
                     self.show()
                     self.terminal.write("Insert username")
                     self.show()
+                    VocalCommandModule.get_instance().say("Utente non riconosciuto, chi sei?") # IT
                     StateManager.get_instance().set_state('state', 'get_user')
                 else:
                     self.terminal.write(f"Hi {username}")
@@ -490,6 +482,7 @@ class Dashboard:
                     StateManager.get_instance().set_state('state', 'navigator')
                     self.terminal.write("Where we go?")
                     self.show()
+                    VocalCommandModule.get_instance().say(f"Ciao {username}, dove andiamo?") # IT
             else:
                 self.get_event()
                 self.show()

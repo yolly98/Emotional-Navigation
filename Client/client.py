@@ -28,13 +28,11 @@ if __name__ == '__main__':
         user_detection_attempts=5)
 
     if StateManager.get_instance().get_state('is_sim'):
-        gps_module = Thread(target=GPS.get_instance().run_simulation, args=())
+        gps_module = Thread(target=GPS.get_instance().run_simulation, args=(), daemon=False)
     else:
-        gps_module = Thread(target=GPS.get_instance().listener, args=())
+        gps_module = Thread(target=GPS.get_instance().listener, args=(), daemon=False)
 
-    history_collector = Thread(target=FaceRecognitionModule.get_instance().run, args=())
-    gps_module.setDaemon(False)
-    history_collector.setDaemon(False)
+    history_collector = Thread(target=FaceRecognitionModule.get_instance().run, args=(), daemon=False)
     gps_module.start()
     history_collector.start()
 

@@ -1,8 +1,6 @@
 import speech_recognition as sr
 import pyttsx3
-from threading import Lock
-import time
-
+from threading import Thread
 
 class VocalCommandModule:
 
@@ -11,10 +9,6 @@ class VocalCommandModule:
     def __init__(self):
         self.v_rec = None
         self.v_synt = None
-        self.rec_lock = Lock()
-        self.synt_lock = Lock()
-        self.command = None
-        self.msg = None
 
     @staticmethod
     def get_instance():
@@ -28,52 +22,38 @@ class VocalCommandModule:
 
     def recognize_command(self):
 
-        # get audio from michrophone
-        with self.v_rec.Microphone() as source:
+        # get audio from microphone
+        with sr.Microphone() as source:
             print("Parla ora...")
             audio = self.v_rec.listen(source)
 
-        # Recongnize audio by using CMU Sphinx
+        # Recognize audio by using Google
         text = None
         try:
-            text = self.v_rec.recognize_sphinx(audio)
+            text = self.v_rec.recognize_google(audio, language='it-IT')
         except sr.UnknownValueError:
             print("I have no understood, try again")
+            return None
         except sr.RequestError as e:
             print("Vocal Command Recognized doesn't work {0}".format(e))
+            return None
+        print(text)
         return text
 
-    def sysntetize_text(self, text):
+    def say(self, text):
+        t = Thread(target=self.synthesize_text, args=(text,), daemon=True)
+        t.start()
+
+    def synthesize_text(self, text):
         self.v_synt.say(text)
         self.v_synt.runAndWait()
 
-    # public
-    def get_command(self):
-        with self.rec_lock:
-            command = self.command
-            self.command = None
-            return command
 
-    # public
-    def synt_msg(self, msg):
-        with self.synt_lock:
-            self.msg = msg
 
-    def run_v_rec(self):
-        while True:
-            command = self.recognize_command()
-            print(command)
-            with self.rec_lock:
-                self.command = command
+if __name__ == '__main__':
 
-    def run_v_synt(self):
-        while True:
-            with self.synt_lock:
-                if self.msg is None:
-                    continue
-                else:
-                    msg = self.msg
-                    self.msg = None
-                    self.sysntetize_text(msg)
-            time.sleep(1000)
-
+    VocalCommandModule.get_instance().init()
+    while True:
+        command = VocalCommandModule.get_instance().recognize_command()
+        print(command)
+        VocalCommandModule.get_instance().synthesize_text(command)

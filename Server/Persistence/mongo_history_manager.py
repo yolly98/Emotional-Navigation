@@ -23,6 +23,7 @@ class MongoHistoryManager:
         self.conn = None
 
     def store_sample(self, username, way_id, emotion, timestamp):
+        username = username.lower()
         if self.conn is None:
             return False
 
@@ -41,6 +42,7 @@ class MongoHistoryManager:
         return True
 
     def get_emotions(self, username, way_id):
+        username.lower()
         if self.conn is None:
             return False
         db = self.conn['smart_navigation'].history
@@ -61,6 +63,7 @@ class MongoHistoryManager:
 
     def delete_history_of_a_user(self, username):
 
+        username = username.lower()
         if self.conn is None:
             return False
         db = self.conn['smart_navigation'].history
@@ -72,6 +75,8 @@ class MongoHistoryManager:
         return True
 
     def create_user(self, username, image):
+
+        username = username.lower()
         if self.conn is None:
             return False
         db = self.conn['smart_navigation'].user
@@ -87,6 +92,7 @@ class MongoHistoryManager:
         return True
 
     def get_user_image(self, username):
+        username = username.lower()
         if self.conn is None:
             return False
         db = self.conn['smart_navigation'].user

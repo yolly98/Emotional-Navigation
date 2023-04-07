@@ -52,7 +52,7 @@ class MongoMapManager:
             return False
 
         db = self.conn['smart_navigation'].map_way
-        json_ways = db.find({'name': way_name})
+        json_ways = db.find({'name': {'$regex': way_name, '$options': 'i'}})
         if json_ways is None:
             return None
         ways = []
