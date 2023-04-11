@@ -34,7 +34,7 @@
                   let lat = currentPosition.coords.latitude;
                   let lon = currentPosition.coords.longitude;
                   let data = { lat: lat, lon: lon };
-                  let url = "http://" + serverUrlInput.value + ":4000/gps";
+                  let url = "http://" + serverUrlInput.value;
                   fetch(url, {
                     method: 'POST',
                     headers: {

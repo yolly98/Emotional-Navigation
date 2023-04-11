@@ -15,6 +15,7 @@ from Client.state_manager import StateManager
 from flask import Flask, request, send_file
 from flask_cors import CORS
 from Client.communication_manager import CommunicationManager
+import json
 
 GPS_IP = "0.0.0.0"
 GPS_PORT = '4000'
@@ -155,3 +156,36 @@ def post_gps():
     StateManager.get_instance().set_state('actual_way', actual_way)
 
     return {"status": 0}
+
+@app.post('/gps-collector')
+def post_gps_collector():
+    if request.json is None:
+        return {'error': 'No JSON request received'}, 500
+
+    received_json = request.json
+    lat = received_json['lat']
+    lon = received_json['lon']
+    new_pos = Point(lat, lon)
+    print(f"GPS pos: {new_pos}")
+
+    gps_data = None
+
+    try:
+        with open('gps-test.json', 'r') as f:
+            gps_data = json.load(f)
+    except Exception:
+        pass
+
+    if gps_data is None:
+        gps_data = dict()
+        gps_data['gps'] = []
+
+    gps_data['gps'].append(new_pos.to_json())
+
+    with open('gps-test.json', 'w') as f:
+        json.dump(gps_data, f)
+
+    return {"status": 0}
+
+if __name__ == '__main__':
+    GPS.get_instance().listener()
