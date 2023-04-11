@@ -11,12 +11,13 @@ DEFAULT_LON = '12.2692692'
 SERVER_IP = "127.0.0.1"
 SERVER_PORT = "5000"
 FULLSCREEN = False
+SIMULATION = True
 
 if __name__ == '__main__':
 
-    StateManager.get_instance().sim_init(True, Point(DEFAULT_LAT, DEFAULT_LON))
+    StateManager.get_instance().sim_init(SIMULATION, Point(DEFAULT_LAT, DEFAULT_LON))
     StateManager.get_instance().set_state('server_ip', SERVER_IP)
-    StateManager.get_instance().set_state('server_port', SERVER_PORT)
+    StateManager.get_instance().set_statce('server_port', SERVER_PORT)
     StateManager.get_instance().set_state('fullscreen', FULLSCREEN)
     VocalCommandModule.get_instance().init()
 
