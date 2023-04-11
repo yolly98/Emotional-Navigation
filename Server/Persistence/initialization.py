@@ -15,6 +15,7 @@ from Utility.way import Way
 
 START_WAY_ID = 0
 
+
 def convert_osm_to_jsm():
     # open osm file in xml format
     with open("Resources/map.osm", "r", encoding='utf-8') as f:
@@ -27,6 +28,7 @@ def convert_osm_to_jsm():
         json.dump(json_data, json_file)
 
     print("The map.json file created with success!")
+
 
 def load_map():
 
@@ -303,6 +305,6 @@ def load_map():
 
 
 if __name__ == "__main__":
-    # convert_osm_to_jsm()
+    convert_osm_to_jsm()
     load_map()
 
