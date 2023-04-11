@@ -16,6 +16,8 @@ from flask import Flask, request, send_file
 from flask_cors import CORS
 from Client.communication_manager import CommunicationManager
 import json
+import geocoder
+from datetime import datetime
 
 GPS_IP = "0.0.0.0"
 GPS_PORT = '4000'
@@ -166,7 +168,6 @@ def post_gps_collector():
     lat = received_json['lat']
     lon = received_json['lon']
     new_pos = Point(lat, lon)
-    print(f"GPS pos: {new_pos}")
 
     gps_data = None
 
@@ -174,16 +175,24 @@ def post_gps_collector():
         with open('gps-test.json', 'r') as f:
             gps_data = json.load(f)
     except Exception:
+        print("gps-test.json not exists")
         pass
 
     if gps_data is None:
         gps_data = dict()
         gps_data['gps'] = []
 
-    gps_data['gps'].append(new_pos.to_json())
+    g = geocoder.osm([lat, lon], method='reverse')
+    coords = Point(lat, lon).to_json()
+    address = g.address
+    now = datetime.now()
+    current_time = now.strftime("%Y-%m-%d %H:%M:%S")
+    new_pos = {'pos': coords, 'address': address, 'datetime': current_time}
+    print(new_pos)
+    gps_data['gps'].append(new_pos)
 
     with open('gps-test.json', 'w') as f:
-        json.dump(gps_data, f)
+        json.dump(gps_data, f, indent=4)
 
     return {"status": 0}
 
