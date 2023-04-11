@@ -12,13 +12,15 @@ SERVER_IP = "127.0.0.1"
 SERVER_PORT = "5000"
 FULLSCREEN = False
 SIMULATION = True
+VOCAL_COMMANDS = True
 
 if __name__ == '__main__':
 
     StateManager.get_instance().sim_init(SIMULATION, Point(DEFAULT_LAT, DEFAULT_LON))
     StateManager.get_instance().set_state('server_ip', SERVER_IP)
-    StateManager.get_instance().set_statce('server_port', SERVER_PORT)
+    StateManager.get_instance().set_state('server_port', SERVER_PORT)
     StateManager.get_instance().set_state('fullscreen', FULLSCREEN)
+    StateManager.get_instance().set_state('vocal_commands', VOCAL_COMMANDS)
     VocalCommandModule.get_instance().init()
 
     FaceRecognitionModule.get_instance().configure(

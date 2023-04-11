@@ -27,6 +27,7 @@ class StateManager:
         self.status['root_path'] = os.path.abspath(os.getcwd())
         self.status['emotion_module'] = False
         self.status['actual_emotion'] = 'neutral'
+        self.status['vocal_commands'] = False
 
     @staticmethod
     def get_instance():
