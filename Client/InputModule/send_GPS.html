@@ -26,11 +26,12 @@
         if (startStopButton.innerText === 'START') {
           startStopButton.innerText = 'STOP';
       
-          if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-              function(position) {
-                currentPosition = position;
-                intervalId = setInterval(function() {
+          intervalId = setInterval(function() {
+            if (navigator.geolocation) {
+              navigator.geolocation.getCurrentPosition(
+                function(position) {
+                  currentPosition = position;
+                  
                   let lat = currentPosition.coords.latitude;
                   let lon = currentPosition.coords.longitude;
                   let data = { lat: lat, lon: lon };
@@ -58,13 +59,13 @@
                     document.getElementById('connection').innerText = "Connection status: failed";
                     document.getElementById('connection').style.color = "red";
                   });
-                }, 1000);
-              }
-            );
-          } 
-          else {
-            console.log('Geolocation is not supported by this browser.');
-          }
+                }
+              );
+            }
+            else {
+              console.log('Geolocation is not supported by this browser.');
+            }
+          }, 1000);
         } 
         else {
           startStopButton.innerText = 'START';
