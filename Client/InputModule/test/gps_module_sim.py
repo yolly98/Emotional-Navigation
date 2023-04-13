@@ -8,9 +8,9 @@ if __name__ == '__main__':
         gps_data = json.load(f)
 
     i = 0
-    while True:
+    while i < len(gps_data['gps']):
+        print(gps_data['gps'][i])
         request = gps_data['gps'][i]['pos']
-        print(request)
         CommunicationManager.send(
             ip='127.0.0.1',
             port='4000',

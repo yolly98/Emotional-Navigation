@@ -15,6 +15,7 @@ class StateManager:
         self.status['server_port'] = None
         self.status['path'] = None
         self.status['actual_way'] = None
+        self.status['last_time'] = None
         self.status['last_pos'] = None
         self.status['actual_node_index'] = 0
         self.status['travelled_km'] = 0
