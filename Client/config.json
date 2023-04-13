@@ -6,7 +6,7 @@
   "fullscreen": false,
   "simulation": true,
   "vocal_commands": false,
-  "user_recognition": true,
+  "user_recognition": false,
   "history_collections": false,
   "face_recognition" : {
     "camera": 0,

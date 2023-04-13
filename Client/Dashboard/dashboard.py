@@ -345,9 +345,6 @@ class Dashboard:
 
     def get_user(self, username):
 
-        if username == 'default':
-            self.terminal.write("your name can't be 'default', try another one")
-            return
         StateManager.get_instance().set_state('username', username)
         root_path = StateManager.get_instance().get_state('root_path')
         is_stored = True
@@ -407,7 +404,7 @@ class Dashboard:
                 pass
             StateManager.get_instance().set_state('state', 'aut')
         elif res == 'n' or res == 'no':
-            StateManager.get_instance().set_state('emotion_module', False)
+            StateManager.get_instance().set_state('username', None)
             StateManager.get_instance().set_state('state', 'navigator')
         else:
             self.terminal.write("Not valid command, press 'y' or 'n' to create a new user")
@@ -475,11 +472,11 @@ class Dashboard:
                     self.show()
                     self.terminal.write("Insert username")
                     self.show()
-                    VocalCommandModule.get_instance().say("Utente non riconosciuto, chi sei?") # IT
+                    VocalCommandModule.get_instance().say("Utente non riconosciuto, inserisci il tuo username?") # IT
                     StateManager.get_instance().set_state('state', 'get_user')
                 else:
                     self.terminal.write(f"Hi {username}")
-                    StateManager.get_instance().set_state('emotion_module', True)
+                    StateManager.get_instance().set_state('username', username)
                     StateManager.get_instance().set_state('state', 'navigator')
                     self.terminal.write("Where we go?")
                     self.show()

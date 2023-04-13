@@ -23,7 +23,7 @@
 
 ## rilevatore emozioni
 * [x] creare modulo per rilevatore emozioni
-* [ ] migliorare prestazioni !!!IMPORTANTE
+* [x] migliorare prestazioni !!!IMPORTANTE
 
 ## storico
 * [x] capire come salvare lo storico
@@ -37,11 +37,12 @@
 * [x] da fare completamente
 
 ## comandi vocali
-* [ ] implementare completamente
+* [x] implementare completamente
 
 ## sperimentazione reale
 * [x] con una sorgente non presente nel db non posso fare il get_path, cercare coordinate più vicine
 * [x] attenzione a crash durante il cambio percorso in corsa
 * [x] mettere un controllo che calcola quanto si è distanti dal nodo del path piu vicino, se troppo distante va richiesto il ricalcolo 
 * [ ] testare arduino + gps
-* [ ] adattare simulazione ad uso di GPS
+* [x] adattare simulazione ad uso di GPS
+* [ ] risolvere bug su velocità da coordinate gps reali

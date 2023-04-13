@@ -34,7 +34,7 @@ if __name__ == '__main__':
 
     if not config['user_recognition']:
         StateManager.get_instance().set_state('state', 'navigator')
-        StateManager.get_instance().set_state('username', 'default')
+        StateManager.get_instance().set_state('username', None)
     else:
         StateManager.get_instance().set_state('state', 'init')
 

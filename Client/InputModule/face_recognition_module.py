@@ -180,9 +180,11 @@ class FaceRecognitionModule:
 
     def run(self):
         while True:
-            if StateManager.get_instance().get_state('emotion_module'):
+            time.sleep(self.period)
+            username = StateManager.get_instance().get_state('username')
+            if username is not None:
+
                 emotion = self.get_emotion()
-                username = StateManager.get_instance().get_state('username')
                 way = StateManager.get_instance().get_state('actual_way')
                 timestamp = time.time()
                 if not (emotion and username and way and timestamp):
@@ -197,7 +199,6 @@ class FaceRecognitionModule:
                     server_ip = StateManager.get_instance().get_state('server_ip')
                     server_port = StateManager.get_instance().get_state('server_port')
                     CommunicationManager.send(server_ip, server_port, 'POST', request, 'history')
-            time.sleep(self.period)
 
 
 if __name__ == "__main__":
