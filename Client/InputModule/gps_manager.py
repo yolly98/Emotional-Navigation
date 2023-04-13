@@ -128,21 +128,25 @@ def post_gps():
     received_json = request.json
     lat = received_json['lat']
     lon = received_json['lon']
+    gps_time = received_json['datetime']
+    gps_time = datetime.strptime(gps_time, "%Y-%m-%d %H:%M:%S")
+    gps_time = time.mktime(gps_time.timetuple())
     new_pos = Point(lat, lon)
-    print(f"GPS pos: {new_pos}")
+    print(f"GPS pos: {new_pos}, datetime: {received_json['datetime']}")
     last_pos = StateManager.get_instance().get_state('last_pos')
 
     if last_pos is not None:
         distance = calculate_distance(new_pos, last_pos)
         travelled_km = StateManager.get_instance().get_state('travelled_km')
         travelled_km += distance
-        period = time.time() - StateManager.get_instance().get_state('last_time')
+        period = gps_time - StateManager.get_instance().get_state('last_time')
         speed = (distance / period) * 3600
-        StateManager.get_instance().set_state('last_time', time.time())
+        print(f"period: {period}, distance: {distance}, speed: {speed}")
+        StateManager.get_instance().set_state('last_time', gps_time)
         StateManager.get_instance().set_state('travelled_km', travelled_km)
         StateManager.get_instance().set_state('speed', speed)
     else:
-        StateManager.get_instance().set_state('last_time', time.time())
+        StateManager.get_instance().set_state('last_time', gps_time)
         StateManager.get_instance().set_state('travelled_km', 0)
         StateManager.get_instance().set_state('speed', 0)
 
@@ -170,7 +174,7 @@ def post_gps_collector():
     received_json = request.json
     lat = received_json['lat']
     lon = received_json['lon']
-    new_pos = Point(lat, lon)
+    time_pos = received_json['datetime']
 
     gps_data = None
 
@@ -188,9 +192,7 @@ def post_gps_collector():
     g = geocoder.osm([lat, lon], method='reverse')
     coords = Point(lat, lon).to_json()
     address = g.address
-    now = datetime.now()
-    current_time = now.strftime("%Y-%m-%d %H:%M:%S")
-    new_pos = {'pos': coords, 'address': address, 'datetime': current_time}
+    new_pos = {'pos': coords, 'address': address, 'datetime': time_pos}
     print(new_pos)
     gps_data['gps'].append(new_pos)
 

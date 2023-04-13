@@ -45,4 +45,4 @@
 * [x] mettere un controllo che calcola quanto si è distanti dal nodo del path piu vicino, se troppo distante va richiesto il ricalcolo 
 * [ ] testare arduino + gps
 * [x] adattare simulazione ad uso di GPS
-* [ ] risolvere bug su velocità da coordinate gps reali
+* [ ] risolvere bug su velocità da coordinate gps reali (nei dati raccolti i timestamp non distano di 1s!)

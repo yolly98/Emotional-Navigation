@@ -30,12 +30,22 @@
             if (navigator.geolocation) {
               navigator.geolocation.getCurrentPosition(
                 function(position) {
-                  currentPosition = position;
                   
+                  currentPosition = position;
                   let lat = currentPosition.coords.latitude;
                   let lon = currentPosition.coords.longitude;
-                  let data = { lat: lat, lon: lon };
+                  let now = new Date();
+                  let year = now.getFullYear();
+                  let month = (now.getMonth() + 1).toString().padStart(2, '0')
+                  let day = (now.getDate()).toString().padStart(2, '0');
+                  let hour = (now.getHours()).toString().padStart(2, '0');
+                  let minute = (now.getMinutes()).toString().padStart(2, '0');
+                  let second = (now.getSeconds()).toString().padStart(2, '0');
+                  let datetime = `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+                  
+                  let data = { lat: lat, lon: lon, datetime: datetime};
                   let url = "http://" + serverUrlInput.value;
+                  
                   fetch(url, {
                     method: 'POST',
                     headers: {
