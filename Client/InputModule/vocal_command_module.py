@@ -46,7 +46,10 @@ class VocalCommandModule:
 
     def synthesize_text(self, text):
         self.v_synt.say(text)
-        self.v_synt.runAndWait()
+        try:
+            self.v_synt.runAndWait()
+        except Exception:
+            pass
 
 
 

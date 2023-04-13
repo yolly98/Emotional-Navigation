@@ -196,7 +196,7 @@ class FaceRecognitionModule:
                     request['emotion'] = emotion
                     server_ip = StateManager.get_instance().get_state('server_ip')
                     server_port = StateManager.get_instance().get_state('server_port')
-                    CommunicationManager.get_instance().send(server_ip, server_port, 'POST', request, 'history')
+                    CommunicationManager.send(server_ip, server_port, 'POST', request, 'history')
             time.sleep(self.period)
 
 

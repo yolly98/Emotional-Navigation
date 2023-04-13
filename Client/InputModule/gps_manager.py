@@ -100,7 +100,7 @@ class GPS:
             server_ip = StateManager.get_instance().get_state('server_ip')
             server_port = StateManager.get_instance().get_state('server_port')
             request = pos.to_json()
-            res = CommunicationManager.get_instance().send(server_ip, server_port, 'GET', request, 'way')
+            res = CommunicationManager.send(server_ip, server_port, 'GET', request, 'way')
             actual_way = None
             if res['status'] == 0:
                 actual_way = dict()
@@ -148,7 +148,7 @@ def post_gps():
     server_ip = StateManager.get_instance().get_state('server_ip')
     server_port = StateManager.get_instance().get_state('server_port')
     server_request = last_pos.to_json()
-    res = CommunicationManager.get_instance().send(server_ip, server_port, 'GET', server_request, 'way')
+    res = CommunicationManager.send(server_ip, server_port, 'GET', server_request, 'way')
     actual_way = None
     if res['status'] == 0:
         actual_way = dict()
@@ -172,7 +172,7 @@ def post_gps_collector():
     gps_data = None
 
     try:
-        with open('gps-test.json', 'r') as f:
+        with open('test/gps-test.json', 'r') as f:
             gps_data = json.load(f)
     except Exception:
         print("gps-test.json not exists")
@@ -191,10 +191,11 @@ def post_gps_collector():
     print(new_pos)
     gps_data['gps'].append(new_pos)
 
-    with open('gps-test.json', 'w') as f:
+    with open('test/gps-test.json', 'w') as f:
         json.dump(gps_data, f, indent=4)
 
     return {"status": 0}
+
 
 if __name__ == '__main__':
     GPS.get_instance().listener()

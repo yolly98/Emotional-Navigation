@@ -2,7 +2,7 @@ from threading import Thread
 from Client.state_manager import StateManager
 from Utility.point import Point
 from Client.Dashboard.dashboard import Dashboard
-from Client.InputModule.gps_module import GPS
+from Client.InputModule.gps_manager import GPS
 from Client.InputModule.face_recognition_module import FaceRecognitionModule
 from Client.InputModule.vocal_command_module import VocalCommandModule
 
@@ -12,7 +12,8 @@ SERVER_IP = "127.0.0.1"
 SERVER_PORT = "5000"
 FULLSCREEN = False
 SIMULATION = True
-VOCAL_COMMANDS = True
+VOCAL_COMMANDS = False
+CAMERA = 0
 
 if __name__ == '__main__':
 
@@ -24,7 +25,7 @@ if __name__ == '__main__':
     VocalCommandModule.get_instance().init()
 
     FaceRecognitionModule.get_instance().configure(
-        camera=1,
+        camera=CAMERA,
         iterations=20,
         wait_time=0.3,
         period=60,

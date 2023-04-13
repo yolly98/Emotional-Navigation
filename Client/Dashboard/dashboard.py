@@ -108,7 +108,7 @@ class Dashboard:
 
         server_ip = StateManager.get_instance().get_state('server_ip')
         server_port = StateManager.get_instance().get_state('server_port')
-        res = CommunicationManager.get_instance().send(server_ip, server_port, "GET", request, "path")
+        res = CommunicationManager.send(server_ip, server_port, "GET", request, "path")
         if res is None or res == "":
             self.terminal.write("Something went wrong")
             VocalCommandModule.get_instance().say("Qualcosa è andato storto, riprova")  # IT
@@ -359,7 +359,7 @@ class Dashboard:
             request['username'] = username
             server_ip = StateManager.get_instance().get_state('server_ip')
             server_port = StateManager.get_instance().get_state('server_port')
-            res = CommunicationManager.get_instance().send(server_ip, server_port, "GET", request, "user")
+            res = CommunicationManager.send(server_ip, server_port, "GET", request, "user")
             if res is None or res == "":
                 self.terminal.write("Something went wrong")
                 return
@@ -397,7 +397,7 @@ class Dashboard:
             request['image'] = base64.b64encode(image).decode('utf-8')
             server_ip = StateManager.get_instance().get_state('server_ip')
             server_port = StateManager.get_instance().get_state('server_port')
-            res = CommunicationManager.get_instance().send(server_ip, server_port, "POST", request, "user")
+            res = CommunicationManager.send(server_ip, server_port, "POST", request, "user")
             if res is None or res == "" or res['status'] < 0:
                 self.terminal.write("Something went wrong")
                 return

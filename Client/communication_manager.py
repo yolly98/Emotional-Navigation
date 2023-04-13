@@ -3,18 +3,11 @@ from requests import post, get,  exceptions
 
 class CommunicationManager:
 
-    _instance = None
-
     def __init__(self):
         pass
 
     @staticmethod
-    def get_instance():
-        if CommunicationManager._instance is None:
-            CommunicationManager._instance = CommunicationManager()
-        return CommunicationManager._instance
-
-    def send(self, ip, port, type, data, resource):
+    def send(ip, port, type, data, resource):
         connection_string = f'http://{ip}:{port}/{resource}'
         response = None
         try:
@@ -36,5 +29,5 @@ class CommunicationManager:
 if __name__ == '__main__':
     msg = dict()
     msg["msg"] = "ciao"
-    res = CommunicationManager.get_instance().send("127.0.0.1", "5000", msg)
+    res = CommunicationManager.send("127.0.0.1", "5000", msg)
     print(res)
