@@ -345,6 +345,9 @@ class Dashboard:
 
     def get_user(self, username):
 
+        if username == 'default':
+            self.terminal.write("your name can't be 'default', try another one")
+            return
         StateManager.get_instance().set_state('username', username)
         root_path = StateManager.get_instance().get_state('root_path')
         is_stored = True
@@ -379,7 +382,6 @@ class Dashboard:
 
         StateManager.get_instance().set_state('state', 'aut')
 
-
     def new_user(self, res):
         res = res.lower()
         if res == 'y' or res == 'yes' or res == 'sì':
@@ -410,7 +412,6 @@ class Dashboard:
         else:
             self.terminal.write("Not valid command, press 'y' or 'n' to create a new user")
             VocalCommandModule.get_instance().say("Comando non valido, si o no?") # IT
-
 
     def get_event(self):
 

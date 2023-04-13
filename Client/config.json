@@ -1,0 +1,20 @@
+{
+  "default_lat": "42.3333569",
+  "default_lon": "12.2692692",
+  "server_ip": "127.0.0.1",
+  "server_port": "5000",
+  "fullscreen": false,
+  "simulation": true,
+  "vocal_commands": false,
+  "user_recognition": true,
+  "history_collections": false,
+  "face_recognition" : {
+    "camera": 0,
+    "iterations": 20,
+    "wait_time": 0.3,
+    "period": 60,
+    "user_detection_attempts": 5
+  }
+
+
+}
