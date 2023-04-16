@@ -25,7 +25,7 @@ GPS_PORT = '4000'
 
 class GPS:
 
-    gps_simulator = None
+    gps_manager = None
 
     def __init__(self):
         self.period = 5
@@ -34,9 +34,9 @@ class GPS:
 
     @staticmethod
     def get_instance():
-        if GPS.gps_simulator is None:
-            GPS.gps_simulator = GPS()
-        return GPS.gps_simulator
+        if GPS.gps_manager is None:
+            GPS.gps_manager = GPS()
+        return GPS.gps_manager
 
     def get_app(self):
         return self.app
@@ -115,11 +115,6 @@ class GPS:
 app = GPS.get_instance().get_app()
 
 
-@app.get('/gps')
-def get_gps():
-    return send_file('send_GPS.html')
-
-
 @app.post('/gps')
 def post_gps():
     if request.json is None:
@@ -165,43 +160,6 @@ def post_gps():
     StateManager.get_instance().set_state('actual_way', actual_way)
 
     return {"status": 0}
-
-@app.post('/gps-collector')
-def post_gps_collector():
-    if request.json is None:
-        return {'error': 'No JSON request received'}, 500
-
-    received_json = request.json
-    lat = received_json['lat']
-    lon = received_json['lon']
-    time_pos = received_json['datetime']
-
-    gps_data = None
-
-    try:
-        with open('test/gps-test.json', 'r') as f:
-            gps_data = json.load(f)
-    except Exception:
-        print("gps-test.json not exists")
-        pass
-
-    if gps_data is None:
-        gps_data = dict()
-        gps_data['gps'] = []
-
-    g = geocoder.osm([lat, lon], method='reverse')
-    coords = Point(lat, lon).to_json()
-    address = g.address
-    new_pos = {'pos': coords, 'address': address, 'datetime': time_pos}
-    print(new_pos)
-    gps_data['gps'].append(new_pos)
-
-    with open('test/gps-test.json', 'w') as f:
-        json.dump(gps_data, f, indent=4)
-        f.close()
-
-    return {"status": 0}
-
 
 if __name__ == '__main__':
     GPS.get_instance().listener()

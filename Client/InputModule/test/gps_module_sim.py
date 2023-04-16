@@ -8,6 +8,7 @@ from Utility.utility_functions import calculate_distance
 
 
 def sanitize_test_path(gps_data):
+    gps_data['gps'].sort(key=lambda x: x['datetime'])
 
     new_gps_data = dict()
     new_gps_data['gps'] = []
@@ -78,7 +79,8 @@ if __name__ == '__main__':
     with open('gps-test.json', 'r') as f:
         gps_data = json.load(f)
 
-    # visualize_test_path(sanitize_test_path(gps_data))
+    gps_data = sanitize_test_path(gps_data)
+    visualize_test_path(gps_data)
     # exit(0)
 
     i = 0
