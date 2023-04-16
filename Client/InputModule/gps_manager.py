@@ -18,6 +18,7 @@ from Client.communication_manager import CommunicationManager
 import json
 import geocoder
 from datetime import datetime
+import math
 
 GPS_IP = "0.0.0.0"
 GPS_PORT = '4000'
@@ -136,6 +137,7 @@ def post_gps():
         travelled_km += distance
         period = gps_time - StateManager.get_instance().get_state('last_time')
         speed = (distance / period) * 3600
+        # speed = math.floor((StateManager.get_instance().get_state('speed') + speed ) /2)
         print(f"period: {period}, distance: {distance}, speed: {speed}")
         StateManager.get_instance().set_state('last_time', gps_time)
         StateManager.get_instance().set_state('travelled_km', travelled_km)
