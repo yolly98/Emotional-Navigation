@@ -113,6 +113,7 @@ def visualize_path(path, completed=False):
     ax.axis('off')
     plt.show()
 
+
 def visualize_map():
 
     fig, ax = plt.subplots()
@@ -158,6 +159,7 @@ def visualize_map():
     ax.axis('off')
     plt.show()
 
+
 def path_to_json(path):
     json = []
     for relationship in path:
@@ -178,6 +180,7 @@ def json_to_path(json):
         way['end_node'] = GNode.json_to_gnode(relationship['end_node'])
         path.append(way)
     return path
+
 
 if __name__ == '__main__':
     visualize_map()

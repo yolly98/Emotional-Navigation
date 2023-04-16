@@ -198,6 +198,7 @@ def post_gps_collector():
 
     with open('test/gps-test.json', 'w') as f:
         json.dump(gps_data, f, indent=4)
+        f.close()
 
     return {"status": 0}
 
