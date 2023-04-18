@@ -15,4 +15,3 @@ flask
 requests
 pymongo
 flask-cors
-polyline
