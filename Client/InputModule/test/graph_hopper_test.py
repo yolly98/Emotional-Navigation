@@ -8,6 +8,7 @@ from Utility.point import Point
 from Utility.gnode import GNode
 from Utility.way import Way
 from Utility.utility_functions import calculate_distance
+from Server.Persistence.mongo_map_manager import MongoMapManager
 
 # Imposta la posizione di partenza e di arrivo
 start_point = '42.33399231261333, 12.269070539901804'
@@ -45,7 +46,8 @@ def get_path(start_point, end_point):
         "point": [start_point, end_point],
         "profile": "car",
         "instructions": "true",
-        "points_encoded": "false"
+        "points_encoded": "false",
+        "locale": "it-IT"
     }
 
     response = requests.get(url, params=params)
@@ -95,44 +97,31 @@ def get_path(start_point, end_point):
 
     '''
     # convert graphhopper path to my path
+    path = []
     last_point = None
+    start_node = None
+    MongoMapManager.get_instance().open_connection()
     for point in points:
         if last_point is None:
             last_point = point
+            start_node = MongoMapManager.get_instance().get_node_by_coord(point[1], point[0])
             continue
 
         way = dict()
 
-        start_node = GNode(
-            id=neo4j_start_node.get('id'),
-            type=neo4j_start_node.get('type'),
-            name=neo4j_start_node.get('name'),
-            lat=neo4j_start_node.get('lat'),
-            lon=neo4j_start_node.get('lon')
-        )
-        end_node = GNode(
-            id=neo4j_end_node.get('id'),
-            type=neo4j_end_node.get('type'),
-            name=neo4j_end_node.get('name'),
-            lat=neo4j_end_node.get('lat'),
-            lon=neo4j_end_node.get('lon')
-        )
-        way_properties = Way(
-            id=neo4j_way['way_id'],
-            name=neo4j_way['name'],
-            alt_name=neo4j_way['alt_name'],
-            ref=neo4j_way['ref'],
-            speed=neo4j_way['speed'],
-            length=neo4j_way['length'],
-            start_node=neo4j_way['start_node'],
-            end_node=neo4j_way['end_node']
-        )
+        end_node = MongoMapManager.get_instance().get_node_by_coord(point[1], point[0])
+        way_properties = MongoMapManager.get_instance().get_way_by_nodes(start_node.get('id'), end_node.get('id'))
         way['way'] = way_properties
         way['start_node'] = start_node
         way['end_node'] = end_node
         path.append(way)
-    '''
+        start_node = end_node
+    
 
+    MongoMapManager.get_instance().close_connection()
+
+    print(path)
+    '''
 
 if __name__=='__main__':
     get_path(start_point, end_point)

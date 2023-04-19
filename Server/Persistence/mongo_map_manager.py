@@ -96,6 +96,27 @@ class MongoMapManager:
             ways.append(way)
         return ways
 
+    def get_way_by_nodes(self, start_node, end_node):
+        if self.conn is None:
+            return False
+
+        db = self.conn['smart_navigation'].map_way
+        json_ways = db.find(
+            {
+                '$and': [
+                    {'start_node': start_node},
+                    {'end_node': end_node}
+                ]
+            }
+        )
+        if json_ways is None:
+            return None
+        ways = []
+        for json_way in json_ways:
+            way = Way.json_to_way(json_way)
+            ways.append(way)
+        return ways
+
     def get_node(self, node_id):
         if self.conn is None:
             return False

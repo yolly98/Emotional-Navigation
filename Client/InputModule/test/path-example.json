@@ -181,7 +181,7 @@
                         0,
                         1
                     ],
-                    "text": "Continue",
+                    "text": "Continua",
                     "time": 2023,
                     "street_name": ""
                 },
@@ -193,7 +193,7 @@
                         1,
                         6
                     ],
-                    "text": "Turn sharp right onto Strada Provinciale Carbognanese",
+                    "text": "Gira a destra curva stretta su Strada Provinciale Carbognanese",
                     "time": 24026,
                     "street_name": "Strada Provinciale Carbognanese"
                 },
@@ -205,7 +205,7 @@
                         6,
                         34
                     ],
-                    "text": "Turn right onto Via di Fabrica",
+                    "text": "Gira a destra su Via di Fabrica",
                     "time": 48831,
                     "street_name": "Via di Fabrica"
                 },
@@ -216,7 +216,7 @@
                         34,
                         35
                     ],
-                    "text": "Turn left",
+                    "text": "Gira a sinistra",
                     "time": 912,
                     "street_name": ""
                 },
@@ -228,7 +228,7 @@
                         35,
                         35
                     ],
-                    "text": "Arrive at destination",
+                    "text": "Arrivato a destinazione",
                     "time": 0,
                     "street_name": ""
                 }
