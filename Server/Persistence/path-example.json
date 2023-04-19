@@ -1,3 +1,4 @@
+
 {
     "hints": {
         "visited_nodes.sum": 14,
@@ -8,7 +9,7 @@
             "GraphHopper",
             "OpenStreetMap contributors"
         ],
-        "took": 4
+        "took": 126
     },
     "paths": [
         {
@@ -234,7 +235,15 @@
                 }
             ],
             "legs": [],
-            "details": {},
+            "details": {
+                "max_speed": [
+                    [
+                        0,
+                        35,
+                        null
+                    ]
+                ]
+            },
             "ascend": 0.0,
             "descend": 0.0,
             "snapped_waypoints": {
