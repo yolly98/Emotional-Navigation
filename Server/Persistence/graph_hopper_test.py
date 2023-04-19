@@ -22,8 +22,7 @@ def get_nearest_point(point):
 
     params = {
         "point": point,
-        "vehicle": "car",
-        "details": "street_name, max_speed"
+        "vehicle": "car"
     }
 
     response = requests.get(url, params=params)
@@ -34,7 +33,7 @@ def get_nearest_point(point):
         exit()
 
     json_data = response.json()
-    print(json_data)
+    return json_data['coordinates']
 
 def get_way_by_coord(point):
     print(geocoder.osm(point, method='reverse').address)
@@ -112,4 +111,5 @@ if __name__ == '__main__':
     path = get_path(start_point, end_point)
     plot_path(path)
     get_way_by_coord('42.331194, 12.265865')
-    get_nearest_point(start_point)
+    point = get_nearest_point(start_point)
+    print(point)
