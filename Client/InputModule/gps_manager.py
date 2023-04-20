@@ -78,56 +78,59 @@ class GPS:
         StateManager.get_instance().set_state('actual_way', actual_way)
         StateManager.get_instance().set_state('remaining_m', remaining_m)
 
+    @staticmethod
+    def get_sim_pos(path, last_pos_index, travelled_km):
+        if path is None:
+            return StateManager.get_instance().get_state('last_pos')
+
+        i = 0
+        distance = travelled_km * 1000
+        while i < len(path['points']):
+            if i > 0:
+                m = calculate_distance(path['points'][i - 1], path['points'][i])
+                distance -= m
+                if i > last_pos_index:
+                    if distance > 0:
+                        last_pos_index = i
+                    else:
+                        distance += m
+                        break
+            i += 1
+
+        # p3 interpolation between p1 and p2
+        p1 = path['points'][last_pos_index]
+        if last_pos_index >= len(path['points']) - 1:
+            return p1
+        p2 = path['points'][last_pos_index + 1]
+
+        lat1 = float(p1[0])
+        lon1 = float(p1[1])
+        lat2 = float(p2[0])
+        lon2 = float(p2[1])
+        d = distance / 1000
+
+        R = 6371  # Earth radius in km
+        lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
+        bearing = atan2(sin(lon2 - lon1) * cos(lat2),
+                        cos(lat1) * sin(lat2) - sin(lat1) * cos(lat2) * cos(lon2 - lon1))
+        lat3 = asin(sin(lat1) * cos(d / R) + cos(lat1) * sin(d / R) * cos(bearing))
+        lon3 = lon1 + atan2(sin(bearing) * sin(d / R) * cos(lat1), cos(d / R) - sin(lat1) * sin(lat3))
+
+        p3 = Point(str(round(degrees(lat3), 7)), str(round(degrees(lon3), 7)))
+
+        StateManager.get_instance().set_state('last_pos_index', last_pos_index)
+        StateManager.get_instance().set_state('last_pos', p3)
+
+        print(f"GPS pos: {p3}")
+
     def run_simulation(self):
         while True:
             travelled_km = StateManager.get_instance().get_state('travelled_km')
-
             last_pos_index = StateManager.get_instance().get_state('last_pos_index')
-
             path = StateManager.get_instance().get_state('path')
-            if path is None:
-                return StateManager.get_instance().get_state('last_pos')
 
-            i = 0
-            distance = travelled_km * 1000
-            while i < len(path['points']):
-                if i > 0:
-                    m = calculate_distance(path['points'][i - 1], path['points'][i])
-                    distance -= m
-                    if i > last_pos_index:
-                        if distance > 0:
-                            last_pos_index = i
-                        else:
-                            distance += m
-                            break
-                i += 1
-
-            # p3 interpolation between p1 and p2
-            p1 = path['points'][last_pos_index]
-            if last_pos_index >= len(path['points']) - 1:
-                return p1
-            p2 = path['points'][last_pos_index + 1]
-
-            lat1 = float(p1[0])
-            lon1 = float(p1[1])
-            lat2 = float(p2[0])
-            lon2 = float(p2[1])
-            d = distance / 1000
-
-            R = 6371  # Earth radius in km
-            lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
-            bearing = atan2(sin(lon2 - lon1) * cos(lat2),
-                            cos(lat1) * sin(lat2) - sin(lat1) * cos(lat2) * cos(lon2 - lon1))
-            lat3 = asin(sin(lat1) * cos(d / R) + cos(lat1) * sin(d / R) * cos(bearing))
-            lon3 = lon1 + atan2(sin(bearing) * sin(d / R) * cos(lat1), cos(d / R) - sin(lat1) * sin(lat3))
-
-            p3 = Point(str(round(degrees(lat3), 7)), str(round(degrees(lon3), 7)))
-
-            StateManager.get_instance().set_state('last_pos_index', last_pos_index)
-            StateManager.get_instance().set_state('last_pos', p3)
-
+            GPS.get_sim_pos(path, last_pos_index, travelled_km)
             GPS.get_actual_way(path, last_pos_index)
-            print(f"GPS pos: {p3}")
 
             time.sleep(self.sim_period)
 

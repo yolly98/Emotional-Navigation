@@ -1,6 +1,5 @@
 import pygame
 import sys
-import math
 from Utility.utility_functions import print_path, json_to_path
 import time
 from Client.Dashboard.View.alert import Alert
@@ -15,6 +14,9 @@ from Client.InputModule.face_recognition_module import FaceRecognitionModule
 from Client.InputModule.vocal_command_module import VocalCommandModule
 import base64
 import polyline
+import json
+import math
+
 
 class Dashboard:
 
@@ -112,7 +114,7 @@ class Dashboard:
             VocalCommandModule.get_instance().say("Qualcosa è andato storto, riprova")  # IT
             return
         elif res['status'] == 0:
-            path = res['path']
+            path = json.loads(res['path'])
         elif res['status'] == -1:
             self.terminal.write("Path not found")
             VocalCommandModule.get_instance().say("Percorso non trovato") # IT
@@ -125,7 +127,7 @@ class Dashboard:
         path['points'] = polyline.decode(path['points'])
         self.terminal.write("Path found ")
         self.terminal.write(f"length:  {path['distance'] / 1000} km")
-        self.terminal.write(f"estimated time: {math.floor(path['time']/60)} minutes {path['time']%60} seconds")
+        self.terminal.write(f"estimated time: {math.floor((path['time']/1000)/60)} minutes {math.floor((path['time']/1000)%60)} seconds")
 
         self.old_timestamp = time.time()
         self.old_car_speed = 0
@@ -192,7 +194,7 @@ class Dashboard:
                     self.player_car.set_speed(StateManager.get_instance().get_state('speed'))
 
                 # draw m travelled
-                m_surface = font.render(f"{remaining_m} m", True, self.colors['white'])
+                m_surface = font.render(f"{math.floor(remaining_m)} m", True, self.colors['white'])
                 m_rect = m_surface.get_rect()
                 m_rect.midtop = (100, 80)
                 self.win.blit(m_surface, m_rect)
