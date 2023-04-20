@@ -14,10 +14,11 @@ class StateManager:
         self.status['server_ip'] = None
         self.status['server_port'] = None
         self.status['path'] = None
-        self.status['actual_way'] = None
+        self.status['path_end'] = True
+        self.status['path_destination'] = None
         self.status['last_time'] = None
         self.status['last_pos'] = None
-        self.status['actual_node_index'] = 0
+        self.status['last_pos_index'] = 0
         self.status['travelled_km'] = 0
         self.status['speed'] = 0
         self.status['is_sim'] = True
@@ -40,13 +41,14 @@ class StateManager:
         if sim:
             self.status['last_pos'] = default_pos
 
-    def path_init(self):
-        if self.status['path'] is None:
+    def path_init(self, path):
+        if path is None:
             return
-        self.status['actual_node_index'] = 0
+        self.status['path'] = path
+        self.status['last_pos_index'] = 0
         self.status['travelled_km'] = 0
-        node = self.status['path'][0]['start_node']
-        self.status['last_pos'] = Point(node.get('lat'), node.get('lon'))
+        self.status['last_pos'] = path['points'][0]
+        self.status['path_end'] = False
 
     def set_state(self, key, value):
         with self.lock:

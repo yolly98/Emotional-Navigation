@@ -7,14 +7,14 @@ from Utility.point import Point
 import math
 
 
-def calculate_distance(Point1, Point2): # in km
+def calculate_distance(Point1, Point2): # in m
 
-    lat1 = float(Point1.get_lat())
-    lon1 = float(Point1.get_lon())
-    lat2 = float(Point2.get_lat())
-    lon2 = float(Point2.get_lon())
+    lat1 = float(Point1[0])
+    lon1 = float(Point1[1])
+    lat2 = float(Point2[0])
+    lon2 = float(Point2[1])
 
-    R = 6371  # Earth radius in km
+    R = 6371000  # Earth radius in m
     lat1 = math.radians(lat1)
     lon1 = math.radians(lon1)
     lat2 = math.radians(lat2)

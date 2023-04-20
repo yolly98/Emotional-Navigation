@@ -45,70 +45,54 @@ class GPS:
     def listener(self):
         self.app.run(host=GPS_IP, port=GPS_PORT, debug=False, threaded=True)
 
-    def get_coord(self, travelled_km):
-
-        actual_node_index = StateManager.get_instance().get_state('actual_node_index')
-
-        path = StateManager.get_instance().get_state('path')
-        if path is None:
-            return StateManager.get_instance().get_state('last_pos')
-
-        i = 0
-        ms = 0
-        while i < len(path):
-            if i < actual_node_index:
-                ms += path[i]['way'].get('length')
-            else:
-                distance = path[actual_node_index]['way'].get('length')
-                if (travelled_km * 1000) <= ms + distance:
-                    break
-                else:
-                    ms += distance
-                    if i + 1 < len(path):
-                        actual_node_index += 1
-            i += 1
-
-        p1 = Point(path[actual_node_index]['start_node'].get('lat'), path[actual_node_index]['start_node'].get('lon'))
-        if actual_node_index >= len(path) - 1:
-            return p1
-        p2 = Point(path[actual_node_index + 1]['start_node'].get('lat'), path[actual_node_index + 1]['start_node'].get('lon'))
-
-        lat1 = float(p1.get_lat())
-        lon1 = float(p1.get_lon())
-        lat2 = float(p2.get_lat())
-        lon2 = float(p2.get_lon())
-        d = travelled_km - (ms / 1000)
-
-        R = 6371  # Earth radius in km
-        lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
-        bearing = atan2(sin(lon2 - lon1) * cos(lat2),
-                        cos(lat1) * sin(lat2) - sin(lat1) * cos(lat2) * cos(lon2 - lon1))
-        lat3 = asin(sin(lat1) * cos(d / R) + cos(lat1) * sin(d / R) * cos(bearing))
-        lon3 = lon1 + atan2(sin(bearing) * sin(d / R) * cos(lat1), cos(d / R) - sin(lat1) * sin(lat3))
-
-        p3 = Point(str(round(degrees(lat3), 7)), str(round(degrees(lon3), 7)))
-
-        print(f"GPS pos: {p3}")
-
-        return p3
-
     def run_simulation(self):
         while True:
             travelled_km = StateManager.get_instance().get_state('travelled_km')
-            pos = self.get_coord(travelled_km)
-            StateManager.get_instance().set_state('last_pos', pos)
 
-            server_ip = StateManager.get_instance().get_state('server_ip')
-            server_port = StateManager.get_instance().get_state('server_port')
-            request = pos.to_json()
-            res = CommunicationManager.send(server_ip, server_port, 'GET', request, 'way')
-            actual_way = None
-            if res['status'] == 0:
-                actual_way = dict()
-                actual_way['way'] = Way.json_to_way(res['way'])
-                actual_way['start_node'] = GNode.json_to_gnode(res['start_node'])
-                actual_way['end_node'] = GNode.json_to_gnode(res['end_node'])
-            StateManager.get_instance().set_state('actual_way', actual_way)
+            last_pos_index = StateManager.get_instance().get_state('last_pos_index')
+
+            path = StateManager.get_instance().get_state('path')
+            if path is None:
+                return StateManager.get_instance().get_state('last_pos')
+
+            i = 0
+            distance = travelled_km * 1000
+            while i < len(path['points']):
+                if i > 0:
+                    m = calculate_distance(path['points'][i - 1], path['points'][i])
+                    distance -= m
+                    if i > last_pos_index:
+                        if distance > 0:
+                            last_pos_index = i
+                        else:
+                            distance += m
+                            break
+                i += 1
+
+            # p3 interpolation between p1 and p2
+            p1 = path['points'][last_pos_index]
+            if last_pos_index >= len(path['points']) - 1:
+                return p1
+            p2 = path['points'][last_pos_index + 1]
+
+            lat1 = float(p1[0])
+            lon1 = float(p1[1])
+            lat2 = float(p2[0])
+            lon2 = float(p2[1])
+            d = distance / 1000
+
+            R = 6371  # Earth radius in km
+            lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
+            bearing = atan2(sin(lon2 - lon1) * cos(lat2),
+                            cos(lat1) * sin(lat2) - sin(lat1) * cos(lat2) * cos(lon2 - lon1))
+            lat3 = asin(sin(lat1) * cos(d / R) + cos(lat1) * sin(d / R) * cos(bearing))
+            lon3 = lon1 + atan2(sin(bearing) * sin(d / R) * cos(lat1), cos(d / R) - sin(lat1) * sin(lat3))
+
+            p3 = Point(str(round(degrees(lat3), 7)), str(round(degrees(lon3), 7)))
+
+            StateManager.get_instance().set_state('last_pos_index', last_pos_index)
+            StateManager.get_instance().set_state('last_pos', p3)
+            print(f"GPS pos: {p3}")
 
             time.sleep(self.period)
 
@@ -127,7 +111,8 @@ def post_gps():
     gps_time = received_json['datetime']
     gps_time = datetime.strptime(gps_time, "%Y-%m-%d %H:%M:%S")
     gps_time = time.mktime(gps_time.timetuple())
-    new_pos = Point(lat, lon)
+    new_pos = [float(lat), float(lon)]
+
     print(f"GPS pos: {new_pos}, datetime: {received_json['datetime']}")
     last_pos = StateManager.get_instance().get_state('last_pos')
 
@@ -149,17 +134,25 @@ def post_gps():
 
     StateManager.get_instance().set_state('last_pos', new_pos)
 
-    server_ip = StateManager.get_instance().get_state('server_ip')
-    server_port = StateManager.get_instance().get_state('server_port')
-    server_request = last_pos.to_json()
-    res = CommunicationManager.send(server_ip, server_port, 'GET', server_request, 'way')
-    actual_way = None
-    if res['status'] == 0:
-        actual_way = dict()
-        actual_way['way'] = Way.json_to_way(res['way'])
-        actual_way['start_node'] = GNode.json_to_gnode(res['start_node'])
-        actual_way['end_node'] = GNode.json_to_gnode(res['end_node'])
-    StateManager.get_instance().set_state('actual_way', actual_way)
+    # check if new_pos is in the path
+    path = StateManager.get_instance().get_state('path')
+    last_pos_index = StateManager.get_instance().get_state('last_pos_index')
+    if path is None:
+        pass
+    else:
+        server_ip = StateManager.get_instance().get_state('server_ip')
+        server_port = StateManager.get_instance().get_state('server_port')
+        server_request = {"coord": new_pos}
+        res = CommunicationManager.send(server_ip, server_port, 'GET', server_request, 'nearest')
+        if res['status'] == 0 and res['point'] is not None:
+            nearest_pos = res['point']
+            isbelonging = False
+            for i in range(last_pos_index, len(path['points'])):
+                if nearest_pos[0] == path['points'][i][0] and nearest_pos[1] == path['points'][i][0]:
+                    isbelonging = True
+                    break
+            if not isbelonging:
+                StateManager.get_instance().set_state('path', None)
 
     return {"status": 0}
 

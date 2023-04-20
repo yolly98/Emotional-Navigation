@@ -14,7 +14,7 @@ from Client.state_manager import StateManager
 from Client.InputModule.face_recognition_module import FaceRecognitionModule
 from Client.InputModule.vocal_command_module import VocalCommandModule
 import base64
-
+import polyline
 
 class Dashboard:
 
@@ -69,16 +69,12 @@ class Dashboard:
         self.street_height = self.win_height / 3
         self.street_pos = [0, self.win_height / 3]
         self.player_car = Car(self.street_width - 250, self.win_height - self.terminal_height - 100, self.block_size, self.max_car_speed, 'player')
-        StateManager.get_instance().set_state('path', None)
-        StateManager.get_instance().set_state('travelled_km', None)
         self.old_car_speed = 0
         self.old_timestamp = None
         self.start_time = None
         self.travel_time = None
         self.alert = Alert(self.street_width - 100, 60, 5, self.colors['white'], self.colors['black'])
         self.arrow = Arrow(270, 60, 5, None, 'right', self.colors['white'], self.colors['black'])
-        StateManager.get_instance().set_state('actual_way', None)
-
         self.path_progress = None
         self.terminal = Terminal(0, self.win_height - self.terminal_height, self.terminal_height, 20, self.colors)
 
@@ -91,6 +87,7 @@ class Dashboard:
     def end_path(self):
         StateManager.get_instance().set_state('path', None)
         StateManager.get_instance().set_state('travelled_km', 0)
+        StateManager.get_instance().set_state('path_end', True)
         self.old_car_speed = 0
         self.old_timestamp = None
         self.start_time = None
@@ -104,22 +101,19 @@ class Dashboard:
         request = dict()
         request['username'] = StateManager.get_instance().get_state('username')
         request['destination_name'] = destination_name
-        request['source_coord'] = StateManager.get_instance().get_state('last_pos').to_json()
+        request['source_coord'] = StateManager.get_instance().get_state('last_pos')
 
         server_ip = StateManager.get_instance().get_state('server_ip')
         server_port = StateManager.get_instance().get_state('server_port')
         res = CommunicationManager.send(server_ip, server_port, "GET", request, "path")
-        if res is None or res == "":
+        path = None
+        if res is None:
             self.terminal.write("Something went wrong")
             VocalCommandModule.get_instance().say("Qualcosa è andato storto, riprova")  # IT
             return
         elif res['status'] == 0:
-            path = json_to_path(res['path'])
+            path = res['path']
         elif res['status'] == -1:
-            self.terminal.write("Not valid destination")
-            VocalCommandModule.get_instance().say("Destinazione non valida") # IT
-            return
-        elif res['status'] == -2:
             self.terminal.write("Path not found")
             VocalCommandModule.get_instance().say("Percorso non trovato") # IT
             return
@@ -128,22 +122,18 @@ class Dashboard:
             VocalCommandModule.get_instance().say("Qualcosa è andato storto, riprova") # IT
             return
 
+        path['points'] = polyline.decode(path['points'])
         self.terminal.write("Path found ")
-        msg = print_path(path)
-        self.terminal.write(f"length:  {msg['len']} km")
-        self.terminal.write(f"estimated time: {msg['t_m']} minutes {msg['t_s']} seconds")
+        self.terminal.write(f"length:  {path['distance'] / 1000} km")
+        self.terminal.write(f"estimated time: {math.floor(path['time']/60)} minutes {path['time']%60} seconds")
 
         self.old_timestamp = time.time()
         self.old_car_speed = 0
         self.start_time = time.time()
         self.travel_time = 0
-        StateManager.get_instance().set_state('travelled_km', 0)
-        path_length = 0
-        for way in path:
-            path_length += way['way'].get('length')
-        self.path_progress = PathProgress(self.street_width + (self.win_width - self.street_width - 30)/2, self.street_pos[1] - 50, self.block_size, path_length)
-        StateManager.get_instance().set_state('path', path)
-        StateManager.get_instance().path_init()
+        self.path_progress = PathProgress(self.street_width + (self.win_width - self.street_width - 30)/2, self.street_pos[1] - 50, self.block_size, path['distance'])
+        StateManager.get_instance().path_init(path)
+        StateManager.get_instance().set_state('path_destination', destination_name)
         VocalCommandModule.get_instance().say("Ho trovato il percorso migliore, andiamo!")  # IT
 
     def show(self):
@@ -157,20 +147,49 @@ class Dashboard:
 
         font = pygame.font.SysFont('times new roman', 25)
 
-        actual_street = StateManager.get_instance().get_state('actual_way')
+        path = StateManager.get_instance().get_state('path')
+        last_pos_index = StateManager.get_instance().get_state('last_pos_index')
+        end_path = StateManager.get_instance().get_state('path_end')
+        remaining_m = 0
+
+        # get actual way
+        actual_way = None
+        if path is not None:
+            for way in path['ways']:
+                if way['interval'][0] < last_pos_index < way['interval'][1]:
+                    actual_way = way
+                    remaining_m = way['distance'] - remaining_m
+                    break
+                else:
+                    remaining_m += way['distance']
+        elif path is None and not end_path:
+            print("path recalculation")
+            self.get_path(StateManager.get_instance().get_state('path_destination'))
+            return
+        else:
+            server_ip = StateManager.get_instance().get_state('server_ip')
+            server_port = StateManager.get_instance().get_state('server_port')
+            server_request = {"coord": StateManager.get_instance().get_state('last_pos')}
+            res = CommunicationManager.send(server_ip, server_port, 'GET', server_request, 'way')
+            if res['status'] == 0 and res['address'] is not None:
+                actual_way = dict()
+                actual_way['street_name'] = res['address']['road']
+                actual_way['max_speed'] = 200
+
+        if 'max_speed' not in actual_way:
+            actual_way['max_speed'] = 60
 
         # draw street name
-        if actual_street is None:
-            pass
-        else:
-            message = f"{actual_street['way'].get('name')} ({actual_street['way'].get('ref')}) lim: {actual_street['way'].get('speed')} km/h"
-            street_surface = font.render(message, True, self.colors['white'])
-            street_rect = street_surface.get_rect()
-            street_rect.midtop = (self.street_width / 2, 10)
-            self.win.blit(street_surface, street_rect)
+        message = f"{actual_way['street_name']}, {actual_way['max_speed']} km/h"
+        street_surface = font.render(message, True, self.colors['white'])
+        street_rect = street_surface.get_rect()
+        street_rect.midtop = (self.street_width / 2, 10)
+        self.win.blit(street_surface, street_rect)
 
         if StateManager.get_instance().get_state('path') is not None:
+
             path_km = StateManager.get_instance().get_state('travelled_km')
+
             # needed for simulation
             if StateManager.get_instance().get_state('is_sim'):
                 t = time.time() - self.old_timestamp
@@ -183,99 +202,51 @@ class Dashboard:
 
                 StateManager.get_instance().set_state('travelled_km', path_km)
 
-            # ------
-
             # get gps position
             position = StateManager.get_instance().get_state('last_pos')
             if not StateManager.get_instance().get_state('is_sim'):
                 self.player_car.set_speed(StateManager.get_instance().get_state('speed'))
 
-            path = StateManager.get_instance().get_state('path')
+            # draw m travelled
+            if remaining_m < 0:
+                remaining_m = 0
+            m_surface = font.render(f"{remaining_m} m", True, self.colors['white'])
+            m_rect = m_surface.get_rect()
+            m_rect.midtop = (100, 80)
+            self.win.blit(m_surface, m_rect)
 
-            # draw arrow
-            if actual_street is not None:
-
-                i = 0
-                ms = 0
-                is_actual_way = False
-                while i < len(path):
-                    street = path[i]
-                    ms += street['way'].get('length')
-                    if street['way'].get('name') == actual_street['way'].get('name'):
-                        is_actual_way = True
-                    elif is_actual_way:
-                        break
-                    i += 1
-
-                if is_actual_way is False:
-                    # the user is out the path, so it's needed a new path calculation
-                    self.terminal.write("You are in a wrong street")
-                    self.end_path()
-                    self.get_path(path[len(path)-1]['way'].get('name'))
-                    return
-
-                traveled_m = path_km * 1000
-
-                # draw m travelled
-                remaining_m = math.floor(ms - traveled_m)
-                if remaining_m < 0:
-                    remaining_m = 0
-                m_surface = font.render(f"{remaining_m} m", True, self.colors['white'])
-                m_rect = m_surface.get_rect()
-                m_rect.midtop = (100, 80)
-                self.win.blit(m_surface, m_rect)
-
-                # draw path progress
-                self.path_progress.draw(self.win, self.colors, math.floor(path_km * 1000))
-
-                # calculate arrow direction
-                if i < len(path) - 1:
-                    lat1 = float(path[i-1]['start_node'].get('lat'))
-                    lon1 = float(path[i-1]['start_node'].get('lon'))
-                    lat2 = float(path[i - 1]['end_node'].get('lat'))
-                    lon2 = float(path[i - 1]['end_node'].get('lon'))
-                    lat3 = float(path[i]['start_node'].get('lat'))
-                    lon3 = float(path[i]['start_node'].get('lon'))
-                    p1 = (lat1, lon1)
-                    p2 = (lat2, lon2)
-                    p3 = (lat3, lon3)
-                    v1 = (p2[0] - p1[0], p2[1] - p1[1])
-                    v2 = (p3[0] - p2[0], p3[1] - p2[1])
-                    cross_product = v1[0] * v2[1] - v1[1] * v2[0]
-                    turn_to_right = None
-                    if cross_product > 0:
-                        self.arrow.set_type('right')
-                        turn_to_right = True
-                    else:
-                        self.arrow.set_type('left')
-                        turn_to_right = False
-
-                    remaining_m = ms - traveled_m
-                    if remaining_m <= 50:
-                        self.arrow.set_speed(5)
-                        self.arrow.draw(self.win)
-                    elif remaining_m <= 100:
-                        self.arrow.set_speed(10)
-                        self.arrow.draw(self.win)
-                    elif remaining_m <= 200:
-                        self.arrow.set_speed(None)
-                        self.arrow.draw(self.win)
-                    else:
-                        self.arrow.hide()
-
-                    if 99 < remaining_m < 100:
-                        if turn_to_right:
-                            VocalCommandModule.get_instance().say(f"Girare a destra") # IT
-                        else:
-                            VocalCommandModule.get_instance().say(f"Girare a sinistra") # IT
-
-            else:
-                self.arrow.hide()
+            # draw path progress
+            self.path_progress.draw(self.win, self.colors, math.floor(path_km * 1000))
 
             # draw alert
-            if (actual_street is not None) and \
-                    (StateManager.get_instance().get_state('speed') > actual_street['way'].get('speed')):
+            if StateManager.get_instance().get_state('speed') > actual_way['max_speed']:
                 self.alert.draw(self.win)
+
+            # set arrow direction
+            sign = actual_way['sign']
+            if sign == -8 or sign == 8:
+                self.arrow.set_type('down')
+            elif -3 <= sign < 0 or sign == -7:
+                self.arrow.set_type('left')
+            elif 0 < sign <= 3 or sign == 7:
+                self.arrow.set_type('right')
+            elif sign == 0:
+                self.arrow.set_type('up')
+
+            if remaining_m <= 50:
+                self.arrow.set_speed(5)
+                self.arrow.draw(self.win)
+            elif remaining_m <= 100:
+                self.arrow.set_speed(10)
+                self.arrow.draw(self.win)
+            else:
+                self.arrow.set_speed(None)
+                self.arrow.draw(self.win)
+
+            if 99 < remaining_m < 100:
+                VocalCommandModule.get_instance().say(actual_way['text'])
+        else:
+            self.arrow.hide()
 
         # draw car speed
         speed = StateManager.get_instance().get_state('speed')
