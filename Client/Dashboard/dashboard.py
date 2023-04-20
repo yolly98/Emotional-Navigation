@@ -87,9 +87,9 @@ class Dashboard:
         return Dashboard.dashboard
 
     def end_path(self):
+        print("end_path")
         StateManager.get_instance().set_state('path', None)
         StateManager.get_instance().set_state('travelled_km', 0)
-        StateManager.get_instance().set_state('path_end', True)
         self.old_car_speed = 0
         self.old_timestamp = None
         self.start_time = None
@@ -115,6 +115,7 @@ class Dashboard:
             return
         elif res['status'] == 0:
             path = json.loads(res['path'])
+            print(json.dumps(path, indent=4)) # test
         elif res['status'] == -1:
             self.terminal.write("Path not found")
             VocalCommandModule.get_instance().say("Percorso non trovato") # IT
@@ -136,6 +137,7 @@ class Dashboard:
         self.path_progress = PathProgress(self.street_width + (self.win_width - self.street_width - 30)/2, self.street_pos[1] - 50, self.block_size, path['distance'])
         StateManager.get_instance().path_init(path)
         StateManager.get_instance().set_state('path_destination', destination_name)
+        StateManager.get_instance().set_state('end_path', False)
         VocalCommandModule.get_instance().say("Ho trovato il percorso migliore, andiamo!")  # IT
 
     def show(self):
@@ -150,9 +152,13 @@ class Dashboard:
         font = pygame.font.SysFont('times new roman', 25)
 
         path = StateManager.get_instance().get_state('path')
-        end_path = StateManager.get_instance().get_state('path_end')
+        end_path = StateManager.get_instance().get_state('end_path')
 
-        if path is None and not end_path:
+        if end_path and path is not None:
+            self.end_path()
+            return
+
+        if not end_path and path is None:
             print("path recalculation")
             self.get_path(StateManager.get_instance().get_state('path_destination'))
             return
@@ -207,28 +213,32 @@ class Dashboard:
                     self.alert.draw(self.win)
 
                 # set arrow direction
-                sign = actual_way['sign']
-                if sign == -8 or sign == 8:
-                    self.arrow.set_type('down')
-                elif -3 <= sign < 0 or sign == -7:
-                    self.arrow.set_type('left')
-                elif 0 < sign <= 3 or sign == 7:
-                    self.arrow.set_type('right')
-                elif sign == 0:
-                    self.arrow.set_type('up')
+                actual_way_index = StateManager.get_instance().get_state('actual_way_index')
+                if actual_way_index < len(path['ways']):
+                    sign = path['ways'][actual_way_index + 1]['sign']
+                    if sign == -8 or sign == 8:
+                        self.arrow.set_type('down')
+                    elif -3 <= sign < 0 or sign == -7:
+                        self.arrow.set_type('left')
+                    elif 0 < sign <= 3 or sign == 7:
+                        self.arrow.set_type('right')
+                    elif sign == 0:
+                        self.arrow.set_type('up')
 
-                if remaining_m <= 50:
-                    self.arrow.set_speed(5)
-                    self.arrow.draw(self.win)
-                elif remaining_m <= 100:
-                    self.arrow.set_speed(10)
-                    self.arrow.draw(self.win)
+                    if remaining_m <= 50:
+                        self.arrow.set_speed(5)
+                        self.arrow.draw(self.win)
+                    elif remaining_m <= 100:
+                        self.arrow.set_speed(10)
+                        self.arrow.draw(self.win)
+                    else:
+                        self.arrow.set_speed(None)
+                        self.arrow.draw(self.win)
+
+                    if 99 < remaining_m < 100:
+                        VocalCommandModule.get_instance().say(path['ways'][actual_way_index + 1]['text'])
                 else:
-                    self.arrow.set_speed(None)
-                    self.arrow.draw(self.win)
-
-                if 99 < remaining_m < 100:
-                    VocalCommandModule.get_instance().say(actual_way['text'])
+                    self.arrow.hide()
             else:
                 self.arrow.hide()
 

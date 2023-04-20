@@ -14,7 +14,7 @@ class StateManager:
         self.status['server_ip'] = None
         self.status['server_port'] = None
         self.status['path'] = None
-        self.status['path_end'] = True
+        self.status['end_path'] = True
         self.status['path_destination'] = None
         self.status['last_time'] = None
         self.status['last_pos'] = None
@@ -49,11 +49,12 @@ class StateManager:
         self.status['last_pos_index'] = 0
         self.status['travelled_km'] = 0
         self.status['last_pos'] = path['points'][0]
+        self.status['actual_way_index'] = 0
         self.status['actual_way'] = path['ways'][0]
         if 'max_speed' not in self.status['actual_way']:
             self.status['actual_way']['max_speed'] = 60
         self.status['remaining_m'] = path['ways'][0]['distance']
-        self.status['path_end'] = False
+        self.status['end_path'] = False
 
     def set_state(self, key, value):
         with self.lock:

@@ -1,25 +1,23 @@
 # TODO
 
-## importante
-* [x] nATTENZIONE !   qunado prende il nearest point potrebbe prendre un punto di un edificio, e poi non trovare il path!
-* [x] sostituire mysql con mongo
-
 ## map engine
 * [x] le deviazioni non funzionano
 * [x] ricaricare il db togliendo le strade e i nodi di edifici (strade senza name, ref, alt_name)
 * [x] fare funzione che ricava posizione nella mappa tramite coordinate (trova il nodo con le coordinate piu vicine)
-* [ ] migliorare prestazioni !!!IMPORTANTE
+* [x] migliorare prestazioni !!!IMPORTANTE
 
 ## dashboard
 * [x] inserire due input per indicare partenza e destinazione
 * [x] rendere la simulazione la dashboard stessa
-* [ ] integrare riconoscimento comandi vocali
+* [x] integrare riconoscimento comandi vocali
 
 ## simulatore di guida
 * [x] aggiungere frecce per curve
 * [x] mettere avanzamento percorso
 * [x] crash quando finisce il percorso
 * [x] aggiungere emoji mood attuale (in alto a dx)
+* [ ] non riconosce quando un path è terminato
+* [ ] crasha se si fa partire un secondo path
 
 ## rilevatore emozioni
 * [x] creare modulo per rilevatore emozioni
@@ -43,6 +41,7 @@
 * [x] con una sorgente non presente nel db non posso fare il get_path, cercare coordinate più vicine
 * [x] attenzione a crash durante il cambio percorso in corsa
 * [x] mettere un controllo che calcola quanto si è distanti dal nodo del path piu vicino, se troppo distante va richiesto il ricalcolo 
+* [ ] testare funzionamento con coordinate reali (da json)
 * [ ] testare arduino + gps
 * [x] adattare simulazione ad uso di GPS
 * [ ] risolvere bug su velocità da coordinate gps reali (nei dati raccolti i timestamp non distano di 1s!)

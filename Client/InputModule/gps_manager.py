@@ -29,7 +29,7 @@ class GPS:
     gps_manager = None
 
     def __init__(self):
-        self.sim_period = 5
+        self.sim_period = 1
         self.app = Flask(__name__)
         CORS(self.app)
 
@@ -46,18 +46,21 @@ class GPS:
         self.app.run(host=GPS_IP, port=GPS_PORT, debug=False, threaded=True)
 
     @staticmethod
-    def get_actual_way(path, last_pos_index):
+    def get_actual_way(path, last_pos_index, travelled_km):
 
         remaining_m = 0
         actual_way = None
+        travelled_m = travelled_km * 1000
+        actual_way_index = 0
         if path is not None:
             for way in path['ways']:
                 if way['interval'][0] <= last_pos_index < way['interval'][1]:
                     actual_way = way
-                    next_pos_index = way['interval'][1]
-                    m = calculate_distance(path['points'][last_pos_index], path['points'][next_pos_index])
-                    remaining_m = way['distance'] - m
+                    remaining_m = way['distance'] - travelled_m
                     break
+                else:
+                    travelled_m -= way['distance']
+                    actual_way_index += 1
         else:
             server_ip = StateManager.get_instance().get_state('server_ip')
             server_port = StateManager.get_instance().get_state('server_port')
@@ -73,10 +76,12 @@ class GPS:
 
         if remaining_m <= 0:
             remaining_m = 0
-            StateManager.get_instance().set_state('end_path', True)
+            if path is not None and actual_way_index == (len(path['ways']) - 1):
+                StateManager.get_instance().set_state('end_path', True)
 
         StateManager.get_instance().set_state('actual_way', actual_way)
         StateManager.get_instance().set_state('remaining_m', remaining_m)
+        StateManager.get_instance().set_state('actual_way_index', actual_way_index)
 
     @staticmethod
     def get_sim_pos(path, last_pos_index, travelled_km):
@@ -130,7 +135,7 @@ class GPS:
             path = StateManager.get_instance().get_state('path')
 
             GPS.get_sim_pos(path, last_pos_index, travelled_km)
-            GPS.get_actual_way(path, last_pos_index)
+            GPS.get_actual_way(path, last_pos_index, travelled_km)
 
             time.sleep(self.sim_period)
 
@@ -153,10 +158,10 @@ def post_gps():
 
     print(f"GPS pos: {new_pos}, datetime: {received_json['datetime']}")
     last_pos = StateManager.get_instance().get_state('last_pos')
+    travelled_km = StateManager.get_instance().get_state('travelled_km')
 
     if last_pos is not None:
         distance = calculate_distance(new_pos, last_pos) / 1000
-        travelled_km = StateManager.get_instance().get_state('travelled_km')
         travelled_km += distance
         period = gps_time - StateManager.get_instance().get_state('last_time')
         speed = (distance / period) * 3600
@@ -192,7 +197,7 @@ def post_gps():
             if not isbelonging:
                 StateManager.get_instance().set_state('path', None)
 
-    GPS.get_actual_way(path, last_pos_index)
+    GPS.get_actual_way(path, last_pos_index, travelled_km)
 
     return {"status": 0}
 
