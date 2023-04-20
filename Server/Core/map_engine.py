@@ -1,7 +1,4 @@
 from Server.Persistence.map_manager import MapManager
-import polyline
-import math
-import matplotlib.pyplot as plt
 import json
 
 
