@@ -37,7 +37,8 @@ class MapManager:
             return None
 
         json_data = response.json()
-        return json_data['coordinates']
+        point =  json_data['coordinates']
+        return [float(point[1]), float(point[0])]
 
     @staticmethod
     def get_point_by_location(location_name):
@@ -54,7 +55,7 @@ class MapManager:
             return None
 
         location = response.json()[0]
-        return [location["lon"], location["lat"]]
+        return [float(location["lat"]), float(location["lon"])]
 
     @staticmethod
     def plot_path(path):
@@ -143,6 +144,7 @@ class MapManager:
 
 
 if __name__ == '__main__':
+
     start_point = [42.415832, 12.106822]
     end_point = [42.41942, 12.10429]
 
@@ -159,10 +161,8 @@ if __name__ == '__main__':
         MapManager.plot_path(paths[i])
 
     point = MapManager.get_point_by_location('Via XXVIII Ottobre')
-    end_point = [float(point[1]), float(point[0])]
-    print(end_point)
-    point = MapManager.get_nearest_point(end_point)
-    paths = MapManager.get_path(start_point, end_point, [])
+    point = MapManager.get_nearest_point(point)
+    paths = MapManager.get_path(start_point, point, [])
     for i in range(0, len(paths)):
         print("---------------------------------------------------")
         print(json.dumps(paths[i], indent=4))
