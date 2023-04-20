@@ -15,7 +15,7 @@ if __name__ == '__main__':
 
     StateManager.get_instance().sim_init(
         config['simulation'],
-        Point(config['default_lat'], config['default_lon'])
+        [float(config['default_lat']), float(config['default_lon'])]
     )
     StateManager.get_instance().set_state('server_ip', config['server_ip'])
     StateManager.get_instance().set_state('server_port', config['server_port'])
