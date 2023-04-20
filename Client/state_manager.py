@@ -19,6 +19,7 @@ class StateManager:
         self.status['last_time'] = None
         self.status['last_pos'] = None
         self.status['last_pos_index'] = 0
+        self.status['actual_way'] = None
         self.status['travelled_km'] = 0
         self.status['speed'] = 0
         self.status['is_sim'] = True
@@ -48,6 +49,8 @@ class StateManager:
         self.status['last_pos_index'] = 0
         self.status['travelled_km'] = 0
         self.status['last_pos'] = path['points'][0]
+        self.status['actual_way'] = path['ways'][0]
+        self.status['remaining_m'] = path['ways'][0]['distance']
         self.status['path_end'] = False
 
     def set_state(self, key, value):

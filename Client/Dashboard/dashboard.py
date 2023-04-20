@@ -148,105 +148,87 @@ class Dashboard:
         font = pygame.font.SysFont('times new roman', 25)
 
         path = StateManager.get_instance().get_state('path')
-        last_pos_index = StateManager.get_instance().get_state('last_pos_index')
         end_path = StateManager.get_instance().get_state('path_end')
-        remaining_m = 0
 
-        # get actual way
-        actual_way = None
-        if path is not None:
-            for way in path['ways']:
-                if way['interval'][0] < last_pos_index < way['interval'][1]:
-                    actual_way = way
-                    remaining_m = way['distance'] - remaining_m
-                    break
-                else:
-                    remaining_m += way['distance']
-        elif path is None and not end_path:
+        if path is None and not end_path:
             print("path recalculation")
             self.get_path(StateManager.get_instance().get_state('path_destination'))
             return
-        else:
-            server_ip = StateManager.get_instance().get_state('server_ip')
-            server_port = StateManager.get_instance().get_state('server_port')
-            server_request = {"coord": StateManager.get_instance().get_state('last_pos')}
-            res = CommunicationManager.send(server_ip, server_port, 'GET', server_request, 'way')
-            if res['status'] == 0 and res['address'] is not None:
-                actual_way = dict()
-                actual_way['street_name'] = res['address']['road']
-                actual_way['max_speed'] = 200
 
-        if 'max_speed' not in actual_way:
-            actual_way['max_speed'] = 60
+        actual_way = StateManager.get_instance().get_state('actual_way')
+        remaining_m = StateManager.get_instance().get_state('remaining_m')
 
-        # draw street name
-        message = f"{actual_way['street_name']}, {actual_way['max_speed']} km/h"
-        street_surface = font.render(message, True, self.colors['white'])
-        street_rect = street_surface.get_rect()
-        street_rect.midtop = (self.street_width / 2, 10)
-        self.win.blit(street_surface, street_rect)
-
-        if StateManager.get_instance().get_state('path') is not None:
-
-            path_km = StateManager.get_instance().get_state('travelled_km')
-
-            # needed for simulation
-            if StateManager.get_instance().get_state('is_sim'):
-                t = time.time() - self.old_timestamp
-                avg_speed = (self.player_car.get_speed() + self.old_car_speed) / 2
-                traveled_km = (avg_speed / 3600) * t
-                path_km += traveled_km
-                self.old_timestamp = time.time()
-                self.old_car_speed = self.player_car.get_speed()
-                StateManager.get_instance().set_state('speed', self.player_car.get_speed())
-
-                StateManager.get_instance().set_state('travelled_km', path_km)
-
-            # get gps position
-            position = StateManager.get_instance().get_state('last_pos')
-            if not StateManager.get_instance().get_state('is_sim'):
-                self.player_car.set_speed(StateManager.get_instance().get_state('speed'))
-
-            # draw m travelled
-            if remaining_m < 0:
-                remaining_m = 0
-            m_surface = font.render(f"{remaining_m} m", True, self.colors['white'])
-            m_rect = m_surface.get_rect()
-            m_rect.midtop = (100, 80)
-            self.win.blit(m_surface, m_rect)
-
-            # draw path progress
-            self.path_progress.draw(self.win, self.colors, math.floor(path_km * 1000))
-
-            # draw alert
-            if StateManager.get_instance().get_state('speed') > actual_way['max_speed']:
-                self.alert.draw(self.win)
-
-            # set arrow direction
-            sign = actual_way['sign']
-            if sign == -8 or sign == 8:
-                self.arrow.set_type('down')
-            elif -3 <= sign < 0 or sign == -7:
-                self.arrow.set_type('left')
-            elif 0 < sign <= 3 or sign == 7:
-                self.arrow.set_type('right')
-            elif sign == 0:
-                self.arrow.set_type('up')
-
-            if remaining_m <= 50:
-                self.arrow.set_speed(5)
-                self.arrow.draw(self.win)
-            elif remaining_m <= 100:
-                self.arrow.set_speed(10)
-                self.arrow.draw(self.win)
+        if actual_way is not None:
+            # draw street name
+            message = ""
+            if actual_way['max_speed'] == -1:
+                message = f"{actual_way['street_name']}"
             else:
-                self.arrow.set_speed(None)
-                self.arrow.draw(self.win)
+                message = f"{actual_way['street_name']}, {actual_way['max_speed']} km/h"
 
-            if 99 < remaining_m < 100:
-                VocalCommandModule.get_instance().say(actual_way['text'])
-        else:
-            self.arrow.hide()
+            street_surface = font.render(message, True, self.colors['white'])
+            street_rect = street_surface.get_rect()
+            street_rect.midtop = (self.street_width / 2, 10)
+            self.win.blit(street_surface, street_rect)
+
+            if StateManager.get_instance().get_state('path') is not None:
+
+                path_km = StateManager.get_instance().get_state('travelled_km')
+
+                # needed for simulation
+                if StateManager.get_instance().get_state('is_sim'):
+                    t = time.time() - self.old_timestamp
+                    avg_speed = (self.player_car.get_speed() + self.old_car_speed) / 2
+                    traveled_km = (avg_speed / 3600) * t
+                    path_km += traveled_km
+                    self.old_timestamp = time.time()
+                    self.old_car_speed = self.player_car.get_speed()
+                    StateManager.get_instance().set_state('speed', self.player_car.get_speed())
+
+                    StateManager.get_instance().set_state('travelled_km', path_km)
+
+                # get gps position
+                if not StateManager.get_instance().get_state('is_sim'):
+                    self.player_car.set_speed(StateManager.get_instance().get_state('speed'))
+
+                # draw m travelled
+                m_surface = font.render(f"{remaining_m} m", True, self.colors['white'])
+                m_rect = m_surface.get_rect()
+                m_rect.midtop = (100, 80)
+                self.win.blit(m_surface, m_rect)
+
+                # draw path progress
+                self.path_progress.draw(self.win, self.colors, math.floor(path_km * 1000))
+
+                # draw alert
+                if not actual_way['max_speed'] == -1 and StateManager.get_instance().get_state('speed') > actual_way['max_speed']:
+                    self.alert.draw(self.win)
+
+                # set arrow direction
+                sign = actual_way['sign']
+                if sign == -8 or sign == 8:
+                    self.arrow.set_type('down')
+                elif -3 <= sign < 0 or sign == -7:
+                    self.arrow.set_type('left')
+                elif 0 < sign <= 3 or sign == 7:
+                    self.arrow.set_type('right')
+                elif sign == 0:
+                    self.arrow.set_type('up')
+
+                if remaining_m <= 50:
+                    self.arrow.set_speed(5)
+                    self.arrow.draw(self.win)
+                elif remaining_m <= 100:
+                    self.arrow.set_speed(10)
+                    self.arrow.draw(self.win)
+                else:
+                    self.arrow.set_speed(None)
+                    self.arrow.draw(self.win)
+
+                if 99 < remaining_m < 100:
+                    VocalCommandModule.get_instance().say(actual_way['text'])
+            else:
+                self.arrow.hide()
 
         # draw car speed
         speed = StateManager.get_instance().get_state('speed')
