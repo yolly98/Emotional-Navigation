@@ -2,7 +2,7 @@
 https://github.com/IsraelHikingMap/graphhopper-docker-image-push
 docker run --name graphhopper -d -p 8989:8989 israelhikingmap/graphhopper --url https://download.geofabrik.de/europe/italy/centro-latest.osm.pbf --host 0.0.0.0
 https://github.com/mediagis/nominatim-docker
-docker run -it \
+docker run -d \
   -e PBF_URL=https://download.geofabrik.de/europe/italy/centro-latest.osm.pbf \
   -p 8080:8080 \
   --name nominatim \
@@ -43,19 +43,42 @@ class MapManager:
     @staticmethod
     def get_point_by_location(location_name):
 
+        url = "http://localhost:8080/search"
         params = {
             "q": location_name,
             "format": "jsonv2",
             "limit": 1
         }
 
-        response = requests.get("http://localhost:8080/search", params=params)
+        response = requests.get(url, params=params)
         if response.status_code != 200:
             print('Nominatim error:', response.text)
             return None
 
         location = response.json()[0]
         return [float(location["lat"]), float(location["lon"])]
+
+    @staticmethod
+    def get_location_by_point(point):
+        url = "http://localhost:8080/reverse"
+        params = {
+            "lat": point[0],
+            "lon": point[1],
+            "format": "json"
+        }
+
+        response = requests.get(url, params=params)
+        if response.status_code != 200:
+            print('Nominatim error:', response.text)
+            return None
+
+        location = response.json()
+        if 'display_name' in location:
+            address = location['address']
+            return address
+        else:
+            return None
+
 
     @staticmethod
     def plot_path(path):
@@ -147,6 +170,9 @@ if __name__ == '__main__':
 
     start_point = [42.415832, 12.106822]
     end_point = [42.41942, 12.10429]
+
+    print(MapManager.get_location_by_point(start_point))
+    print(MapManager.get_location_by_point(end_point))
 
     paths = MapManager.get_path(start_point, end_point, [])
     for i in range(0, len(paths)):

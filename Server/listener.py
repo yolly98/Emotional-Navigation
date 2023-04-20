@@ -50,6 +50,20 @@ def get_path():
     return {"status": 0, "path": json.dumps(path)}
 
 
+@app.get('/way')
+def get_way():
+    if request.json is None:
+        return {'error': 'No JSON request received'}, 500
+
+    received_json = request.json
+    point = received_json['coord']
+    address = MapManager.get_location_by_point(point)
+    if address is None:
+        return {"status": -1, "address": None}
+    else:
+        return {"status": 0, "address": address}
+
+
 @app.get('/nearest')
 def nearest():
     if request.json is None:
