@@ -21,6 +21,8 @@ class MapManager:
     @staticmethod
     def get_nearest_point(point):
 
+        point = f'{point[0]},{point[1]}'
+
         url = "http://localhost:8989/nearest"
 
         params = {
@@ -86,6 +88,9 @@ class MapManager:
 
     @staticmethod
     def get_path(start_point, end_point, avid_ways):
+
+        start_point = f'{start_point[0]},{start_point[1]}'
+        end_point = f'{end_point[0]},{end_point[1]}'
         url = "http://localhost:8989/route"
 
         params = {
@@ -138,8 +143,8 @@ class MapManager:
 
 
 if __name__ == '__main__':
-    start_point = '42.415832,12.106822'
-    end_point = '42.41942,12.10429'
+    start_point = [42.415832, 12.106822]
+    end_point = [42.41942, 12.10429]
 
     paths = MapManager.get_path(start_point, end_point, [])
     for i in range(0, len(paths)):
@@ -153,10 +158,12 @@ if __name__ == '__main__':
         print(json.dumps(paths[i], indent=4))
         MapManager.plot_path(paths[i])
 
-    '''
-    point = MapManager.get_point_by_location('Via VIII Ottobre')
-    point = MapManager.get_nearest_point(point)
-    path = MapManager.get_path(start_point, point)
-    print(json.dumps(path, indent=4))
-    MapManager.plot_path(path)
-    '''
+    point = MapManager.get_point_by_location('Via XXVIII Ottobre')
+    end_point = [float(point[1]), float(point[0])]
+    print(end_point)
+    point = MapManager.get_nearest_point(end_point)
+    paths = MapManager.get_path(start_point, end_point, [])
+    for i in range(0, len(paths)):
+        print("---------------------------------------------------")
+        print(json.dumps(paths[i], indent=4))
+        MapManager.plot_path(paths[i])
