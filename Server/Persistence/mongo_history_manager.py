@@ -23,6 +23,10 @@ class MongoHistoryManager:
         self.conn = None
 
     def store_sample(self, username, way, emotion, timestamp):
+
+        if way == "":
+            return True
+
         username = username.lower()
         if self.conn is None:
             return False
