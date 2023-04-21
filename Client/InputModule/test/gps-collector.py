@@ -5,7 +5,6 @@
 # (you have to do this because browsers can't share gps position with not https server)
 
 
-from Utility.point import Point
 from flask import Flask, request, send_file
 from flask_cors import CORS
 import json
@@ -71,7 +70,7 @@ def post_gps_collector():
             gps_data['gps'] = []
 
         g = geocoder.osm([lat, lon], method='reverse')
-        coords = Point(lat, lon).to_json()
+        coords = [lat, lon]
         address = g.address
         new_pos = {'pos': coords, 'address': address, 'datetime': time_pos}
         print(new_pos)

@@ -156,13 +156,14 @@ def post_gps():
         return {'error': 'No JSON request received'}, 500
 
     received_json = request.json
-    lat = received_json['lat']
-    lon = received_json['lon']
+    lat = received_json['pos'][0]
+    lon = received_json['pos'][1]
     gps_time = received_json['datetime']
     gps_time = datetime.strptime(gps_time, "%Y-%m-%d %H:%M:%S")
     gps_time = time.mktime(gps_time.timetuple())
     new_pos = [float(lat), float(lon)]
 
+    # [Test]
     print(f"GPS pos: {new_pos}, datetime: {received_json['datetime']}")
     last_pos = StateManager.get_instance().get_state('last_pos')
     travelled_km = StateManager.get_instance().get_state('travelled_km')
@@ -202,6 +203,8 @@ def post_gps():
                     is_belonging = True
                     break
             if not is_belonging:
+                # [Test]
+                print("pos outside the path")
                 StateManager.get_instance().set_state('path', None)
 
     GPS.get_actual_way()

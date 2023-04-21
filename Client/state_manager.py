@@ -1,6 +1,5 @@
 from threading import Lock
 from copy import copy
-from Utility.point import Point
 import os
 
 

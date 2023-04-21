@@ -84,6 +84,7 @@ class MapManager:
     def plot_path(path):
 
         points = polyline.decode(path['points'])
+        # [Test]
         print(points)
         fig, ax = plt.subplots()
         lats = []

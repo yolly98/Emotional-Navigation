@@ -3,7 +3,6 @@ import time
 import json
 import matplotlib.pyplot as plt
 import math
-from Utility.point import Point
 from Utility.utility_functions import calculate_distance
 
 
@@ -39,10 +38,10 @@ def prepare_test_path(gps_data):
     last_gps = None
     outliers = 0
     for gps in gps_data['gps']:
-        point = Point(gps['pos']['lat'], gps['pos']['lon'])
+        point = [float(gps['pos'][0]), float(gps['pos'][1])]
 
         if last_gps is not None:
-            last_point = Point(last_gps['pos']['lat'], last_gps['pos']['lon'])
+            last_point = [float(last_gps['pos'][0]), float(last_gps['pos'][1])]
             if gps['datetime'] == last_gps['datetime']:
                 print(f"duplicate record, Error!")
                 exit(1)
@@ -61,7 +60,7 @@ def prepare_test_path(gps_data):
                     next_pos = gps_data['gps'][j]
 
                 if not next_pos == gps:
-                    next_point = Point(next_pos['pos']['lat'], next_pos['pos']['lon'])
+                    next_point = [float(next_pos['pos'][0]), float(next_pos['pos'][1])]
                     next_distance = calculate_distance(point, next_point)
                     print(next_distance)
                     if next_distance > 0.5:
@@ -89,25 +88,25 @@ def visualize_test_path(gps_data):
     progress = 0
     last_gps = None
     for gps in gps_data['gps']:
-        point = Point(gps['pos']['lat'], gps['pos']['lon'])
+        point = [float(gps['pos'][0]), float(gps['pos'][1])]
         if not progress == math.floor((i * 100) / (len(gps_data['gps']))):
             progress = math.floor((i * 100) / (len(gps_data['gps'])))
             print(f"calculation {progress}%")
 
         if last_gps is not None:
-            last_point = Point(last_gps['pos']['lat'], last_gps['pos']['lon'])
+            last_point = [float(last_gps['pos'][0]), float(last_gps['pos'][1])]
 
             if gps['datetime'] == last_gps['datetime']:
                 print(f"duplicate record, datetime: {gps['datetime']}")
             distance = calculate_distance(last_point, point)
             if distance > 0.5:
                 print(f"too long distance: {distance}, last_point: {last_point}, point: {point}")
-            line_lat = [last_point.get_lat(), point.get_lat()]
-            line_lon = [last_point.get_lon(), point.get_lon()]
+            line_lat = [last_point[0], point[0]]
+            line_lon = [last_point[1], point[1]]
             ax.plot(line_lon, line_lat, c='violet', alpha=1, linewidth=1)
 
-        lats.append(point.get_lat())
-        lons.append(point.get_lon())
+        lats.append(point[0])
+        lons.append(point[1])
         last_gps = gps
         i += 1
 
@@ -130,8 +129,7 @@ if __name__ == '__main__':
     while i < len(gps_data['gps']):
         print(gps_data['gps'][i])
         request = dict()
-        request['lat'] = gps_data['gps'][i]['pos']['lat']
-        request['lon'] = gps_data['gps'][i]['pos']['lon']
+        request['pos'] = gps_data['gps'][i]['pos']
         request['datetime'] = gps_data['gps'][i]['datetime']
         CommunicationManager.send(
             ip='127.0.0.1',

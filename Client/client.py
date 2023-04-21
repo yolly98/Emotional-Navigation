@@ -1,6 +1,5 @@
 from threading import Thread
 from Client.state_manager import StateManager
-from Utility.point import Point
 from Client.Dashboard.dashboard import Dashboard
 from Client.InputModule.gps_manager import GPS
 from Client.InputModule.face_recognition_module import FaceRecognitionModule
