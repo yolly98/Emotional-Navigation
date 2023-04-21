@@ -1,6 +1,7 @@
 from Server.Persistence.mongo_history_manager import MongoHistoryManager
 from Server.Core.map_engine import MapEngine
 import json
+
 # emotion values for balance
 ANGRY = -5
 DISGUST = -1
@@ -73,3 +74,33 @@ class EmotionalRouteSelector:
         evaluated_path['overall_balance'] = overall_balance
 
         return evaluated_path
+
+
+if __name__ == "__main__":
+
+    start_point = [42.33320246437533, 12.269394696130366]
+    destination = 'Via Dalmazia, Viterbo'
+
+    MongoHistoryManager.get_instance().open_connection()
+    MongoHistoryManager.get_instance().create_user('test', '')
+    MongoHistoryManager.get_instance().close_connection()
+
+    path = EmotionalRouteSelector.get_path('test', start_point, destination)
+    print(json.dumps(path, indent=4))
+    MapEngine.plot_path(path)
+
+    MongoHistoryManager.get_instance().open_connection()
+    MongoHistoryManager.get_instance().store_sample('test', 'Viale Trieste', 'sad', 0)
+    MongoHistoryManager.get_instance().store_sample('test', 'Viale Trieste', 'sad', 0)
+    MongoHistoryManager.get_instance().store_sample('test', 'Viale Trieste', 'disgust', 0)
+    MongoHistoryManager.get_instance().close_connection()
+
+    path = EmotionalRouteSelector.get_path('test', start_point, destination)
+    print(json.dumps(path, indent=4))
+    MapEngine.plot_path(path)
+
+    MongoHistoryManager.get_instance().open_connection()
+    MongoHistoryManager.get_instance().delete_history_of_a_user('test')
+    MongoHistoryManager.get_instance().delete_user('test')
+    MongoHistoryManager.get_instance().close_connection()
+

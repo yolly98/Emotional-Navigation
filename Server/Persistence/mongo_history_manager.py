@@ -115,6 +115,19 @@ class MongoHistoryManager:
             return False
         return True
 
+    def delete_user(self, username):
+
+        username = username.lower()
+        if self.conn is None:
+            return False
+        db = self.conn['smart_navigation'].user
+        try:
+            db.delete_one({'username': username})
+        except Exception as e:
+            print(f"Mongo execution error [{e}]")
+            return False
+        return True
+
     def get_user_image(self, username):
         username = username.lower()
         if self.conn is None:
@@ -129,6 +142,7 @@ class MongoHistoryManager:
 if __name__ == '__main__':
     history = MongoHistoryManager().get_instance()
     history.open_connection()
+    history.create_user("user0", '')
     history.store_sample("user0", "Via Alfonso", 'happy', datetime.now())
     history.store_sample("user0", "Via Alfonso", 'sad', datetime.now() + timedelta(minutes=1))
     history.store_sample("user0", "Via Giacomo", 'disgust', datetime.now() + timedelta(minutes=2))
@@ -139,4 +153,5 @@ if __name__ == '__main__':
     emotions = history.get_emotions("user0", "Via Giacomo")
     print(f"way: Via Giacomo emotions: {emotions}")
     history.delete_history_of_a_user("user0")
+    history.delete_user("user0")
     history.close_connection()
