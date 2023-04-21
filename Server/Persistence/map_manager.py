@@ -37,7 +37,7 @@ class MapManager:
             return None
 
         json_data = response.json()
-        point =  json_data['coordinates']
+        point = json_data['coordinates']
         return [float(point[1]), float(point[0])]
 
     @staticmethod
@@ -50,7 +50,12 @@ class MapManager:
             "limit": 1
         }
 
-        response = requests.get(url, params=params)
+        try:
+            response = requests.get(url, params=params, timeout=5)
+        except requests.exceptions.Timeout:
+            print("expired timeout for location request")
+            return None
+
         if response.status_code != 200:
             print('Nominatim error:', response.text)
             return None

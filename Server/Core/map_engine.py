@@ -8,6 +8,8 @@ class MapEngine:
     def calculate_path(source_point, destination, avoid_ways):
 
         destination_point = MapManager.get_point_by_location(destination)
+        if destination_point is None:
+            return None
         paths = MapManager.get_path(source_point, destination_point, avoid_ways)
         return paths
 

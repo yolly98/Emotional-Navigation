@@ -4,8 +4,8 @@
   "server_ip": "127.0.0.1",
   "server_port": "5000",
   "fullscreen": false,
-  "simulation": false,
-  "vocal_commands": false,
+  "simulation": true,
+  "vocal_commands": true,
   "user_recognition": false,
   "history_collections": false,
   "face_recognition" : {

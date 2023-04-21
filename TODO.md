@@ -12,7 +12,7 @@
 * [x] inserire due input per indicare partenza e destinazione
 * [x] rendere la simulazione la dashboard stessa
 * [x] integrare riconoscimento comandi vocali
-* [ ] capire come risolvere il fatto che con i comandi vocali non azzecca le lettere maiuscole e minuscole
+* [x] capire come risolvere il fatto che con i comandi vocali non azzecca le lettere maiuscole e minuscole
 
 ## simulatore di guida
 * [x] aggiungere frecce per curve
