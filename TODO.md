@@ -1,5 +1,7 @@
 # TODO
 
+* [ ] rifare il makefile
+
 ## map engine
 * [x] le deviazioni non funzionano
 * [x] ricaricare il db togliendo le strade e i nodi di edifici (strade senza name, ref, alt_name)
@@ -10,14 +12,15 @@
 * [x] inserire due input per indicare partenza e destinazione
 * [x] rendere la simulazione la dashboard stessa
 * [x] integrare riconoscimento comandi vocali
+* [ ] capire come risolvere il fatto che con i comandi vocali non azzecca le lettere maiuscole e minuscole
 
 ## simulatore di guida
 * [x] aggiungere frecce per curve
 * [x] mettere avanzamento percorso
 * [x] crash quando finisce il percorso
 * [x] aggiungere emoji mood attuale (in alto a dx)
-* [ ] non riconosce quando un path è terminato
-* [ ] crasha se si fa partire un secondo path
+* [x] non riconosce quando un path è terminato (nel get_wat considera un last_pos_index indietro)
+* [x] crasha se si fa partire un secondo path
 
 ## rilevatore emozioni
 * [x] creare modulo per rilevatore emozioni

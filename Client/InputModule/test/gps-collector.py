@@ -1,3 +1,10 @@
+# if you want to get gps coordinate from the smartphone,
+# you have to go to 'chrome://flags/#unsafely-treat-insecure-origin-as-secure'
+# in the search bar of your chromium browser on the smartphone,
+# the you have to enable the ip of this device
+# (you have to do this because browsers can't share gps position with not https server)
+
+
 from Utility.point import Point
 from flask import Flask, request, send_file
 from flask_cors import CORS

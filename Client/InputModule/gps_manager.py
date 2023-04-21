@@ -1,14 +1,4 @@
-# if you want to get gps coordinate from the smartphone,
-# you have to go to 'chrome://flags/#unsafely-treat-insecure-origin-as-secure'
-# in the search bar of your chromium browser on the smartphone,
-# the you have to enable the ip of this device
-# (you have to do this because browsers can't share gps position with not https server)
-
-
 from Utility.utility_functions import calculate_distance
-from Utility.point import Point
-from Utility.way import Way
-from Utility.gnode import GNode
 from math import radians, sin, cos, asin, atan2, degrees
 import time
 from Client.state_manager import StateManager
@@ -16,9 +6,7 @@ from flask import Flask, request, send_file
 from flask_cors import CORS
 from Client.communication_manager import CommunicationManager
 import json
-import geocoder
 from datetime import datetime
-import math
 
 GPS_IP = "0.0.0.0"
 GPS_PORT = '4000'
@@ -46,7 +34,11 @@ class GPS:
         self.app.run(host=GPS_IP, port=GPS_PORT, debug=False, threaded=True)
 
     @staticmethod
-    def get_actual_way(path, last_pos_index, travelled_km):
+    def get_actual_way():
+
+        travelled_km = StateManager.get_instance().get_state('travelled_km')
+        last_pos_index = StateManager.get_instance().get_state('last_pos_index')
+        path = StateManager.get_instance().get_state('path')
 
         remaining_m = 0
         actual_way = None
@@ -61,6 +53,18 @@ class GPS:
                 else:
                     travelled_m -= way['distance']
                     actual_way_index += 1
+
+            for speed in path['max_speed']:
+                if speed[0] <= last_pos_index < speed[1]:
+                    actual_way['max_speed'] = speed[2]
+
+            # [Test]
+            print(f"remaining_m: {remaining_m}, way_index: {actual_way_index}, pos_index: {last_pos_index} len_ways: {len(path['ways']) - 1}")
+            if remaining_m <= 0:
+                remaining_m = 0
+                if actual_way_index >= (len(path['ways']) - 1):
+                    StateManager.get_instance().set_state('end_path', True)
+                    return
         else:
             server_ip = StateManager.get_instance().get_state('server_ip')
             server_port = StateManager.get_instance().get_state('server_port')
@@ -71,71 +75,74 @@ class GPS:
                 actual_way['street_name'] = res['address']['road']
                 actual_way['max_speed'] = -1
 
-        if 'max_speed' not in actual_way:
+        if 'max_speed' not in actual_way or actual_way['max_speed'] is None:
             actual_way['max_speed'] = 60
 
-        if remaining_m <= 0:
-            remaining_m = 0
-            if path is not None and actual_way_index == (len(path['ways']) - 1):
-                StateManager.get_instance().set_state('end_path', True)
+        # [Test]
+        print(json.dumps(actual_way, indent=4))
+        print("-----------------------------------")
 
         StateManager.get_instance().set_state('actual_way', actual_way)
         StateManager.get_instance().set_state('remaining_m', remaining_m)
         StateManager.get_instance().set_state('actual_way_index', actual_way_index)
 
     @staticmethod
-    def get_sim_pos(path, last_pos_index, travelled_km):
+    def get_sim_pos():
+
+        travelled_km = StateManager.get_instance().get_state('travelled_km')
+        last_pos_index = StateManager.get_instance().get_state('last_pos_index')
+        path = StateManager.get_instance().get_state('path')
+        new_pos = None
         if path is None:
-            return StateManager.get_instance().get_state('last_pos')
+            new_pos = StateManager.get_instance().get_state('last_pos')
+        else:
+            i = 0
+            distance = travelled_km * 1000
+            while i < len(path['points']):
+                if i > 0:
+                    m = calculate_distance(path['points'][i - 1], path['points'][i])
+                    distance -= m
+                    if i > last_pos_index:
+                        if distance > 0:
+                            last_pos_index = i
+                        else:
+                            distance += m
+                            break
+                i += 1
 
-        i = 0
-        distance = travelled_km * 1000
-        while i < len(path['points']):
-            if i > 0:
-                m = calculate_distance(path['points'][i - 1], path['points'][i])
-                distance -= m
-                if i > last_pos_index:
-                    if distance > 0:
-                        last_pos_index = i
-                    else:
-                        distance += m
-                        break
-            i += 1
+            # p3 interpolation between p1 and p2
+            p1 = path['points'][last_pos_index]
+            if last_pos_index >= len(path['points']) - 1:
+                new_pos = p1
+            else:
+                p2 = path['points'][last_pos_index + 1]
 
-        # p3 interpolation between p1 and p2
-        p1 = path['points'][last_pos_index]
-        if last_pos_index >= len(path['points']) - 1:
-            return p1
-        p2 = path['points'][last_pos_index + 1]
+                lat1 = float(p1[0])
+                lon1 = float(p1[1])
+                lat2 = float(p2[0])
+                lon2 = float(p2[1])
+                d = distance / 1000
 
-        lat1 = float(p1[0])
-        lon1 = float(p1[1])
-        lat2 = float(p2[0])
-        lon2 = float(p2[1])
-        d = distance / 1000
+                R = 6371  # Earth radius in km
+                lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
+                bearing = atan2(sin(lon2 - lon1) * cos(lat2),
+                                cos(lat1) * sin(lat2) - sin(lat1) * cos(lat2) * cos(lon2 - lon1))
+                lat3 = asin(sin(lat1) * cos(d / R) + cos(lat1) * sin(d / R) * cos(bearing))
+                lon3 = lon1 + atan2(sin(bearing) * sin(d / R) * cos(lat1), cos(d / R) - sin(lat1) * sin(lat3))
 
-        R = 6371  # Earth radius in km
-        lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
-        bearing = atan2(sin(lon2 - lon1) * cos(lat2),
-                        cos(lat1) * sin(lat2) - sin(lat1) * cos(lat2) * cos(lon2 - lon1))
-        lat3 = asin(sin(lat1) * cos(d / R) + cos(lat1) * sin(d / R) * cos(bearing))
-        lon3 = lon1 + atan2(sin(bearing) * sin(d / R) * cos(lat1), cos(d / R) - sin(lat1) * sin(lat3))
+                p3 = [float(round(degrees(lat3), 7)), float(round(degrees(lon3), 7))]
+                new_pos = p3
 
-        p3 = Point(str(round(degrees(lat3), 7)), str(round(degrees(lon3), 7)))
+            StateManager.get_instance().set_state('last_pos_index', last_pos_index)
+            StateManager.get_instance().set_state('last_pos', new_pos)
 
-        StateManager.get_instance().set_state('last_pos_index', last_pos_index)
-        StateManager.get_instance().set_state('last_pos', p3)
-
-        print(f"GPS pos: {p3}")
+        # [Test]
+        print(f"GPS pos: {new_pos}")
 
     def run_simulation(self):
         while True:
-            travelled_km = StateManager.get_instance().get_state('travelled_km')
-            last_pos_index = StateManager.get_instance().get_state('last_pos_index')
-            path = StateManager.get_instance().get_state('path')
-
-            GPS.get_sim_pos(path, last_pos_index, travelled_km)
-            GPS.get_actual_way(path, last_pos_index, travelled_km)
+            GPS.get_sim_pos()
+            GPS.get_actual_way()
 
             time.sleep(self.sim_period)
 
@@ -189,15 +196,15 @@ def post_gps():
         res = CommunicationManager.send(server_ip, server_port, 'GET', server_request, 'nearest')
         if res['status'] == 0 and res['point'] is not None:
             nearest_pos = res['point']
-            isbelonging = False
+            is_belonging = False
             for i in range(last_pos_index, len(path['points'])):
-                if nearest_pos[0] == path['points'][i][0] and nearest_pos[1] == path['points'][i][0]:
-                    isbelonging = True
+                if nearest_pos[0] == path['points'][i][0] and nearest_pos[1] == path['points'][i][1]:
+                    is_belonging = True
                     break
-            if not isbelonging:
+            if not is_belonging:
                 StateManager.get_instance().set_state('path', None)
 
-    GPS.get_actual_way(path, last_pos_index, travelled_km)
+    GPS.get_actual_way()
 
     return {"status": 0}
 

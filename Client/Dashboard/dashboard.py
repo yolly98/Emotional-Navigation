@@ -1,6 +1,5 @@
 import pygame
 import sys
-from Utility.utility_functions import print_path, json_to_path
 import time
 from Client.Dashboard.View.alert import Alert
 from Client.Dashboard.View.path_progress import PathProgress
@@ -87,16 +86,17 @@ class Dashboard:
         return Dashboard.dashboard
 
     def end_path(self):
-        print("end_path")
         StateManager.get_instance().set_state('path', None)
         StateManager.get_instance().set_state('travelled_km', 0)
+        StateManager.get_instance().set_state('remaining_m', 0)
+        StateManager.get_instance().set_state('actual_way_index', 0)
         self.old_car_speed = 0
         self.old_timestamp = None
         self.start_time = None
         self.travel_time = None
         self.path_progress = None
         self.car_speed_counter = 0
-        self.terminal.write("Insert Destination")
+        self.terminal.write("Destination reached, Insert new Destination")
 
     def get_path(self, destination_name):
 
@@ -104,6 +104,7 @@ class Dashboard:
         request['username'] = StateManager.get_instance().get_state('username')
         request['destination_name'] = destination_name
         request['source_coord'] = StateManager.get_instance().get_state('last_pos')
+        print(request)
 
         server_ip = StateManager.get_instance().get_state('server_ip')
         server_port = StateManager.get_instance().get_state('server_port')
@@ -127,7 +128,7 @@ class Dashboard:
 
         path['points'] = polyline.decode(path['points'])
         self.terminal.write("Path found ")
-        self.terminal.write(f"length:  {path['distance'] / 1000} km")
+        self.terminal.write(f"length:  {round(path['distance'] / 1000, 3)} km")
         self.terminal.write(f"estimated time: {math.floor((path['time']/1000)/60)} minutes {math.floor((path['time']/1000)%60)} seconds")
 
         self.old_timestamp = time.time()
@@ -209,7 +210,10 @@ class Dashboard:
                 self.path_progress.draw(self.win, self.colors, math.floor(path_km * 1000))
 
                 # draw alert
-                if not actual_way['max_speed'] == -1 and StateManager.get_instance().get_state('speed') > actual_way['max_speed']:
+                if 'way_speed' in actual_way and \
+                        actual_way['max_speed'] is not None and \
+                        not actual_way['max_speed'] == -1 \
+                        and StateManager.get_instance().get_state('speed') > actual_way['max_speed']:
                     self.alert.draw(self.win)
 
                 # set arrow direction
