@@ -72,7 +72,10 @@ class GPS:
             res = CommunicationManager.send(server_ip, server_port, 'GET', server_request, 'way')
             if res['status'] == 0 and res['address'] is not None:
                 actual_way = dict()
-                actual_way['street_name'] = res['address']['road']
+                if 'road' in res['address']:
+                    actual_way['street_name'] = res['address']['road']
+                else:
+                    actual_way['street_name'] = 'Unknown'
                 actual_way['max_speed'] = -1
 
         if 'max_speed' not in actual_way or actual_way['max_speed'] is None:
@@ -172,6 +175,7 @@ def post_gps():
         distance = calculate_distance(new_pos, last_pos) / 1000
         travelled_km += distance
         period = gps_time - StateManager.get_instance().get_state('last_time')
+        # period = 1# [Test]
         speed = (distance / period) * 3600
         # speed = math.floor((StateManager.get_instance().get_state('speed') + speed ) /2)
         print(f"period: {period}, distance: {distance}, speed: {speed}")
@@ -191,12 +195,15 @@ def post_gps():
     if path is None:
         pass
     else:
+        '''
         server_ip = StateManager.get_instance().get_state('server_ip')
         server_port = StateManager.get_instance().get_state('server_port')
         server_request = {"coord": new_pos}
         res = CommunicationManager.send(server_ip, server_port, 'GET', server_request, 'nearest')
         if res['status'] == 0 and res['point'] is not None:
             nearest_pos = res['point']
+            # [Test]
+            print(f"nearest_pos: {nearest_pos}, pos: {new_pos}, next_pos: {path['points'][last_pos_index + 1]}")
             is_belonging = False
             for i in range(last_pos_index, len(path['points'])):
                 if nearest_pos[0] == path['points'][i][0] and nearest_pos[1] == path['points'][i][1]:
@@ -206,6 +213,18 @@ def post_gps():
                 # [Test]
                 print("pos outside the path")
                 StateManager.get_instance().set_state('path', None)
+        '''
+        is_belonging = False
+        for i in range(last_pos_index, len(path['points'])):
+            distance = calculate_distance(new_pos, path['points'][i])
+            if distance < 50:
+                is_belonging = True
+                StateManager.get_instance().set_state('last_pos_index', i)
+                break
+        if not is_belonging:
+            # [Test]
+            print("position outside the path")
+            StateManager.get_instance().set_state('path', None)
 
     GPS.get_actual_way()
 

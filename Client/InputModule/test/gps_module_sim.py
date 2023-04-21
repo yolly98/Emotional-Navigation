@@ -17,7 +17,7 @@ def prepare_test_path(gps_data):
     duplicated_records = 0
     for gps in gps_data['gps']:
         if last_gps is not None:
-            if gps['datetime'] == last_gps['datetime']:
+            if gps['pos'] == last_gps['pos']:# gps['datetime'] == last_gps['datetime']:
                 # print(f"duplicate record, datetime: {gps['datetime']}")
                 i += 1
                 duplicated_records += 1
@@ -47,27 +47,9 @@ def prepare_test_path(gps_data):
                 exit(1)
 
             distance = calculate_distance(last_point, point)
-            if distance > 0.5:
+            if distance > 200:
+                print(f"detected possible outlier {gps}")
                 print(f"too long distance: {distance}, last_point: {last_point}, point: {point}")
-
-                j = i + 1
-                next_pos = gps_data['gps'][j]
-                while next_pos == gps:
-                    if j < len(gps_data['gps']) - 1:
-                        j += 1
-                    else:
-                        break
-                    next_pos = gps_data['gps'][j]
-
-                if not next_pos == gps:
-                    next_point = [float(next_pos['pos'][0]), float(next_pos['pos'][1])]
-                    next_distance = calculate_distance(point, next_point)
-                    print(next_distance)
-                    if next_distance > 0.5:
-                        print(f"detected outlier: {gps}")
-                        outliers += 1
-                        i += 1
-                        continue
 
         new_gps_data['gps'].append(gps)
         last_gps = gps
@@ -95,12 +77,6 @@ def visualize_test_path(gps_data):
 
         if last_gps is not None:
             last_point = [float(last_gps['pos'][0]), float(last_gps['pos'][1])]
-
-            if gps['datetime'] == last_gps['datetime']:
-                print(f"duplicate record, datetime: {gps['datetime']}")
-            distance = calculate_distance(last_point, point)
-            if distance > 0.5:
-                print(f"too long distance: {distance}, last_point: {last_point}, point: {point}")
             line_lat = [last_point[0], point[0]]
             line_lon = [last_point[1], point[1]]
             ax.plot(line_lon, line_lat, c='violet', alpha=1, linewidth=1)
