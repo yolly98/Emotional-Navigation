@@ -408,6 +408,7 @@ class Dashboard:
 
         if command is not None:
             if command == "quit" or command == "esci":
+                StateManager.get_instance().set_state('end_path', True)
                 self.end_path()
                 StateManager.get_instance().set_state('state', 'init')
             if StateManager.get_instance().get_state('state') == 'get_user':
@@ -415,7 +416,11 @@ class Dashboard:
             elif StateManager.get_instance().get_state('state') == 'new_user':
                 self.new_user(command)
             elif StateManager.get_instance().get_state('state') == 'navigator':
-                self.get_path(command)
+                if command == "stop":
+                    StateManager.get_instance().set_state('end_path', True)
+                    self.end_path()
+                else:
+                    self.get_path(command)
             else:
                 self.terminal.write('Unknown state')
 

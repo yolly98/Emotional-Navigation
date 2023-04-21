@@ -44,7 +44,7 @@
 * [x] con una sorgente non presente nel db non posso fare il get_path, cercare coordinate più vicine
 * [x] attenzione a crash durante il cambio percorso in corsa
 * [x] mettere un controllo che calcola quanto si è distanti dal nodo del path piu vicino, se troppo distante va richiesto il ricalcolo 
-* [ ] testare funzionamento con coordinate reali (da json)
+* [x] testare funzionamento con coordinate reali (da json)
 * [ ] testare arduino + gps
 * [x] adattare simulazione ad uso di GPS
 * [ ] risolvere bug su velocità da coordinate gps reali (nei dati raccolti i timestamp non distano di 1s!)

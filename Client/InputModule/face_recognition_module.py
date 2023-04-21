@@ -181,19 +181,20 @@ class FaceRecognitionModule:
     def run(self):
         while True:
             time.sleep(self.period)
+            state = StateManager.get_instance().get_state('state')
             username = StateManager.get_instance().get_state('username')
-            if username is not None:
+            if username is not None and state == 'navigator':
 
                 emotion = self.get_emotion()
                 way = StateManager.get_instance().get_state('actual_way')
                 timestamp = time.time()
-                if not (emotion and username and way and timestamp):
+                if not (emotion and username and way and timestamp and not way['street_name'] == ''):
                     pass
                 else:
                     print("Get emotion success")
                     request = dict()
                     request['username'] = username
-                    request['way_id'] = way['way'].get('id')
+                    request['way'] = way['street_name']
                     request['timestamp'] = timestamp
                     request['emotion'] = emotion
                     server_ip = StateManager.get_instance().get_state('server_ip')
