@@ -1,6 +1,6 @@
 # TODO
 
-* [ ] rifare il makefile
+* [x] rifare il makefile
 
 ## map engine
 * [x] le deviazioni non funzionano
