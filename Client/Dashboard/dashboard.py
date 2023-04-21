@@ -112,22 +112,22 @@ class Dashboard:
         path = None
         if res is None:
             self.terminal.write("Something went wrong")
-            VocalCommandModule.get_instance().say("Qualcosa è andato storto, riprova")  # IT
+            VocalCommandModule.get_instance().say(f"Qualcosa è andato storto, non ho trovato {destination_name}, riprova")  # IT
             return
         elif res['status'] == 0:
             path = json.loads(res['path'])
             print(json.dumps(path, indent=4)) # test
         elif res['status'] == -1:
             self.terminal.write("Path not found")
-            VocalCommandModule.get_instance().say("Percorso non trovato") # IT
+            VocalCommandModule.get_instance().say(f"Percorso non trovato per {destination_name}") # IT
             return
         else:
             self.terminal.write("Something went wrong")
-            VocalCommandModule.get_instance().say("Qualcosa è andato storto, riprova") # IT
+            VocalCommandModule.get_instance().say(f"Qualcosa è andato storto, riprova") # IT
             return
 
         path['points'] = polyline.decode(path['points'])
-        self.terminal.write("Path found ")
+        self.terminal.write(f"Path found for {destination_name}")
         self.terminal.write(f"length:  {round(path['distance'] / 1000, 3)} km")
         self.terminal.write(f"estimated time: {math.floor((path['time']/1000)/60)} minutes {math.floor((path['time']/1000)%60)} seconds")
 
@@ -139,7 +139,7 @@ class Dashboard:
         StateManager.get_instance().path_init(path)
         StateManager.get_instance().set_state('path_destination', destination_name)
         StateManager.get_instance().set_state('end_path', False)
-        VocalCommandModule.get_instance().say("Ho trovato il percorso migliore, andiamo!")  # IT
+        VocalCommandModule.get_instance().say(f"Ho trovato il percorso migliore per {destination_name}, andiamo!")  # IT
 
     def show(self):
         self.win.fill(pygame.Color(self.colors['black']))

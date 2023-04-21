@@ -25,7 +25,8 @@ class VocalCommandModule:
         # get audio from microphone
         with sr.Microphone() as source:
             print("Parla ora...")
-            audio = self.v_rec.listen(source)
+            self.v_rec.adjust_for_ambient_noise(source)
+            audio = self.v_rec.listen(source, timeout=5)
 
         # Recognize audio by using Google
         text = None
@@ -35,7 +36,7 @@ class VocalCommandModule:
             print("I have no understood, try again")
             return None
         except sr.RequestError as e:
-            print("Vocal Command Recognized doesn't work {0}".format(e))
+            print(f"Vocal Command Recognized doesn't work {e}")
             return None
         print(text)
         return text
