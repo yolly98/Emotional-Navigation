@@ -210,7 +210,7 @@ class Dashboard:
                 self.path_progress.draw(self.win, self.colors, math.floor(path_km * 1000))
 
                 # draw alert
-                if 'way_speed' in actual_way and \
+                if 'max_speed' in actual_way and \
                         actual_way['max_speed'] is not None and \
                         not actual_way['max_speed'] == -1 \
                         and StateManager.get_instance().get_state('speed') > actual_way['max_speed']:
@@ -239,8 +239,9 @@ class Dashboard:
                         self.arrow.set_speed(None)
                         self.arrow.draw(self.win)
 
-                    if 99 < remaining_m < 100:
+                    if 'vocal_indication' not in actual_way and remaining_m < 100:
                         VocalCommandModule.get_instance().say(path['ways'][actual_way_index + 1]['text'])
+                        actual_way['vocal_indication'] = False
                 else:
                     self.arrow.hide()
             else:

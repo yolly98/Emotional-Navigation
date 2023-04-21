@@ -5,9 +5,9 @@
   "server_port": "5000",
   "fullscreen": false,
   "simulation": true,
-  "vocal_commands": true,
-  "user_recognition": true,
-  "history_collections": true,
+  "vocal_commands": false,
+  "user_recognition": false,
+  "history_collections": false,
   "face_recognition" : {
     "camera": 0,
     "iterations": 20,

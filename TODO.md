@@ -13,6 +13,8 @@
 * [x] rendere la simulazione la dashboard stessa
 * [x] integrare riconoscimento comandi vocali
 * [x] capire come risolvere il fatto che con i comandi vocali non azzecca le lettere maiuscole e minuscole
+* [x] non si attiva alert per velocita
+* [x] non da le indicazioni stradali vocali
 
 ## simulatore di guida
 * [x] aggiungere frecce per curve
