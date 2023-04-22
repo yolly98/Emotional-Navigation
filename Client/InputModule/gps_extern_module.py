@@ -64,14 +64,14 @@ class GPSExternModule:
                 if lat_dd and lon_dd and not lat_dd == 0.0 and not lon_dd == 0.0:
                     now = datetime.now()
                     formatted_datetime = now.strftime('%Y-%m-%d %H:%M:%S')
-                    request = {'lat': lat_dd, 'lon': lon_dd, 'datetime': formatted_datetime}
+                    request = {'pos': [lat_dd, lon_dd], 'datetime': formatted_datetime}
                     print(request)
                     CommunicationManager.send(self.server_ip, self.server_port, 'POST', request, self.target_resource)
 
 
 if __name__ == '__main__':
     GPSExternModule.get_instance().config(
-        usb_port='COM12',
+        usb_port='COM13',
         server_ip='127.0.0.1',
         server_port='4000',
         target_resource='gps-collector',

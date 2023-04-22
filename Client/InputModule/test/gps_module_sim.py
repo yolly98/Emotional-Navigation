@@ -112,7 +112,7 @@ if __name__ == '__main__':
             port='4000',
             type='POST',
             data=request,
-            resource='gps'
+            resource='gps-collector'
         )
         i += 1
         time.sleep(1)

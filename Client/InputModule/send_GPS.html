@@ -43,7 +43,7 @@
                   let second = (now.getSeconds()).toString().padStart(2, '0');
                   let datetime = `${year}-${month}-${day} ${hour}:${minute}:${second}`;
                   
-                  let data = { lat: lat, lon: lon, datetime: datetime};
+                  let data = { pos: [lat, lon], datetime: datetime};
                   let url = "http://" + serverUrlInput.value;
                   
                   fetch(url, {

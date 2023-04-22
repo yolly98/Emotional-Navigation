@@ -4,7 +4,7 @@
   "server_ip": "127.0.0.1",
   "server_port": "5000",
   "fullscreen": false,
-  "simulation": true,
+  "simulation": false,
   "vocal_commands": false,
   "user_recognition": false,
   "history_collections": false,
@@ -17,10 +17,10 @@
   },
   "extern_gps_module": {
     "enable": false,
-    "usb_port": "COM12",
+    "usb_port": "COM13",
     "server_ip": "127.0.0.1",
     "server_port": "4000",
-    "target_resource": "gps",
+    "target_resource": "gps-collector",
     "interval": 1
   }
 

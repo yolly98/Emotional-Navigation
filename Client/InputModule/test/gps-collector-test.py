@@ -42,7 +42,7 @@ app = GPSCollector.get_instance().get_app()
 
 @app.get('/gps')
 def get_gps():
-    return send_file('send_GPS.html')
+    return send_file('../send_GPS.html')
 
 @app.post('/gps-collector')
 def post_gps_collector():
@@ -50,8 +50,7 @@ def post_gps_collector():
         return {'error': 'No JSON request received'}, 500
 
     received_json = request.json
-    lat = received_json['lat']
-    lon = received_json['lon']
+    lat, lon = received_json['pos']
     time_pos = received_json['datetime']
 
     gps_data = None

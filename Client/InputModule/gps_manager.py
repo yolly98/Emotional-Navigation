@@ -152,8 +152,11 @@ class GPS:
 
 app = GPS.get_instance().get_app()
 
+@app.get('/gps')
+def get_gps():
+    return send_file('send_GPS.html')
 
-@app.post('/gps')
+@app.post('/gps-collector')
 def post_gps():
     if request.json is None:
         return {'error': 'No JSON request received'}, 500
