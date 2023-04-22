@@ -16,3 +16,5 @@ requests
 pymongo
 flask-cors
 polyline
+pyserial
+pynmea2

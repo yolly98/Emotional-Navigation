@@ -17,7 +17,7 @@ def prepare_test_path(gps_data):
     duplicated_records = 0
     for gps in gps_data['gps']:
         if last_gps is not None:
-            if gps['pos'] == last_gps['pos']:# gps['datetime'] == last_gps['datetime']:
+            if gps['pos'] == last_gps['pos'] or gps['datetime'] == last_gps['datetime']:
                 # print(f"duplicate record, datetime: {gps['datetime']}")
                 i += 1
                 duplicated_records += 1

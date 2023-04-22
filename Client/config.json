@@ -14,6 +14,14 @@
     "wait_time": 0.3,
     "period": 60,
     "user_detection_attempts": 5
+  },
+  "extern_gps_module": {
+    "enable": false,
+    "usb_port": "COM12",
+    "server_ip": "127.0.0.1",
+    "server_port": "4000",
+    "target_resource": "gps",
+    "interval": 1
   }
 
 
