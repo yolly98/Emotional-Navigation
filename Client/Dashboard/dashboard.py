@@ -1,6 +1,3 @@
-import pygame
-import sys
-import time
 from Client.Dashboard.View.alert import Alert
 from Client.Dashboard.View.path_progress import PathProgress
 from Client.Dashboard.View.car import Car
@@ -11,11 +8,13 @@ from Client.communication_manager import CommunicationManager
 from Client.state_manager import StateManager
 from Client.InputModule.face_recognition_module import FaceRecognitionModule
 from Client.InputModule.vocal_command_module import VocalCommandModule
+import pygame
+import sys
+import time
 import base64
 import polyline
 import json
 import math
-
 
 class Dashboard:
 

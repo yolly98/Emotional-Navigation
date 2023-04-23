@@ -1,12 +1,12 @@
-from Utility.utility_functions import calculate_distance
 from math import radians, sin, cos, asin, atan2, degrees
 import time
 from Client.state_manager import StateManager
+from Client.communication_manager import CommunicationManager
 from flask import Flask, request, send_file
 from flask_cors import CORS
-from Client.communication_manager import CommunicationManager
 import json
 from datetime import datetime
+import math
 
 GPS_IP = "0.0.0.0"
 GPS_PORT = '4000'
@@ -32,6 +32,27 @@ class GPS:
 
     def listener(self):
         self.app.run(host=GPS_IP, port=GPS_PORT, debug=False, threaded=True)
+
+    @staticmethod
+    def calculate_distance(Point1, Point2):  # in m
+
+        lat1 = float(Point1[0])
+        lon1 = float(Point1[1])
+        lat2 = float(Point2[0])
+        lon2 = float(Point2[1])
+
+        R = 6371000  # Earth radius in m
+        lat1 = math.radians(lat1)
+        lon1 = math.radians(lon1)
+        lat2 = math.radians(lat2)
+        lon2 = math.radians(lon2)
+        dlat = lat2 - lat1
+        dlon = lon2 - lon1
+        a = math.sin(dlat / 2) ** 2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2) ** 2
+        c = 2 * math.asin(math.sqrt(a))
+        distance = R * c
+
+        return distance
 
     @staticmethod
     def get_actual_way():
@@ -103,7 +124,7 @@ class GPS:
             distance = travelled_km * 1000
             while i < len(path['points']):
                 if i > 0:
-                    m = calculate_distance(path['points'][i - 1], path['points'][i])
+                    m = GPS.calculate_distance(path['points'][i - 1], path['points'][i])
                     distance -= m
                     if i > last_pos_index:
                         if distance > 0:
@@ -152,9 +173,11 @@ class GPS:
 
 app = GPS.get_instance().get_app()
 
+
 @app.get('/gps')
 def get_gps():
     return send_file('send_GPS.html')
+
 
 @app.post('/gps-collector')
 def post_gps():
@@ -175,7 +198,7 @@ def post_gps():
     travelled_km = StateManager.get_instance().get_state('travelled_km')
 
     if last_pos is not None:
-        distance = calculate_distance(new_pos, last_pos) / 1000
+        distance = GPS.calculate_distance(new_pos, last_pos) / 1000
         travelled_km += distance
         period = gps_time - StateManager.get_instance().get_state('last_time')
         # period = 1# [Test]
@@ -219,7 +242,7 @@ def post_gps():
         '''
         is_belonging = False
         for i in range(last_pos_index, len(path['points'])):
-            distance = calculate_distance(new_pos, path['points'][i])
+            distance = GPS.calculate_distance(new_pos, path['points'][i])
             if distance < 50:
                 is_belonging = True
                 StateManager.get_instance().set_state('last_pos_index', i)

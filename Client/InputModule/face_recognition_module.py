@@ -5,6 +5,7 @@ from Client.state_manager import StateManager
 from Client.communication_manager import CommunicationManager
 import os
 
+
 class FaceRecognitionModule:
 
     face_recognition_module = None

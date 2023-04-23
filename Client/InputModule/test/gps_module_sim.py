@@ -1,9 +1,9 @@
 from Client.communication_manager import CommunicationManager
+from Client.InputModule.gps_manager import GPS
 import time
 import json
 import matplotlib.pyplot as plt
 import math
-from Utility.utility_functions import calculate_distance
 
 
 def prepare_test_path(gps_data):
@@ -46,7 +46,7 @@ def prepare_test_path(gps_data):
                 print(f"duplicate record, Error!")
                 exit(1)
 
-            distance = calculate_distance(last_point, point)
+            distance = GPS.calculate_distance(last_point, point)
             if distance > 200:
                 print(f"detected possible outlier {gps}")
                 print(f"too long distance: {distance}, last_point: {last_point}, point: {point}")
