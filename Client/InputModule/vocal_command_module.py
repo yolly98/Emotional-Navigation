@@ -2,6 +2,7 @@ import speech_recognition as sr
 import pyttsx3
 from threading import Thread
 
+
 class VocalCommandModule:
 
     vocal_command_module = None
@@ -19,6 +20,8 @@ class VocalCommandModule:
     def init(self):
         self.v_rec = sr.Recognizer()
         self.v_synt = pyttsx3.init()
+        self.v_synt.setProperty('rate', 150)
+        self.v_synt.setProperty('voice', 'it')
 
     def recognize_command(self):
 
@@ -26,7 +29,10 @@ class VocalCommandModule:
         with sr.Microphone() as source:
             print("Parla ora...")
             self.v_rec.adjust_for_ambient_noise(source)
-            audio = self.v_rec.listen(source, timeout=5)
+            try:
+                audio = self.v_rec.listen(source, timeout=5)
+            except Exception:
+                return
 
         # Recognize audio by using Google
         text = None
@@ -51,7 +57,6 @@ class VocalCommandModule:
             self.v_synt.runAndWait()
         except Exception:
             pass
-
 
 
 if __name__ == '__main__':
