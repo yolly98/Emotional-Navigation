@@ -27,10 +27,10 @@ if __name__ == '__main__':
     camera = config['face_recognition']
     FaceRecognitionModule.get_instance().configure(
         camera=camera['camera'],
-        iterations=camera['iterations'],
+        emotion_samples=camera['emotion_samples'],
         wait_time=camera['wait_time'],
         period=camera['period'],
-        user_detection_attempts=camera['user_detection_attempts']
+        user_recognition_attempts=camera['user_recognition_attempts']
     )
 
     if not config['user_recognition']:

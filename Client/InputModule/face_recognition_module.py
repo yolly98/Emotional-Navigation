@@ -12,10 +12,10 @@ class FaceRecognitionModule:
 
     def __init__(self):
         self.camera = -1
-        self.iterations = 0
+        self.emotion_samples = 0
         self.wait_time = 0
         self.period = 0
-        self.user_detection_attempts = 0
+        self.user_recognition_attempts = 0
 
     @staticmethod
     def get_instance():
@@ -23,12 +23,12 @@ class FaceRecognitionModule:
             FaceRecognitionModule.face_recognition_module = FaceRecognitionModule()
         return FaceRecognitionModule.face_recognition_module
 
-    def configure(self, camera, iterations, wait_time, period, user_detection_attempts=20):
+    def configure(self, camera, emotion_samples, wait_time, period, user_recognition_attempts=20):
         self.camera = camera
-        self.iterations = iterations
+        self.emotion_samples = emotion_samples
         self.wait_time = wait_time
         self.period = period
-        self.user_detection_attempts = user_detection_attempts
+        self.user_recognition_attempts = user_recognition_attempts
 
     def get_picture(self, username):
         if self.camera == -1:
@@ -55,7 +55,7 @@ class FaceRecognitionModule:
         video.release()
         cv2.destroyAllWindows()
 
-    def find_face(self, test=False):
+    def find_face(self):
 
         if self.camera == -1:
             print("camera not setted")
@@ -74,18 +74,11 @@ class FaceRecognitionModule:
 
             _, frame = video.read()
 
-            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            model_path = None
-            if test is False:
-                root_path = StateManager.get_instance().get_state('root_path')
-                model_path = os.path.join(root_path, "InputModule", "models", "haarcascade_frontalface_default.xml")
-            else:
-                model_path = os.path.join("models", "haarcascade_frontalface_default.xml")
-            face_cascade = cv2.CascadeClassifier(model_path)
-            faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5)
-
-            if len(faces) > 0:
-                break
+            try:
+                DeepFace.extract_faces(frame)
+            except Exception:
+                continue
+            break
 
         video.release()
         return True
@@ -108,7 +101,7 @@ class FaceRecognitionModule:
             user_images_dir = os.path.join(root_path, "InputModule", "UserImages")
         for file_name in os.listdir(user_images_dir):
             if file_name.endswith('.png'):
-                for i in range(self.user_detection_attempts):
+                for i in range(self.user_recognition_attempts):
 
                     time.sleep(self.wait_time)
 
@@ -140,7 +133,7 @@ class FaceRecognitionModule:
         dominant_emotion = None
         dominant_emotion_value = 0
 
-        for i in range(self.iterations):
+        for i in range(self.emotion_samples):
 
             time.sleep(self.wait_time)
 
@@ -204,10 +197,13 @@ class FaceRecognitionModule:
 
 
 if __name__ == "__main__":
-    FaceRecognitionModule.get_instance().configure(1, 20, 0.3, 60, 5)
+
+    FaceRecognitionModule.get_instance().configure(0, 20, 0.3, 60, 5)
+
     # FaceRecognitionModule.print_available_cameras()
     # FaceRecognitionModule.get_instance().run()
-    FaceRecognitionModule.get_instance().find_face(True)
+    FaceRecognitionModule.get_instance().find_face()
     print("face detected")
     username = FaceRecognitionModule.get_instance().verify_user('UserImages')
     print(username)
+
