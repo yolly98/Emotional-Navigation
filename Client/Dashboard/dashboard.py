@@ -15,6 +15,13 @@ import base64
 import polyline
 import json
 import math
+import os
+if os.name == 'posix':
+    from xvfbwrapper import Xvfb
+
+
+VIRTUAL_DISPLAY = False
+
 
 class Dashboard:
 
@@ -22,7 +29,11 @@ class Dashboard:
 
     def __init__(self):
 
-        # pygame initialization
+        if VIRTUAL_DISPLAY:
+            vdisplay = Xvfb()
+            vdisplay.start()
+            os.environ["DISPLAY"] = ":" + str(vdisplay.new_display)
+
         pygame.init()
 
         # set width and height of the window

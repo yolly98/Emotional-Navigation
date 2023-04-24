@@ -6,11 +6,9 @@ pyaudio
 pygame
 pygame-textinput
 xmltodict
-py2neo
 matplotlib
 geocoder
 opencv-python
-mysql-connector-python
 flask
 requests
 pymongo
@@ -18,3 +16,4 @@ flask-cors
 polyline
 pyserial
 pynmea2
+xvfbwrapper
