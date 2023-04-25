@@ -60,6 +60,9 @@ class MapManager:
             print('Nominatim error:', response.text)
             return None
 
+        if len(response.json()) == 0:
+            return None
+
         location = response.json()[0]
         return [float(location["lat"]), float(location["lon"])]
 

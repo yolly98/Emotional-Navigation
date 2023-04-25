@@ -21,8 +21,11 @@ if __name__ == '__main__':
     StateManager.get_instance().set_state('server_ip', config['server_ip'])
     StateManager.get_instance().set_state('server_port', config['server_port'])
     StateManager.get_instance().set_state('fullscreen', config['fullscreen'])
-    StateManager.get_instance().set_state('vocal_commands', config['vocal_commands'])
-    VocalCommandModule.get_instance().init()
+    StateManager.get_instance().set_state('vocal_commands', config['vocal_commands']['enable'])
+    VocalCommandModule.get_instance().init(
+        stt_service=config['vocal_commands']['stt_service'],
+        mic_device=config['vocal_commands']['mic_device']
+    )
 
     camera = config['face_recognition']
     FaceRecognitionModule.get_instance().configure(

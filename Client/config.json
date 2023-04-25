@@ -5,8 +5,12 @@
   "server_port": "5000",
   "fullscreen": false,
   "simulation": true,
-  "vocal_commands": false,
-  "user_recognition": true,
+  "vocal_commands": {
+    "enable": true,
+    "mic_device": null,
+    "stt_service": "google"
+  },
+  "user_recognition": false,
   "history_collections": false,
   "face_recognition" : {
     "camera": 0,

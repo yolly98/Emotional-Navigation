@@ -17,3 +17,6 @@ polyline
 pyserial
 pynmea2
 xvfbwrapper
+openai-whisper
+soundfile
+torch

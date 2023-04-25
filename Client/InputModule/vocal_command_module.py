@@ -8,8 +8,11 @@ class VocalCommandModule:
     vocal_command_module = None
 
     def __init__(self):
+        self.stt_model = None
         self.v_rec = None
         self.v_synt = None
+        self.stt_service = None
+        self.mic_device = None
 
     @staticmethod
     def get_instance():
@@ -17,16 +20,21 @@ class VocalCommandModule:
             VocalCommandModule.vocal_command_module = VocalCommandModule()
         return VocalCommandModule.vocal_command_module
 
-    def init(self):
+    def init(self, stt_service='google', mic_device=None):
         self.v_rec = sr.Recognizer()
         self.v_synt = pyttsx3.init()
         self.v_synt.setProperty('rate', 150)
         self.v_synt.setProperty('voice', 'it')
+        self.stt_service = stt_service
+        self.mic_device = mic_device
 
     def recognize_command(self):
 
+        stt_service = self.stt_service
+        device_index =self.mic_device
+
         # get audio from microphone
-        with sr.Microphone() as source:
+        with sr.Microphone(device_index=device_index) as source:
             print("Parla ora...")
             self.v_rec.adjust_for_ambient_noise(source)
             try:
@@ -34,10 +42,13 @@ class VocalCommandModule:
             except Exception:
                 return
 
-        # Recognize audio by using Google
+        # Recognize audio by using Google or Whisper
         text = None
         try:
-            text = self.v_rec.recognize_google(audio, language='it-IT')
+            if stt_service == 'whisper':
+                text = self.v_rec.recognize_whisper(audio, language='italian')
+            elif stt_service == 'google':
+                text = self.v_rec.recognize_google(audio, language='it-IT')
         except sr.UnknownValueError:
             print("I have no understood, try again")
             return None
@@ -61,7 +72,7 @@ class VocalCommandModule:
 
 if __name__ == '__main__':
 
-    VocalCommandModule.get_instance().init()
+    VocalCommandModule.get_instance().init(stt_service='whisper')
     while True:
         command = VocalCommandModule.get_instance().recognize_command()
         print(command)
