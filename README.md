@@ -5,3 +5,4 @@
 * per installare i requirements fare 'pip install -r requirements.txt'
 * per avviare il client mettersi nella cartella del progetto e fare 'python3 -m Client.client' (attenzione alla posizione dei file)
 * per ora pygame non funziona se il rasberry non è connesso ad uno schermo, provare a farlo funzionare con VNC
+* installa espeak su linux ->  sudo apt update && sudo apt install espeak ffmpeg libespeak1
