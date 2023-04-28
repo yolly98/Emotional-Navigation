@@ -4,6 +4,7 @@ import cv2
 from Client.state_manager import StateManager
 from Client.communication_manager import CommunicationManager
 import os
+import pandas
 
 
 class FaceRecognitionModule:
@@ -15,7 +16,6 @@ class FaceRecognitionModule:
         self.emotion_samples = 0
         self.wait_time = 0
         self.period = 0
-        self.user_recognition_attempts = 0
 
     @staticmethod
     def get_instance():
@@ -23,12 +23,11 @@ class FaceRecognitionModule:
             FaceRecognitionModule.face_recognition_module = FaceRecognitionModule()
         return FaceRecognitionModule.face_recognition_module
 
-    def configure(self, camera, emotion_samples, wait_time, period, user_recognition_attempts=20):
+    def configure(self, camera, emotion_samples, wait_time, period):
         self.camera = camera
         self.emotion_samples = emotion_samples
         self.wait_time = wait_time
         self.period = period
-        self.user_recognition_attempts = user_recognition_attempts
 
     def get_picture(self, username):
         if self.camera == -1:
@@ -85,6 +84,18 @@ class FaceRecognitionModule:
 
     def verify_user(self, user_images_dir=None):
 
+        models = [
+            "VGG-Face",
+            "Facenet",
+            "Facenet512",
+            "OpenFace",
+            "DeepFace",
+            "DeepID",
+            "ArcFace",
+            "Dlib",
+            "SFace",
+        ]
+
         if self.camera == -1:
             print("camera not setted")
             return
@@ -99,22 +110,28 @@ class FaceRecognitionModule:
         if user_images_dir is None:
             root_path = StateManager.get_instance().get_state('root_path')
             user_images_dir = os.path.join(root_path, "InputModule", "UserImages")
-        for file_name in os.listdir(user_images_dir):
-            if file_name.endswith('.png'):
-                for i in range(self.user_recognition_attempts):
 
-                    time.sleep(self.wait_time)
+        _, frame = video.read()
+        img_path = os.path.join(user_images_dir, "temp.png")
+        cv2.imwrite(img_path, frame)
+        dfs = DeepFace.find(img_path=img_path, db_path=user_images_dir, enforce_detection=False)
+        res = []
+        username = None
+        for df in dfs:
+            res.append(df.to_dict())
 
-                    _, frame = video.read()
+        res = res[0]['identity']
+        if 1 in res:
+            username = res[1]
+            username = username.replace(user_images_dir, '')
+            username = username.replace('/', '')
+            username = username.replace('.png', '')
 
-                    file_path = os.path.join(user_images_dir, file_name)
-                    res = DeepFace.verify(frame, file_path, enforce_detection=False)
-                    if res['verified']:
-                        username = file_name.replace('.png', '')
-                        return username
+        os.remove(img_path)
+        os.remove(os.path.join(user_images_dir, 'representations_vgg_face.pkl'))
 
         video.release()
-        return None
+        return username
 
     def get_emotion(self):
 
@@ -198,12 +215,12 @@ class FaceRecognitionModule:
 
 if __name__ == "__main__":
 
-    FaceRecognitionModule.get_instance().configure(0, 20, 0.3, 60, 5)
+    FaceRecognitionModule.get_instance().configure(0, 20, 0.3, 60)
 
     # FaceRecognitionModule.print_available_cameras()
     # FaceRecognitionModule.get_instance().run()
-    FaceRecognitionModule.get_instance().find_face()
-    print("face detected")
+    # FaceRecognitionModule.get_instance().find_face()
+    # print("face detected")
     username = FaceRecognitionModule.get_instance().verify_user('UserImages')
     print(username)
 

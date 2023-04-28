@@ -10,14 +10,13 @@
     "mic_device": null,
     "stt_service": "google"
   },
-  "user_recognition": false,
+  "user_recognition": true,
   "history_collections": false,
   "face_recognition" : {
     "camera": 0,
     "emotion_samples": 20,
     "wait_time": 0.3,
-    "period": 60,
-    "user_recognition_attempts": 5
+    "period": 60
   },
   "extern_gps_module": {
     "enable": false,

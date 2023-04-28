@@ -32,8 +32,7 @@ if __name__ == '__main__':
         camera=camera['camera'],
         emotion_samples=camera['emotion_samples'],
         wait_time=camera['wait_time'],
-        period=camera['period'],
-        user_recognition_attempts=camera['user_recognition_attempts']
+        period=camera['period']
     )
 
     if not config['user_recognition']:
