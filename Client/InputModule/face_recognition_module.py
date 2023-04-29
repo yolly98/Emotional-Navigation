@@ -120,6 +120,7 @@ class FaceRecognitionModule:
         for df in dfs:
             res.append(df.to_dict())
 
+        print(res)
         res = res[0]['identity']
         if 1 in res:
             username = res[1]
@@ -215,7 +216,7 @@ class FaceRecognitionModule:
 
 if __name__ == "__main__":
 
-    FaceRecognitionModule.get_instance().configure(0, 20, 0.3, 60)
+    FaceRecognitionModule.get_instance().configure(1, 20, 0.3, 60)
 
     # FaceRecognitionModule.print_available_cameras()
     # FaceRecognitionModule.get_instance().run()

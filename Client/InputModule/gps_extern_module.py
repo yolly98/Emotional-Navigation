@@ -71,7 +71,7 @@ class GPSExternModule:
 
 if __name__ == '__main__':
     GPSExternModule.get_instance().config(
-        usb_port='COM13',
+        usb_port='COM16',
         server_ip='127.0.0.1',
         server_port='4000',
         target_resource='gps-collector',

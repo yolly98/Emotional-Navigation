@@ -108,7 +108,7 @@ class Dashboard:
         self.car_speed_counter = 0
         self.terminal.write("Destination reached, Insert new Destination")
 
-    def get_path(self, destination_name):
+    def get_path(self, destination_name, is_recalculation=False):
 
         request = dict()
         request['username'] = StateManager.get_instance().get_state('username')
@@ -137,19 +137,21 @@ class Dashboard:
             return
 
         path['points'] = polyline.decode(path['points'])
-        self.terminal.write(f"Path found for {destination_name}")
-        self.terminal.write(f"length:  {round(path['distance'] / 1000, 3)} km")
-        self.terminal.write(f"estimated time: {math.floor((path['time']/1000)/60)} minutes {math.floor((path['time']/1000)%60)} seconds")
 
         self.old_timestamp = time.time()
         self.old_car_speed = 0
         self.start_time = time.time()
         self.travel_time = 0
-        self.path_progress = PathProgress(self.street_width + (self.win_width - self.street_width - 30)/2, self.street_pos[1] - 50, self.block_size, path['distance'])
         StateManager.get_instance().path_init(path)
         StateManager.get_instance().set_state('path_destination', destination_name)
         StateManager.get_instance().set_state('end_path', False)
-        VocalCommandModule.get_instance().say(f"Ho trovato il percorso migliore per {destination_name}, andiamo!")  # IT
+
+        if not is_recalculation:
+            self.path_progress = PathProgress(self.street_width + (self.win_width - self.street_width - 30) / 2, self.street_pos[1] - 50, self.block_size, path['distance'])
+            self.terminal.write(f"Path found for {destination_name}")
+            self.terminal.write(f"length:  {round(path['distance'] / 1000, 3)} km")
+            self.terminal.write(f"estimated time: {math.floor((path['time']/1000)/60)} minutes {math.floor((path['time']/1000)%60)} seconds")
+            VocalCommandModule.get_instance().say(f"Ho trovato il percorso migliore per {destination_name}, andiamo!")  # IT
 
     def show(self):
         self.win.fill(pygame.Color(self.colors['black']))
@@ -171,7 +173,7 @@ class Dashboard:
 
         if not end_path and path is None:
             print("path recalculation")
-            self.get_path(StateManager.get_instance().get_state('path_destination'))
+            self.get_path(StateManager.get_instance().get_state('path_destination'), is_recalculation=True)
             return
 
         actual_way = StateManager.get_instance().get_state('actual_way')
@@ -210,7 +212,7 @@ class Dashboard:
                 if not StateManager.get_instance().get_state('is_sim'):
                     self.player_car.set_speed(StateManager.get_instance().get_state('speed'))
 
-                # draw m travelled
+                # draw remaining meters before turn right or left
                 m_surface = font.render(f"{math.floor(remaining_m)} m", True, self.colors['white'])
                 m_rect = m_surface.get_rect()
                 m_rect.midtop = (100, 80)
@@ -230,14 +232,18 @@ class Dashboard:
                 actual_way_index = StateManager.get_instance().get_state('actual_way_index')
                 if actual_way_index < len(path['ways']):
                     sign = path['ways'][actual_way_index + 1]['sign']
-                    if sign == -8 or sign == 8:
-                        self.arrow.set_type('down')
-                    elif -3 <= sign < 0 or sign == -7:
-                        self.arrow.set_type('left')
-                    elif 0 < sign <= 3 or sign == 7:
-                        self.arrow.set_type('right')
-                    elif sign == 0:
+
+                    if remaining_m > 200:
                         self.arrow.set_type('up')
+                    else:
+                        if sign == -8 or sign == 8:
+                            self.arrow.set_type('down')
+                        elif -3 <= sign < 0 or sign == -7:
+                            self.arrow.set_type('left')
+                        elif 0 < sign <= 3 or sign == 7:
+                            self.arrow.set_type('right')
+                        elif sign == 0:
+                            self.arrow.set_type('up')
 
                     if remaining_m <= 50:
                         self.arrow.set_speed(5)
@@ -249,7 +255,7 @@ class Dashboard:
                         self.arrow.set_speed(None)
                         self.arrow.draw(self.win)
 
-                    if 'vocal_indication' not in actual_way and remaining_m < 100:
+                    if 'vocal_indication' not in actual_way and remaining_m < 50:
                         VocalCommandModule.get_instance().say(path['ways'][actual_way_index + 1]['text'])
                         actual_way['vocal_indication'] = False
                 else:
@@ -431,7 +437,7 @@ class Dashboard:
                     StateManager.get_instance().set_state('end_path', True)
                     self.end_path()
                 else:
-                    self.get_path(command)
+                    self.get_path(command, is_recalculation=False)
             else:
                 self.terminal.write('Unknown state')
 

@@ -72,7 +72,7 @@ class VocalCommandModule:
 
 if __name__ == '__main__':
 
-    VocalCommandModule.get_instance().init(stt_service='whisper')
+    VocalCommandModule.get_instance().init(stt_service='google')
     while True:
         command = VocalCommandModule.get_instance().recognize_command()
         print(command)

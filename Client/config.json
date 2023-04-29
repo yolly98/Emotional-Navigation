@@ -4,16 +4,16 @@
   "server_ip": "127.0.0.1",
   "server_port": "5000",
   "fullscreen": false,
-  "simulation": true,
+  "simulation": false,
   "vocal_commands": {
     "enable": true,
     "mic_device": null,
     "stt_service": "google"
   },
   "user_recognition": true,
-  "history_collections": false,
+  "history_collections": true,
   "face_recognition" : {
-    "camera": 0,
+    "camera": 1,
     "emotion_samples": 20,
     "wait_time": 0.3,
     "period": 60
