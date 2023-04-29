@@ -3,10 +3,10 @@
   "default_lon": "12.2692692",
   "server_ip": "127.0.0.1",
   "server_port": "5000",
-  "fullscreen": false,
+  "fullscreen": true,
   "simulation": false,
   "vocal_commands": {
-    "enable": false,
+    "enable": true,
     "mic_device": null,
     "stt_service": "google"
   },

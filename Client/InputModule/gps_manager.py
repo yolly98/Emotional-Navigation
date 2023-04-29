@@ -205,12 +205,13 @@ def post_gps():
         travelled_km += distance
         period = gps_time - StateManager.get_instance().get_state('last_time')
         # period = 1# [Test]
-        speed = (distance / period) * 3600
-        # speed = math.floor((StateManager.get_instance().get_state('speed') + speed ) /2)
-        # print(f"period: {period}, distance: {distance}, speed: {speed}")
-        StateManager.get_instance().set_state('last_time', gps_time)
-        StateManager.get_instance().set_state('travelled_km', travelled_km)
-        StateManager.get_instance().set_state('speed', speed)
+        if not period == 0:
+            speed = (distance / period) * 3600
+            # speed = math.floor((StateManager.get_instance().get_state('speed') + speed ) /2)
+            # print(f"period: {period}, distance: {distance}, speed: {speed}")
+            StateManager.get_instance().set_state('last_time', gps_time)
+            StateManager.get_instance().set_state('travelled_km', travelled_km)
+            StateManager.get_instance().set_state('speed', speed)
     else:
         StateManager.get_instance().set_state('last_time', gps_time)
         StateManager.get_instance().set_state('travelled_km', 0)
