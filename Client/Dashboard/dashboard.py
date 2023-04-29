@@ -114,7 +114,7 @@ class Dashboard:
         request['username'] = StateManager.get_instance().get_state('username')
         request['destination_name'] = destination_name
         request['source_coord'] = StateManager.get_instance().get_state('last_pos')
-        print(request)
+        # print(request)
 
         server_ip = StateManager.get_instance().get_state('server_ip')
         server_port = StateManager.get_instance().get_state('server_port')
@@ -126,7 +126,7 @@ class Dashboard:
             return
         elif res['status'] == 0:
             path = json.loads(res['path'])
-            print(json.dumps(path, indent=4)) # test
+            # print(json.dumps(path, indent=4)) # [Test]
         elif res['status'] == -1:
             self.terminal.write("Path not found")
             VocalCommandModule.get_instance().say(f"Percorso non trovato per {destination_name}") # IT
@@ -142,6 +142,7 @@ class Dashboard:
         self.old_car_speed = 0
         self.start_time = time.time()
         self.travel_time = 0
+        residual_m = StateManager.get_instance().get_state('travelled_km') * 1000
         StateManager.get_instance().path_init(path)
         StateManager.get_instance().set_state('path_destination', destination_name)
         StateManager.get_instance().set_state('end_path', False)
@@ -152,6 +153,8 @@ class Dashboard:
             self.terminal.write(f"length:  {round(path['distance'] / 1000, 3)} km")
             self.terminal.write(f"estimated time: {math.floor((path['time']/1000)/60)} minutes {math.floor((path['time']/1000)%60)} seconds")
             VocalCommandModule.get_instance().say(f"Ho trovato il percorso migliore per {destination_name}, andiamo!")  # IT
+        else:
+            self.path_progress.set_residual_m(residual_m)
 
     def show(self):
         self.win.fill(pygame.Color(self.colors['black']))

@@ -6,12 +6,12 @@
   "fullscreen": false,
   "simulation": false,
   "vocal_commands": {
-    "enable": true,
+    "enable": false,
     "mic_device": null,
     "stt_service": "google"
   },
-  "user_recognition": true,
-  "history_collections": true,
+  "user_recognition": false,
+  "history_collections": false,
   "face_recognition" : {
     "camera": 1,
     "emotion_samples": 20,

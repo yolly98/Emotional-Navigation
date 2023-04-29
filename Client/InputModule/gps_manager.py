@@ -80,7 +80,7 @@ class GPS:
                     actual_way['max_speed'] = speed[2]
 
             # [Test]
-            print(f"remaining_m: {remaining_m}, way_index: {actual_way_index}, pos_index: {last_pos_index} len_ways: {len(path['ways']) - 1}")
+            # print(f"remaining_m: {remaining_m}, way_index: {actual_way_index}, pos_index: {last_pos_index} len_ways: {len(path['ways']) - 1}")
             if remaining_m <= 0:
                 remaining_m = 0
                 if actual_way_index >= (len(path['ways']) - 1):
@@ -103,15 +103,15 @@ class GPS:
             actual_way['max_speed'] = 60
 
         # [Test]
-        print(json.dumps(actual_way, indent=4))
-        print("-----------------------------------")
+        # print(json.dumps(actual_way, indent=4))
+        # print("-----------------------------------")
 
         StateManager.get_instance().set_state('actual_way', actual_way)
         StateManager.get_instance().set_state('remaining_m', remaining_m)
         StateManager.get_instance().set_state('actual_way_index', actual_way_index)
 
     @staticmethod
-    def get_sim_pos():
+    def get_hypothetical_position():
 
         travelled_km = StateManager.get_instance().get_state('travelled_km')
         last_pos_index = StateManager.get_instance().get_state('last_pos_index')
@@ -157,15 +157,18 @@ class GPS:
                 p3 = [float(round(degrees(lat3), 7)), float(round(degrees(lon3), 7))]
                 new_pos = p3
 
-            StateManager.get_instance().set_state('last_pos_index', last_pos_index)
-            StateManager.get_instance().set_state('last_pos', new_pos)
+            return {'last_pos_index': last_pos_index, 'last_pos': new_pos}
 
         # [Test]
-        print(f"GPS pos: {new_pos}")
+        # print(f"GPS pos: {new_pos}")
 
     def run_simulation(self):
         while True:
-            GPS.get_sim_pos()
+            res = GPS.get_hypothetical_position()
+            if res is None:
+                continue
+            StateManager.get_instance().set_state('last_pos_index', res['last_pos_index'])
+            StateManager.get_instance().set_state('last_pos', res['last_pos'])
             GPS.get_actual_way()
 
             time.sleep(self.sim_period)
@@ -193,7 +196,7 @@ def post_gps():
     new_pos = [float(lat), float(lon)]
 
     # [Test]
-    print(f"GPS pos: {new_pos}, datetime: {received_json['datetime']}")
+    # print(f"GPS pos: {new_pos}, datetime: {received_json['datetime']}")
     last_pos = StateManager.get_instance().get_state('last_pos')
     travelled_km = StateManager.get_instance().get_state('travelled_km')
 
@@ -204,7 +207,7 @@ def post_gps():
         # period = 1# [Test]
         speed = (distance / period) * 3600
         # speed = math.floor((StateManager.get_instance().get_state('speed') + speed ) /2)
-        print(f"period: {period}, distance: {distance}, speed: {speed}")
+        # print(f"period: {period}, distance: {distance}, speed: {speed}")
         StateManager.get_instance().set_state('last_time', gps_time)
         StateManager.get_instance().set_state('travelled_km', travelled_km)
         StateManager.get_instance().set_state('speed', speed)
@@ -221,38 +224,18 @@ def post_gps():
     if path is None:
         pass
     else:
-        '''
-        server_ip = StateManager.get_instance().get_state('server_ip')
-        server_port = StateManager.get_instance().get_state('server_port')
-        server_request = {"coord": new_pos}
-        res = CommunicationManager.send(server_ip, server_port, 'GET', server_request, 'nearest')
-        if res['status'] == 0 and res['point'] is not None:
-            nearest_pos = res['point']
-            # [Test]
-            print(f"nearest_pos: {nearest_pos}, pos: {new_pos}, next_pos: {path['points'][last_pos_index + 1]}")
-            is_belonging = False
-            for i in range(last_pos_index, len(path['points'])):
-                if nearest_pos[0] == path['points'][i][0] and nearest_pos[1] == path['points'][i][1]:
-                    is_belonging = True
-                    break
-            if not is_belonging:
-                # [Test]
-                print("pos outside the path")
-                StateManager.get_instance().set_state('path', None)
-        '''
-        is_belonging = False
-        for i in range(last_pos_index, len(path['points'])):
-            distance = GPS.calculate_distance(new_pos, path['points'][i])
-            if distance < 50:
-                is_belonging = True
-                StateManager.get_instance().set_state('last_pos_index', i)
-                break
-        if not is_belonging:
+        res = GPS.get_hypothetical_position()
+        hypothetical_position = res['last_pos']
+        distance = GPS.calculate_distance(new_pos, hypothetical_position)
+        if distance < 10:
+            StateManager.get_instance().set_state('last_pos_index', res['last_pos_index'])
+        else:
             # [Test]
             print("position outside the path")
             StateManager.get_instance().set_state('path', None)
 
     GPS.get_actual_way()
+
 
     return {"status": 0}
 

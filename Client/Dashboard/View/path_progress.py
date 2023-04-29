@@ -11,6 +11,10 @@ class PathProgress:
         self.width = 4
         self.height = 26
         self.length_m = length_m
+        self.residual_m = 0
+
+    def set_residual_m(self, residual_m):
+        self.residual_m = residual_m
 
     def get_pos_x(self):
         return self.pos_x
@@ -37,6 +41,8 @@ class PathProgress:
         return self.height
 
     def draw(self, win, colors, travelled_m):
+
+        travelled_m = travelled_m + self.residual_m
         pos_x = self.pos_x
         pos_y = self.pos_y
         block_size = self.block_size
