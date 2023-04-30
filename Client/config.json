@@ -10,8 +10,8 @@
     "mic_device": null,
     "stt_service": "google"
   },
-  "user_recognition": false,
-  "history_collections": false,
+  "user_recognition": true,
+  "history_collections": true,
   "face_recognition" : {
     "camera": 1,
     "emotion_samples": 20,
@@ -20,7 +20,7 @@
   },
   "extern_gps_module": {
     "enable": false,
-    "usb_port": "COM13",
+    "usb_port": "COM16",
     "server_ip": "127.0.0.1",
     "server_port": "4000",
     "target_resource": "gps-collector",
