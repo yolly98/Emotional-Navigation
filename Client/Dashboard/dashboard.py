@@ -154,6 +154,7 @@ class Dashboard:
             self.terminal.write(f"estimated time: {math.floor((path['time']/1000)/60)} minutes {math.floor((path['time']/1000)%60)} seconds")
             VocalCommandModule.get_instance().say(f"Ho trovato il percorso migliore per {destination_name}, andiamo!")  # IT
         else:
+            print(f"residual m: {residual_m}") # [Test]
             self.path_progress.set_residual_m(residual_m)
 
     def show(self):
@@ -218,8 +219,18 @@ class Dashboard:
                 # draw remaining meters before turn right or left
                 m_surface = font.render(f"{math.floor(remaining_m)} m", True, self.colors['white'])
                 m_rect = m_surface.get_rect()
-                m_rect.midtop = (100, 80)
+                m_rect.midleft = (10, 120)
                 self.win.blit(m_surface, m_rect)
+
+                #draw arrival time
+                path = StateManager.get_instance().get_state('path')
+                travelled_m = StateManager.get_instance().get_state('travelled_km') * 1000
+                all_remaining_m = path['distance'] - travelled_m
+                remaining_time = (path['time'] / path['distance']) * all_remaining_m
+                at_surface = font.render(f"{math.floor((remaining_time/1000)/60)}min {math.floor((remaining_time/1000)%60)}sec", True, self.colors['white'])
+                at_rect = m_surface.get_rect()
+                at_rect.midleft = (10, 70)
+                self.win.blit(at_surface, at_rect)
 
                 # draw path progress
                 self.path_progress.draw(self.win, self.colors, math.floor(path_km * 1000))

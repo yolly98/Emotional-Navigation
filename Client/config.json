@@ -3,15 +3,15 @@
   "default_lon": "12.2692692",
   "server_ip": "127.0.0.1",
   "server_port": "5000",
-  "fullscreen": true,
+  "fullscreen": false,
   "simulation": false,
   "vocal_commands": {
-    "enable": true,
+    "enable": false,
     "mic_device": null,
     "stt_service": "google"
   },
-  "user_recognition": true,
-  "history_collections": true,
+  "user_recognition": false,
+  "history_collections": false,
   "face_recognition" : {
     "camera": 1,
     "emotion_samples": 20,
