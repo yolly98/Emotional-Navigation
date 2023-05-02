@@ -4,17 +4,17 @@ import math
 
 class PathProgress:
 
-    def __init__(self, pos_x, pos_y, block_size, length_m):
+    def __init__(self, pos_x, pos_y, block_size, length_m, residual_m=0):
         self.pos_x = pos_x
         self.pos_y = pos_y
         self.block_size = block_size
         self.width = 4
         self.height = 26
-        self.length_m = length_m
-        self.residual_m = 0
-
-    def set_residual_m(self, residual_m):
+        self.length_m = length_m + residual_m
         self.residual_m = residual_m
+
+    def get_residual_m(self):
+        return self.residual_m
 
     def get_pos_x(self):
         return self.pos_x

@@ -53,7 +53,7 @@ class VocalCommandModule:
             print("I have no understood, try again")
             return None
         except sr.RequestError as e:
-            print(f"Vocal Command Recognized doesn't work {e}")
+            print(f"Vocal Command Recognizer doesn't work {e}")
             return None
         print(text)
         return text

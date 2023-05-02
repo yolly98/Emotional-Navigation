@@ -154,8 +154,9 @@ class Dashboard:
             self.terminal.write(f"estimated time: {math.floor((path['time']/1000)/60)} minutes {math.floor((path['time']/1000)%60)} seconds")
             VocalCommandModule.get_instance().say(f"Ho trovato il percorso migliore per {destination_name}, andiamo!")  # IT
         else:
-            print(f"residual m: {residual_m}") # [Test]
-            self.path_progress.set_residual_m(residual_m)
+            residual_m += self.path_progress.get_residual_m()
+            # print(f"residual m: {residual_m}") # [Test]
+            self.path_progress = PathProgress(self.street_width + (self.win_width - self.street_width - 30) / 2, self.street_pos[1] - 50, self.block_size, path['distance'], residual_m)
 
     def show(self):
         self.win.fill(pygame.Color(self.colors['black']))
