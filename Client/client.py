@@ -5,7 +5,10 @@ from Client.InputModule.gps_manager import GPS
 from Client.InputModule.gps_extern_module import GPSExternModule
 from Client.InputModule.face_recognition_module import FaceRecognitionModule
 from Client.InputModule.vocal_command_module import VocalCommandModule
-
+from Client.Monitor.monitor import Monitor
+import os
+import signal
+import time
 import json
 
 if __name__ == '__main__':
@@ -46,6 +49,7 @@ if __name__ == '__main__':
         gps_module = Thread(target=GPS.get_instance().run_simulation, args=(), daemon=False)
     else:
         gps_module = Thread(target=GPS.get_instance().listener, args=(), daemon=False)
+    StateManager.get_instance().set_state('gps_module_thread', True)
     gps_module.start()
 
     ext_gps_config = config['extern_gps_module']
@@ -59,11 +63,27 @@ if __name__ == '__main__':
 
         )
         extern_gps_module = Thread(target=GPSExternModule.get_instance().run, args=(), daemon=False)
+        StateManager.get_instance().set_state('extern_gps_module_thread', True)
         extern_gps_module.start()
 
     if config['history_collections']:
         history_collector = Thread(target=FaceRecognitionModule.get_instance().run, args=(), daemon=False)
+        StateManager.get_instance().set_state('history_collector_thread', True)
         history_collector.start()
+
+    if config['monitor']:
+        monitor = Thread(target=Monitor.run, args=(), daemon=False)
+        StateManager.get_instance().set_state('monitor_thread', True)
+        monitor.start()
 
     Dashboard.get_instance().run()
 
+    StateManager.get_instance().set_state('gps_module_thread', False)
+    StateManager.get_instance().set_state('extern_gps_module_thread', False)
+    StateManager.get_instance().set_state('history_collector_thread', False)
+    StateManager.get_instance().set_state('monitor_thread', False)
+
+    print("App terminated")
+
+    time.sleep(3)
+    os.kill(os.getpid(), signal.SIGINT)

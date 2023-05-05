@@ -1,5 +1,6 @@
 import serial
 from Client.communication_manager import CommunicationManager
+from Client.state_manager import StateManager
 from datetime import datetime
 import pynmea2
 import time
@@ -38,6 +39,8 @@ class GPSExternModule:
         time.sleep(1)
 
         while True:
+            if not StateManager.get_instance().get_state('extern_gps_module_thread'):
+                return
             line = gps_nmea_module.readline().decode('ascii', errors='replace')
 
             if line.startswith('$GPGGA'):

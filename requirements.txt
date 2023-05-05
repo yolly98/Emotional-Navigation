@@ -20,3 +20,4 @@ xvfbwrapper
 openai-whisper
 soundfile
 torch
+psutil

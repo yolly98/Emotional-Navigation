@@ -443,6 +443,8 @@ class Dashboard:
                 StateManager.get_instance().set_state('end_path', True)
                 self.end_path()
                 StateManager.get_instance().set_state('state', 'init')
+            elif command == "close" or command == "termina":
+                return -1
             if StateManager.get_instance().get_state('state') == 'get_user':
                 self.get_user(command)
             elif StateManager.get_instance().get_state('state') == 'new_user':
@@ -459,6 +461,7 @@ class Dashboard:
         self.terminal.listen(events)
 
         self.player_car.move_car(self.commands)
+        return 0
 
     def run(self):
 
@@ -488,7 +491,9 @@ class Dashboard:
                     self.show()
                     VocalCommandModule.get_instance().say(f"Ciao {username}, dove andiamo?") # IT
             else:
-                self.get_event()
+                res = self.get_event()
+                if res == -1:
+                    return
                 self.show()
                 self.wait()
 

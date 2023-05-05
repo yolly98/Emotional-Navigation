@@ -3,6 +3,7 @@
   "default_lon": "12.2692692",
   "server_ip": "127.0.0.1",
   "server_port": "5000",
+  "monitor": true,
   "fullscreen": false,
   "simulation": false,
   "vocal_commands": {
@@ -10,10 +11,10 @@
     "mic_device": null,
     "stt_service": "google"
   },
-  "user_recognition": false,
-  "history_collections": false,
+  "user_recognition": true,
+  "history_collections": true,
   "face_recognition" : {
-    "camera": 1,
+    "camera": 0,
     "emotion_samples": 20,
     "wait_time": 0.3,
     "period": 60
