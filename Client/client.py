@@ -53,6 +53,7 @@ if __name__ == '__main__':
     gps_module.start()
 
     ext_gps_config = config['extern_gps_module']
+    extern_gps_module = None
     if ext_gps_config['enable']:
         GPSExternModule.get_instance().config(
             usb_port=ext_gps_config['usb_port'],
@@ -66,11 +67,13 @@ if __name__ == '__main__':
         StateManager.get_instance().set_state('extern_gps_module_thread', True)
         extern_gps_module.start()
 
+    history_collector = None
     if config['history_collections']:
         history_collector = Thread(target=FaceRecognitionModule.get_instance().run, args=(), daemon=False)
         StateManager.get_instance().set_state('history_collector_thread', True)
         history_collector.start()
 
+    monitor = None
     if config['monitor']:
         monitor = Thread(target=Monitor.run, args=(), daemon=False)
         StateManager.get_instance().set_state('monitor_thread', True)
@@ -85,5 +88,7 @@ if __name__ == '__main__':
 
     print("App terminated")
 
-    time.sleep(3)
+    if monitor is not None:
+        monitor.join()
+
     os.kill(os.getpid(), signal.SIGINT)
