@@ -6,9 +6,9 @@ from Client.InputModule.gps_extern_module import GPSExternModule
 from Client.InputModule.face_recognition_module import FaceRecognitionModule
 from Client.InputModule.vocal_command_module import VocalCommandModule
 from Client.Monitor.monitor import Monitor
+from Client.InputModule.Test.gps_module_sim import GPSsim
 import os
 import signal
-import time
 import json
 
 if __name__ == '__main__':
@@ -30,12 +30,14 @@ if __name__ == '__main__':
         mic_device=config['vocal_commands']['mic_device']
     )
 
-    camera = config['face_recognition']
+    face_rec = config['face_recognition']
     FaceRecognitionModule.get_instance().configure(
-        camera=camera['camera'],
-        emotion_samples=camera['emotion_samples'],
-        wait_time=camera['wait_time'],
-        period=camera['period']
+        camera=face_rec['camera'],
+        emotion_samples=face_rec['emotion_samples'],
+        wait_time=face_rec['wait_time'],
+        period=face_rec['period'],
+        detector=face_rec['detector'],
+        model=face_rec['model']
     )
 
     if not config['user_recognition']:
@@ -64,6 +66,10 @@ if __name__ == '__main__':
 
         )
         extern_gps_module = Thread(target=GPSExternModule.get_instance().run, args=(), daemon=False)
+        StateManager.get_instance().set_state('extern_gps_module_thread', True)
+        extern_gps_module.start()
+    else:
+        extern_gps_module = Thread(target=GPSsim.run, args=(), daemon=False)
         StateManager.get_instance().set_state('extern_gps_module_thread', True)
         extern_gps_module.start()
 

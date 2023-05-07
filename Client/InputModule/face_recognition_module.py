@@ -16,6 +16,8 @@ class FaceRecognitionModule:
         self.emotion_samples = 0
         self.wait_time = 0
         self.period = 0
+        self.detector = None
+        self.detector = None
 
     @staticmethod
     def get_instance():
@@ -23,11 +25,13 @@ class FaceRecognitionModule:
             FaceRecognitionModule.face_recognition_module = FaceRecognitionModule()
         return FaceRecognitionModule.face_recognition_module
 
-    def configure(self, camera, emotion_samples, wait_time, period):
+    def configure(self, camera, emotion_samples, wait_time, period, detector, model):
         self.camera = camera
         self.emotion_samples = emotion_samples
         self.wait_time = wait_time
         self.period = period
+        self.detector = detector
+        self.model = model
 
     def get_picture(self, username):
         if self.camera == -1:
@@ -74,7 +78,7 @@ class FaceRecognitionModule:
             _, frame = video.read()
 
             try:
-                DeepFace.extract_faces(frame)
+                DeepFace.extract_faces(frame, detector_backend=self.detector)
             except Exception:
                 continue
             break
@@ -83,18 +87,6 @@ class FaceRecognitionModule:
         return True
 
     def verify_user(self, user_images_dir=None):
-
-        models = [
-            "VGG-Face",
-            "Facenet",
-            "Facenet512",
-            "OpenFace",
-            "DeepFace",
-            "DeepID",
-            "ArcFace",
-            "Dlib",
-            "SFace",
-        ]
 
         if self.camera == -1:
             print("camera not setted")
@@ -114,7 +106,14 @@ class FaceRecognitionModule:
         _, frame = video.read()
         img_path = os.path.join(user_images_dir, "temp.png")
         cv2.imwrite(img_path, frame)
-        dfs = DeepFace.find(img_path=img_path, db_path=user_images_dir, enforce_detection=False)
+        dfs = DeepFace.find(
+            img_path=img_path,
+            db_path=user_images_dir,
+            enforce_detection=False,
+            distance_metric='cosine',
+            detector_backend=self.detector,
+            model_name=self.model
+        )
         res = []
         username = None
         for df in dfs:
@@ -128,8 +127,13 @@ class FaceRecognitionModule:
             username = username.replace('/', '')
             username = username.replace('.png', '')
 
+        # remove the temporary files used to execute the model
         os.remove(img_path)
-        os.remove(os.path.join(user_images_dir, 'representations_vgg_face.pkl'))
+        all_tmp_files = os.listdir(user_images_dir)
+        for tmp_file_name in all_tmp_files:
+            name, extension = os.path.splitext(tmp_file_name)
+            if extension == '.pkl':
+                os.remove(os.path.join(user_images_dir, tmp_file_name))
 
         video.release()
         return username
@@ -158,7 +162,7 @@ class FaceRecognitionModule:
             _, frame = video.read()
 
             try:
-                analyze = DeepFace.analyze(frame, actions=['emotion'])
+                analyze = DeepFace.analyze(frame, actions=['emotion'], detector_backend=self.detector)
             except:
                 print("no face")
                 continue
@@ -218,13 +222,20 @@ class FaceRecognitionModule:
 
 if __name__ == "__main__":
 
-    FaceRecognitionModule.get_instance().configure(0, 20, 0.3, 60)
+    FaceRecognitionModule.get_instance().configure(
+        camera=1,
+        emotion_samples=20,
+        wait_time=0.3,
+        period=60,
+        detector='opencv',
+        model='Facenet'
+    )
 
     # FaceRecognitionModule.print_available_cameras()
     StateManager.get_instance().set_state('history_collector_thread', True)
-    # FaceRecognitionModule.get_instance().run()
-    # FaceRecognitionModule.get_instance().find_face()
-    # print("face detected")
+    FaceRecognitionModule.get_instance().find_face()
+    print("face detected")
     username = FaceRecognitionModule.get_instance().verify_user('UserImages')
-    print(username)
+    print(f'{username} recognized')
+    FaceRecognitionModule.get_instance().run()
 

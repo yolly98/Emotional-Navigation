@@ -14,10 +14,12 @@
   "user_recognition": true,
   "history_collections": true,
   "face_recognition" : {
-    "camera": 0,
+    "camera": 1,
     "emotion_samples": 20,
     "wait_time": 0.3,
-    "period": 60
+    "period": 60,
+    "detector": "opencv",
+    "model": "Facenet"
   },
   "extern_gps_module": {
     "enable": false,
