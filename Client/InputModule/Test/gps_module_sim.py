@@ -20,7 +20,7 @@ class GPSsim:
         duplicated_records = 0
         for gps in gps_data['gps']:
             if last_gps is not None:
-                if gps['pos'] == last_gps['pos'] or gps['datetime'] == last_gps['datetime']:
+                if gps['datetime'] == last_gps['datetime']:
                     # print(f"duplicate record, datetime: {gps['datetime']}")
                     i += 1
                     duplicated_records += 1
@@ -102,7 +102,7 @@ class GPSsim:
         with open(os.path.join(route_path, 'gps-test.json'), 'r') as f:
             gps_data = json.load(f)
 
-        # gps_data = GPSsim.prepare_test_path(gps_data)
+        gps_data = GPSsim.prepare_test_path(gps_data)
         if not is_thread:
             GPSsim.visualize_test_path(gps_data)
 
