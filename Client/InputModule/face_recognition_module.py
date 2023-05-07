@@ -229,7 +229,8 @@ if __name__ == "__main__":
         wait_time=0.3,
         period=60,
         detector='opencv',
-        model='OpenFace'
+        model='OpenFace',
+        distance='euclidean'
     )
 
     # FaceRecognitionModule.print_available_cameras()
@@ -238,5 +239,5 @@ if __name__ == "__main__":
     print("face detected")
     username = FaceRecognitionModule.get_instance().verify_user()
     print(f'{username} recognized')
-    FaceRecognitionModule.get_instance().run()
+    FaceRecognitionModule.get_instance().get_emotion()
 
