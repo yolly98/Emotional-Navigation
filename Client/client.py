@@ -14,7 +14,8 @@ import json
 if __name__ == '__main__':
 
     # load configuration
-    with open('config.json', 'r') as f:
+    actual_path = os.path.dirname(__file__)
+    with open(os.path.join(actual_path, 'config.json'), 'r') as f:
         config = json.load(f)
 
     StateManager.get_instance().sim_init(
