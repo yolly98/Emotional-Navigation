@@ -26,7 +26,6 @@ class StateManager:
         self.lock = Lock()
         self.status['state'] = None
         self.status['username'] = None
-        self.status['root_path'] = os.path.abspath(os.getcwd())
         self.status['actual_emotion'] = 'neutral'
         self.status['vocal_commands'] = False
         self.status['gps_module_thread'] = False

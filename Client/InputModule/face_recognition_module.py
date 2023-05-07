@@ -45,13 +45,13 @@ class FaceRecognitionModule:
             print("cam not available")
             exit(1)
 
-        root_path = StateManager.get_instance().get_state('root_path')
+        actual_path = os.path.abspath(os.path.dirname(__file__))
         while True:
             _, frame = video.read()
             cv2.imshow("Your face", frame)
             key = cv2.waitKey(1)
             if key == ord("s"):
-                path = os.path.join(root_path, "InputModule", "UserImages", f"{username}.png")
+                path = os.path.join(actual_path, 'UserImages', f'{username}.png')
                 cv2.imwrite(path, frame)
                 break
 
@@ -86,7 +86,7 @@ class FaceRecognitionModule:
         video.release()
         return True
 
-    def verify_user(self, user_images_dir=None):
+    def verify_user(self):
 
         if self.camera == -1:
             print("camera not setted")
@@ -99,9 +99,8 @@ class FaceRecognitionModule:
             print("cam not available")
             exit(1)
 
-        if user_images_dir is None:
-            root_path = StateManager.get_instance().get_state('root_path')
-            user_images_dir = os.path.join(root_path, "InputModule", "UserImages")
+        actual_path = os.path.dirname(__file__)
+        user_images_dir = os.path.join(actual_path, "UserImages")
 
         _, frame = video.read()
         img_path = os.path.join(user_images_dir, "temp.png")
@@ -223,7 +222,7 @@ class FaceRecognitionModule:
 if __name__ == "__main__":
 
     FaceRecognitionModule.get_instance().configure(
-        camera=1,
+        camera=0,
         emotion_samples=20,
         wait_time=0.3,
         period=60,
@@ -235,7 +234,7 @@ if __name__ == "__main__":
     StateManager.get_instance().set_state('history_collector_thread', True)
     FaceRecognitionModule.get_instance().find_face()
     print("face detected")
-    username = FaceRecognitionModule.get_instance().verify_user('UserImages')
+    username = FaceRecognitionModule.get_instance().verify_user()
     print(f'{username} recognized')
     FaceRecognitionModule.get_instance().run()
 

@@ -347,10 +347,11 @@ class Dashboard:
     def get_user(self, username):
 
         StateManager.get_instance().set_state('username', username)
-        root_path = StateManager.get_instance().get_state('root_path')
+        actual_path = os.path.abspath(os.path.dirname(__file__))
+        image_path = os.path.join(actual_path, '..', 'InputModule', 'UserImages', f'{username}.png')
         is_stored = True
         try:
-            with open(f"{root_path}/InputModule/UserImages/{username}.png", "r") as file:
+            with open(image_path, "r") as file:
                 pass
         except FileNotFoundError:
             is_stored = False
@@ -366,7 +367,7 @@ class Dashboard:
                 return
             elif res['status'] == 0:
                 image = base64.b64decode(res['image'].encode('utf-8'))
-                with open(f"{root_path}/InputModule/UserImages/{username}.png", "wb") as file:
+                with open(image_path, "wb") as file:
                     file.write(image)
             elif res['status'] == -1:
                 self.terminal.write("User not exists")
@@ -388,8 +389,9 @@ class Dashboard:
             self.show()
             FaceRecognitionModule.get_instance().get_picture(username)
             image = None
-            root_path = StateManager.get_instance().get_state('root_path')
-            with open(f"{root_path}/InputModule/UserImages/{username}.png", "rb") as file:
+            actual_path = os.path.abspath(os.path.dirname(__file__))
+            image_path = os.path.join(actual_path, '..', 'InputModule', 'UserImages', f'{username}.png')
+            with open(image_path, "rb") as file:
                 image = file.read()
 
             request = dict()

@@ -1,6 +1,5 @@
 from Client.communication_manager import CommunicationManager
 from Client.InputModule.gps_manager import GPS
-from Client.state_manager import StateManager
 import time
 import json
 import matplotlib.pyplot as plt
@@ -97,15 +96,13 @@ class GPSsim:
         plt.show()
 
     @staticmethod
-    def run(route_path=None, is_thread=True):
-        if route_path is None:
-            root_path = StateManager.get_instance().get_state('root_path')
-            route_path = os.path.join(root_path, 'InputModule', 'Test')
-            print(route_path)
+    def run(is_thread=True):
+        route_path = os.path.dirname(__file__)
+
         with open(os.path.join(route_path, 'gps-test.json'), 'r') as f:
             gps_data = json.load(f)
 
-        gps_data = GPSsim.prepare_test_path(gps_data)
+        # gps_data = GPSsim.prepare_test_path(gps_data)
         if not is_thread:
             GPSsim.visualize_test_path(gps_data)
 
@@ -127,4 +124,4 @@ class GPSsim:
 
 
 if __name__ == '__main__':
-    GPSsim.run(route_path='', isThread=False)
+    GPSsim.run(is_thread=False)

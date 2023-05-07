@@ -107,17 +107,14 @@ class Monitor:
 
 
     @staticmethod
-    def run(root_path=None):
-        abs_path = ''
-        if root_path is None:
-            root_path = StateManager.get_instance().get_state('root_path')
-            abs_path = os.path.join(root_path, "Monitor")
+    def run():
+        abs_path = os.path.dirname(__file__)
         Monitor.clean(abs_path)
         Monitor.collect_resources_usage(abs_path)
         Monitor.create_plots(abs_path)
 
 if __name__ == '__main__':
-    t1 = Thread(target=Monitor.run, args=('',), daemon=False)
+    t1 = Thread(target=Monitor.run, args=(), daemon=False)
     StateManager.get_instance().set_state('monitor_thread', True)
     t1.start()
     print("monitor started")

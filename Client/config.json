@@ -14,7 +14,7 @@
   "user_recognition": true,
   "history_collections": true,
   "face_recognition" : {
-    "camera": 1,
+    "camera": 0,
     "emotion_samples": 20,
     "wait_time": 0.3,
     "period": 60,
