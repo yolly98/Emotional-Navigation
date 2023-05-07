@@ -37,7 +37,7 @@ class VocalCommandModule:
         self.v_rec = sr.Recognizer()
         self.v_synt = pyttsx3.init()
         self.v_synt.setProperty('rate', 150)
-        self.v_synt.setProperty('voice', 'it')
+        self.v_synt.setProperty('voice', 'italian')
         self.stt_service = stt_service
         self.mic_device = mic_device
 
