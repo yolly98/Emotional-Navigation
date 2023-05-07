@@ -7,7 +7,7 @@
   "fullscreen": false,
   "simulation": false,
   "vocal_commands": {
-    "enable": false,
+    "enable": true,
     "mic_device": null,
     "stt_service": "google"
   },

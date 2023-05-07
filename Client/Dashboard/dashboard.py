@@ -16,11 +16,6 @@ import polyline
 import json
 import math
 import os
-if os.name == 'posix':
-    from xvfbwrapper import Xvfb
-
-
-VIRTUAL_DISPLAY = False
 
 
 class Dashboard:
@@ -28,11 +23,6 @@ class Dashboard:
     dashboard = None
 
     def __init__(self):
-
-        if VIRTUAL_DISPLAY:
-            vdisplay = Xvfb()
-            vdisplay.start()
-            os.environ["DISPLAY"] = ":" + str(vdisplay.new_display)
 
         pygame.init()
 
