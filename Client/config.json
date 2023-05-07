@@ -19,7 +19,8 @@
     "wait_time": 0.3,
     "period": 60,
     "detector": "opencv",
-    "model": "Facenet"
+    "model": "OpenFace",
+    "distance": "euclidean"
   },
   "extern_gps_module": {
     "enable": false,

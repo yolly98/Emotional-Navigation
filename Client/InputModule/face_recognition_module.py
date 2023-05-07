@@ -18,6 +18,7 @@ class FaceRecognitionModule:
         self.period = 0
         self.detector = None
         self.detector = None
+        self.distance = None
 
     @staticmethod
     def get_instance():
@@ -25,13 +26,14 @@ class FaceRecognitionModule:
             FaceRecognitionModule.face_recognition_module = FaceRecognitionModule()
         return FaceRecognitionModule.face_recognition_module
 
-    def configure(self, camera, emotion_samples, wait_time, period, detector, model):
+    def configure(self, camera, emotion_samples, wait_time, period, detector, model, distance):
         self.camera = camera
         self.emotion_samples = emotion_samples
         self.wait_time = wait_time
         self.period = period
         self.detector = detector
         self.model = model
+        self.distance = distance
 
     def get_picture(self, username):
         if self.camera == -1:
@@ -109,7 +111,7 @@ class FaceRecognitionModule:
             img_path=img_path,
             db_path=user_images_dir,
             enforce_detection=False,
-            distance_metric='cosine',
+            distance_metric=self.distance,
             detector_backend=self.detector,
             model_name=self.model
         )
@@ -227,7 +229,7 @@ if __name__ == "__main__":
         wait_time=0.3,
         period=60,
         detector='opencv',
-        model='Facenet'
+        model='OpenFace'
     )
 
     # FaceRecognitionModule.print_available_cameras()

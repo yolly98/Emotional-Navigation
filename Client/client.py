@@ -37,7 +37,8 @@ if __name__ == '__main__':
         wait_time=face_rec['wait_time'],
         period=face_rec['period'],
         detector=face_rec['detector'],
-        model=face_rec['model']
+        model=face_rec['model'],
+        distance=face_rec['distance']
     )
 
     if not config['user_recognition']:
