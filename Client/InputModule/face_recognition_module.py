@@ -13,11 +13,12 @@ class FaceRecognitionModule:
 
     def __init__(self):
         self.camera = -1
+        self.max_attempts = 0
         self.emotion_samples = 0
         self.wait_time = 0
         self.period = 0
         self.detector = None
-        self.detector = None
+        self.model = None
         self.distance = None
 
     @staticmethod
@@ -26,8 +27,9 @@ class FaceRecognitionModule:
             FaceRecognitionModule.face_recognition_module = FaceRecognitionModule()
         return FaceRecognitionModule.face_recognition_module
 
-    def configure(self, camera, emotion_samples, wait_time, period, detector, model, distance):
+    def configure(self, camera, max_attempts, emotion_samples, wait_time, period, detector, model, distance):
         self.camera = camera
+        self.max_attempts = max_attempts
         self.emotion_samples = emotion_samples
         self.wait_time = wait_time
         self.period = period
@@ -156,7 +158,12 @@ class FaceRecognitionModule:
         dominant_emotion = None
         dominant_emotion_value = 0
 
-        for i in range(self.emotion_samples):
+        emotion_samples = 0
+        for i in range(self.max_attempts):
+
+            # check if enough emotions are collected
+            if emotion_samples >= self.emotion_samples:
+                break
 
             time.sleep(self.wait_time)
 
@@ -165,11 +172,13 @@ class FaceRecognitionModule:
             try:
                 analyze = DeepFace.analyze(frame, actions=['emotion'], detector_backend=self.detector)
             except:
-                print("no face")
+                # print("no face") # [Test]
                 continue
+
+            emotion_samples += 1
             result = analyze[0]
 
-            print(result['dominant_emotion'])
+            # print(result['dominant_emotion']) [Test]
             for emotion in result['emotion']:
                 if emotion in emotions:
                     emotions[emotion] += result['emotion'][emotion]
@@ -210,7 +219,7 @@ class FaceRecognitionModule:
                 if not (emotion and username and way and timestamp and not way['street_name'] == ''):
                     pass
                 else:
-                    print("Get emotion success")
+                    print(f"Get emotion success {emotion}")
                     request = dict()
                     request['username'] = username
                     request['way'] = way['street_name']

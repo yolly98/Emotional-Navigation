@@ -15,7 +15,8 @@
   "history_collections": true,
   "face_recognition" : {
     "camera": 1,
-    "emotion_samples": 20,
+    "max_attempts": 10,
+    "emotion_samples": 3,
     "wait_time": 0.3,
     "period": 60,
     "detector": "opencv",

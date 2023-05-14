@@ -34,6 +34,7 @@ if __name__ == '__main__':
     face_rec = config['face_recognition']
     FaceRecognitionModule.get_instance().configure(
         camera=face_rec['camera'],
+        max_attempts=face_rec['max_attempts'],
         emotion_samples=face_rec['emotion_samples'],
         wait_time=face_rec['wait_time'],
         period=face_rec['period'],
