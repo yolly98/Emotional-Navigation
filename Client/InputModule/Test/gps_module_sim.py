@@ -108,7 +108,7 @@ class GPSsim:
 
         i = 0
         while i < len(gps_data['gps']):
-            print(gps_data['gps'][i])
+            # print(gps_data['gps'][i]) [Test]
             request = dict()
             request['pos'] = gps_data['gps'][i]['pos']
             request['datetime'] = gps_data['gps'][i]['datetime']

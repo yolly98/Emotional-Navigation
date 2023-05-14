@@ -68,7 +68,7 @@ class GPSExternModule:
                     now = datetime.now()
                     formatted_datetime = now.strftime('%Y-%m-%d %H:%M:%S')
                     request = {'pos': [lat_dd, lon_dd], 'datetime': formatted_datetime}
-                    print(request)
+                    # print(request) [Test]
                     CommunicationManager.send(self.server_ip, self.server_port, 'POST', request, self.target_resource)
 
 
