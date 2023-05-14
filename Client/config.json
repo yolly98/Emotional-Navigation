@@ -10,10 +10,10 @@
     "enable": true,
     "mic_device": null,
     "stt_service": "google",
-    "mic_timeout": 10
+    "mic_timeout": 5
   },
-  "user_recognition": false,
-  "history_collections": false,
+  "user_recognition": true,
+  "history_collections": true,
   "face_recognition" : {
     "camera": 1,
     "max_attempts": 10,

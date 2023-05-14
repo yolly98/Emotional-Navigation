@@ -29,6 +29,8 @@ class VocalCommandModule:
         self.mic_device = None
         self.mic_timeout = 0
         self.command = None
+        self.new_command = False
+        self.rec_started = False
         self.lock = Lock()
 
     @staticmethod
@@ -69,18 +71,27 @@ class VocalCommandModule:
                 text = self.v_rec.recognize_google(audio, language='it-IT')
         except sr.UnknownValueError:
             print("I have no understood, try again")
-            return None
+            text = ""
         except sr.RequestError as e:
             print(f"Vocal Command Recognizer doesn't work {e}")
-            return None
+            text = ""
         print(text)
         with self.lock:
             self.command = text
+            self.new_command = True
+            self.rec_started = False
         return text
 
     def say(self, text):
         t = Thread(target=self.synthesize_text, args=(text,), daemon=True)
         t.start()
+
+    def start_command_recognizer(self):
+        with self.lock:
+            if not self.rec_started:
+                t = Thread(target=self.recognize_command, args=(), daemon=True)
+                t.start()
+                self.rec_started = True
 
     def synthesize_text(self, text):
         self.v_synt.say(text)
@@ -90,16 +101,18 @@ class VocalCommandModule:
             pass
 
     def get_command(self):
+        if not self.new_command:
+            return None
         with self.lock:
-            command = self.command
+            text = self.command
             self.command = None
-            return command
-
+            self.new_command = False
+            return text
 
 
 if __name__ == '__main__':
 
-    VocalCommandModule.get_instance().init(stt_service='google', mic_device=None, mic_timeout=10)
+    VocalCommandModule.get_instance().init(stt_service='google', mic_device=None, mic_timeout=5)
     while True:
 
         # command = VocalCommandModule.get_instance().recognize_command()

@@ -420,15 +420,19 @@ class Dashboard:
                     self.commands['up'] = True
                 if event.key == pygame.K_DOWN:
                     self.commands['down'] = True
-                if StateManager.get_instance().get_state('vocal_commands') and event.key == pygame.K_LEFT:
-                    command = VocalCommandModule.get_instance().recognize_command()
-                    if command is None:
-                        VocalCommandModule.get_instance().say("Non ho capito, riprova")  # IT
+                if StateManager.get_instance().get_state('vocal_commands') and event.key == pygame.K_RSHIFT:
+                    VocalCommandModule.get_instance().start_command_recognizer()
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_UP:
                     self.commands['up'] = False
                 if event.key == pygame.K_DOWN:
                     self.commands['down'] = False
+
+        if StateManager.get_instance().get_state('vocal_commands'):
+            command = VocalCommandModule.get_instance().get_command()
+            if command == "":
+                VocalCommandModule.get_instance().say("Non ho capito, riprova")  # IT
+                command = None
 
         if command is not None:
             if command == "quit" or command == "esci":
