@@ -1,6 +1,5 @@
 **/__pycache__
 venv/
-Server/Persistence/Resources/*
-!Server/Persistence/Resources/.gitkeep
-Client/InputModule/UserImages/*
-!Client/InputModule/UserImages/.gitkeep
+Client/InputModule/UserImages/*.png
+Client/Monitor/*.png
+Client/Monitor/*.txt

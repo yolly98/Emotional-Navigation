@@ -8,7 +8,7 @@
   "simulation": false,
   "vocal_commands": {
     "enable": true,
-    "mic_device": 1,
+    "mic_device": null,
     "stt_service": "google"
   },
   "user_recognition": true,
@@ -17,7 +17,7 @@
     "camera": 1,
     "max_attempts": 10,
     "emotion_samples": 3,
-    "wait_time": 0.3,
+    "wait_time": 1,
     "period": 60,
     "detector": "opencv",
     "model": "OpenFace",
