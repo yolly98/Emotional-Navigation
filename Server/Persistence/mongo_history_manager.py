@@ -48,7 +48,8 @@ class MongoHistoryManager:
     def get_emotions(self, username, way):
         username.lower()
         if self.conn is None:
-            return False
+            print("Closed mongo connection")
+            return []
         db = self.conn['smart_navigation'].history
         samples = db.find(
             {
@@ -59,7 +60,7 @@ class MongoHistoryManager:
             }
         )
         if samples is None:
-            return None
+            return []
         emotions = []
         for sample in samples:
             emotions.append(sample['emotion'])
@@ -69,6 +70,7 @@ class MongoHistoryManager:
 
         username = username.lower()
         if self.conn is None:
+            print("Closed mongo connection")
             return False
         db = self.conn['smart_navigation'].history
         try:
@@ -82,6 +84,7 @@ class MongoHistoryManager:
 
         username = username.lower()
         if self.conn is None:
+            print("Closed mongo connection")
             return False
         db = self.conn['smart_navigation'].history
         try:
@@ -102,6 +105,7 @@ class MongoHistoryManager:
 
         username = username.lower()
         if self.conn is None:
+            print("Closed mongo connection")
             return False
         db = self.conn['smart_navigation'].user
         user = {
@@ -119,6 +123,7 @@ class MongoHistoryManager:
 
         username = username.lower()
         if self.conn is None:
+            print("Closed mongo connection")
             return False
         db = self.conn['smart_navigation'].user
         try:
@@ -131,7 +136,8 @@ class MongoHistoryManager:
     def get_user_image(self, username):
         username = username.lower()
         if self.conn is None:
-            return False
+            print("Closed mongo connection")
+            return None
         db = self.conn['smart_navigation'].user
         user = db.find_one({'username': username})
         if user is None:
