@@ -1,6 +1,6 @@
 import speech_recognition as sr
 import pyttsx3
-from threading import Thread
+from threading import Thread, Lock
 import os
 
 
@@ -16,6 +16,7 @@ if os.name == 'posix':
     # Set error handler
     asound.snd_lib_error_set_handler(c_error_handler)
 
+
 class VocalCommandModule:
 
     vocal_command_module = None
@@ -26,6 +27,9 @@ class VocalCommandModule:
         self.v_synt = None
         self.stt_service = None
         self.mic_device = None
+        self.mic_timeout = 0
+        self.command = None
+        self.lock = Lock()
 
     @staticmethod
     def get_instance():
@@ -33,13 +37,14 @@ class VocalCommandModule:
             VocalCommandModule.vocal_command_module = VocalCommandModule()
         return VocalCommandModule.vocal_command_module
 
-    def init(self, stt_service='google', mic_device=None):
+    def init(self, stt_service='google', mic_device=None, mic_timeout=5):
         self.v_rec = sr.Recognizer()
         self.v_synt = pyttsx3.init()
         self.v_synt.setProperty('rate', 150)
         self.v_synt.setProperty('voice', 'italian')
         self.stt_service = stt_service
         self.mic_device = mic_device
+        self.mic_timeout = mic_timeout
 
     def recognize_command(self):
 
@@ -48,10 +53,10 @@ class VocalCommandModule:
 
         # get audio from microphone
         with sr.Microphone(device_index=device_index) as source:
-            print("Parla ora...")
             self.v_rec.adjust_for_ambient_noise(source)
+            print("Parla ora...")
             try:
-                audio = self.v_rec.listen(source, timeout=5)
+                audio = self.v_rec.listen(source, timeout=self.mic_timeout)
             except Exception:
                 return
 
@@ -69,6 +74,8 @@ class VocalCommandModule:
             print(f"Vocal Command Recognizer doesn't work {e}")
             return None
         print(text)
+        with self.lock:
+            self.command = text
         return text
 
     def say(self, text):
@@ -82,11 +89,23 @@ class VocalCommandModule:
         except Exception:
             pass
 
+    def get_command(self):
+        with self.lock:
+            command = self.command
+            self.command = None
+            return command
+
+
 
 if __name__ == '__main__':
 
-    VocalCommandModule.get_instance().init(stt_service='google')
+    VocalCommandModule.get_instance().init(stt_service='google', mic_device=None, mic_timeout=10)
     while True:
-        command = VocalCommandModule.get_instance().recognize_command()
+
+        # command = VocalCommandModule.get_instance().recognize_command()
+        t = Thread(target=VocalCommandModule.get_instance().recognize_command, args=(), daemon=True)
+        t.start()
+        t.join()
+        command = VocalCommandModule.get_instance().get_command()
         print(command)
         VocalCommandModule.get_instance().synthesize_text(command)

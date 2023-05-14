@@ -9,10 +9,11 @@
   "vocal_commands": {
     "enable": true,
     "mic_device": null,
-    "stt_service": "google"
+    "stt_service": "google",
+    "mic_timeout": 10
   },
-  "user_recognition": true,
-  "history_collections": true,
+  "user_recognition": false,
+  "history_collections": false,
   "face_recognition" : {
     "camera": 1,
     "max_attempts": 10,

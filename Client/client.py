@@ -28,7 +28,8 @@ if __name__ == '__main__':
     StateManager.get_instance().set_state('vocal_commands', config['vocal_commands']['enable'])
     VocalCommandModule.get_instance().init(
         stt_service=config['vocal_commands']['stt_service'],
-        mic_device=config['vocal_commands']['mic_device']
+        mic_device=config['vocal_commands']['mic_device'],
+        mic_timeout=config['vocal_commands']['mic_timeout']
     )
 
     face_rec = config['face_recognition']
