@@ -219,7 +219,7 @@ class FaceRecognitionModule:
                 if not (emotion and username and way and timestamp and not way['street_name'] == ''):
                     pass
                 else:
-                    print(f"Get emotion success {emotion}")
+                    print(f"Get emotion success [{emotion}]")
                     request = dict()
                     request['username'] = username
                     request['way'] = way['street_name']
