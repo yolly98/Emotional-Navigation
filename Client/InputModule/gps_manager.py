@@ -7,9 +7,10 @@ from flask_cors import CORS
 import json
 from datetime import datetime
 import math
+import logging
 
 GPS_IP = "0.0.0.0"
-GPS_PORT = '4000'
+GPS_PORT = '6000'
 
 
 class GPS:
@@ -177,7 +178,7 @@ class GPS:
 
 
 app = GPS.get_instance().get_app()
-
+logging.getLogger('werkzeug').disabled = True
 
 @app.get('/gps')
 def get_gps():

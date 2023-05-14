@@ -8,13 +8,13 @@
   "simulation": false,
   "vocal_commands": {
     "enable": true,
-    "mic_device": null,
+    "mic_device": 1,
     "stt_service": "google"
   },
   "user_recognition": true,
   "history_collections": true,
   "face_recognition" : {
-    "camera": 0,
+    "camera": 1,
     "emotion_samples": 20,
     "wait_time": 0.3,
     "period": 60,
@@ -26,7 +26,7 @@
     "enable": false,
     "usb_port": "COM16",
     "server_ip": "127.0.0.1",
-    "server_port": "4000",
+    "server_port": "6000",
     "target_resource": "gps-collector",
     "interval": 1
   }

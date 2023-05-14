@@ -114,7 +114,7 @@ class GPSsim:
             request['datetime'] = gps_data['gps'][i]['datetime']
             CommunicationManager.send(
                 ip='127.0.0.1',
-                port='4000',
+                port='6000',
                 type='POST',
                 data=request,
                 resource='gps-collector'
