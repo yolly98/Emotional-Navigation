@@ -20,3 +20,4 @@ openai-whisper
 soundfile
 torch
 psutil
+pydub

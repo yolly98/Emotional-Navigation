@@ -1,6 +1,8 @@
 import speech_recognition as sr
 import pyttsx3
 from threading import Thread, Lock
+from pydub import AudioSegment
+from pydub.playback import play
 import os
 
 
@@ -57,9 +59,12 @@ class VocalCommandModule:
         with sr.Microphone(device_index=device_index) as source:
             self.v_rec.adjust_for_ambient_noise(source)
             print("Parla ora...")
+            play(AudioSegment.from_wav(os.path.join(os.path.dirname(__file__), 'bip.wav')))
             try:
                 audio = self.v_rec.listen(source, timeout=self.mic_timeout)
-            except Exception:
+            except Exception as e:
+                print(f"Microphone error [{e}]")
+                self.rec_started = False
                 return
 
         # Recognize audio by using Google or Whisper
