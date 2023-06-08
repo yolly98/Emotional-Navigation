@@ -13,10 +13,14 @@ import json
 
 if __name__ == '__main__':
 
+    print("-------- START INITIALIZATION --------")
+
     # load configuration
     actual_path = os.path.dirname(__file__)
     with open(os.path.join(actual_path, 'config.json'), 'r') as f:
         config = json.load(f)
+
+    print("loaded configuration")
 
     StateManager.get_instance().sim_init(
         config['simulation'],
@@ -26,11 +30,16 @@ if __name__ == '__main__':
     StateManager.get_instance().set_state('server_port', config['server_port'])
     StateManager.get_instance().set_state('fullscreen', config['fullscreen'])
     StateManager.get_instance().set_state('vocal_commands', config['vocal_commands']['enable'])
+
+    print("StateManager configured")
+
     VocalCommandModule.get_instance().init(
         stt_service=config['vocal_commands']['stt_service'],
         mic_device=config['vocal_commands']['mic_device'],
         mic_timeout=config['vocal_commands']['mic_timeout']
     )
+
+    print("VocalCommandModule configured")
 
     face_rec = config['face_recognition']
     FaceRecognitionModule.get_instance().configure(
@@ -49,6 +58,8 @@ if __name__ == '__main__':
         StateManager.get_instance().set_state('username', None)
     else:
         StateManager.get_instance().set_state('state', 'init')
+
+    print("FaceRecognitionModule configured")
 
     gps_module = None
     if StateManager.get_instance().get_state('is_sim'):
@@ -77,17 +88,25 @@ if __name__ == '__main__':
         StateManager.get_instance().set_state('extern_gps_module_thread', True)
         extern_gps_module.start()
 
+    print("GPSModule configured")
+
     history_collector = None
     if config['history_collections']:
         history_collector = Thread(target=FaceRecognitionModule.get_instance().run, args=(), daemon=False)
         StateManager.get_instance().set_state('history_collector_thread', True)
         history_collector.start()
 
+    print("HistoryCollector configured")
+
     monitor = None
     if config['monitor']:
         monitor = Thread(target=Monitor.run, args=(), daemon=False)
         StateManager.get_instance().set_state('monitor_thread', True)
         monitor.start()
+
+    print("Monitor configured")
+
+    print("-------- INITIALIZATION ENDED --------")
 
     Dashboard.get_instance().run()
 
