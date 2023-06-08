@@ -196,13 +196,18 @@ class FaceRecognitionModule:
 
     @staticmethod
     def print_available_cameras():
-        for i in range(4):  # change the range if there are more or less cameras
-            cam = cv2.VideoCapture(i)
-            if cam.isOpened():
-                print(f'Cam {i}: {cam.getBackendName()} available')
-            else:
-                print(f'Cam {i}: {cam.getBackendName()} not available')
-            cam.release()
+        i = 0
+        while True:  # change the range if there are more or less cameras
+            try:
+                cam = cv2.VideoCapture(i)
+                if cam.isOpened():
+                    print(f'Cam {i}: {cam.getBackendName()} available')
+                else:
+                    print(f'Cam {i}: {cam.getBackendName()} not available')
+                cam.release()
+                i += 1
+            except Exception:
+                break
 
     def run(self):
         while True:
@@ -233,20 +238,24 @@ class FaceRecognitionModule:
 if __name__ == "__main__":
 
     FaceRecognitionModule.get_instance().configure(
-        camera=0,
-        emotion_samples=20,
-        wait_time=0.3,
-        period=60,
-        detector='opencv',
-        model='OpenFace',
-        distance='euclidean'
+        camera=1,
+        max_attempts= 10,
+        emotion_samples= 3,
+        wait_time= 1,
+        period= 60,
+        detector= "opencv",
+        model= "OpenFace",
+        distance= "euclidean"
+
     )
 
-    # FaceRecognitionModule.print_available_cameras()
     StateManager.get_instance().set_state('history_collector_thread', True)
+    FaceRecognitionModule.print_available_cameras()
     FaceRecognitionModule.get_instance().find_face()
     print("face detected")
+    emotion = FaceRecognitionModule.get_instance().get_emotion()
+    print(f'dominant emotion: {emotion}')
     username = FaceRecognitionModule.get_instance().verify_user()
     print(f'{username} recognized')
-    FaceRecognitionModule.get_instance().get_emotion()
+
 

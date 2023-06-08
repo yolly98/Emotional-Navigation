@@ -171,7 +171,6 @@ class MapManager:
                 continue
             paths.append(path)
 
-
         return paths
 
 

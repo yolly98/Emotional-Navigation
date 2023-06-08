@@ -117,7 +117,7 @@ class VocalCommandModule:
 
 if __name__ == '__main__':
 
-    VocalCommandModule.get_instance().init(stt_service='google', mic_device=None, mic_timeout=5)
+    VocalCommandModule.get_instance().init(stt_service='google', mic_device=0, mic_timeout=5)
     while True:
 
         # command = VocalCommandModule.get_instance().recognize_command()

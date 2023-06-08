@@ -90,9 +90,9 @@ if __name__ == "__main__":
     MapEngine.plot_path(path)
 
     MongoHistoryManager.get_instance().open_connection()
-    MongoHistoryManager.get_instance().store_sample('test', 'Viale Trieste', 'sad', 0)
-    MongoHistoryManager.get_instance().store_sample('test', 'Viale Trieste', 'sad', 0)
-    MongoHistoryManager.get_instance().store_sample('test', 'Viale Trieste', 'disgust', 0)
+    MongoHistoryManager.get_instance().store_sample('test', 'Via XX Settembre', 'sad', 0)
+    MongoHistoryManager.get_instance().store_sample('test', 'Via XX Settembre', 'sad', 0)
+    MongoHistoryManager.get_instance().store_sample('test', 'Via XX Settembre', 'disgust', 0)
     MongoHistoryManager.get_instance().close_connection()
 
     path = EmotionalRouteSelector.get_path('test', start_point, destination)
