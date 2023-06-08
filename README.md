@@ -1,5 +1,7 @@
 # Note
 
+* NON USARE MICROFONO TELECAMERA
+
 ## Installazione rasberry
 * ricorda di installare flac (apt-get install flac) altrimenti non funzionerà il microfono
 * per installare i requirements fare ' pip install -r requirements.txt --no-cache-dir'

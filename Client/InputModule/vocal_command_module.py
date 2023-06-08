@@ -57,7 +57,7 @@ class VocalCommandModule:
 
         # get audio from microphone
         with sr.Microphone(device_index=device_index) as source:
-            self.v_rec.adjust_for_ambient_noise(source)
+            # self.v_rec.adjust_for_ambient_noise(source)
             print("Parla ora...")
             play(AudioSegment.from_wav(os.path.join(os.path.dirname(__file__), 'bip.wav')))
             try:
@@ -99,6 +99,8 @@ class VocalCommandModule:
                 self.rec_started = True
 
     def synthesize_text(self, text):
+        if self.rec_started is True:
+            return
         self.v_synt.say(text)
         try:
             self.v_synt.runAndWait()
