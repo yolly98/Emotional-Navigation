@@ -159,8 +159,7 @@ class FaceRecognitionModule:
         dominant_emotion_value = 0
 
         emotion_samples = 0
-        for i in range(self.max_attempts):
-
+        for i in range(0, self.max_attempts):
             # check if enough emotions are collected
             if emotion_samples >= self.emotion_samples:
                 break
@@ -172,7 +171,7 @@ class FaceRecognitionModule:
             try:
                 analyze = DeepFace.analyze(frame, actions=['emotion'], detector_backend=self.detector)
             except:
-                # print("no face") # [Test]
+                print("no face") # [Test]
                 continue
 
             emotion_samples += 1
