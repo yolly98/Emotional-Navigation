@@ -30,8 +30,8 @@ class GPSsim:
             last_gps = gps
             i += 1
 
-        print(f"removed {duplicated_records} duplicated records")
-        print("-------------------------------------")
+        # print(f"removed {duplicated_records} duplicated records")
+        # print("-------------------------------------")
 
         # remove outliers
         gps_data = new_gps_data
@@ -58,8 +58,8 @@ class GPSsim:
             last_gps = gps
             i += 1
 
-        print(f"removed {outliers} outliers")
-        print("-------------------------------------")
+        # print(f"removed {outliers} outliers")
+        # print("-------------------------------------")
 
         return new_gps_data
 

@@ -24,7 +24,9 @@ class Dashboard:
 
     def __init__(self):
 
-        pygame.init()
+        # pygame.init()
+        pygame.font.init()
+        pygame.display.init()
 
         # set width and height of the window
         self.win_width = 800
