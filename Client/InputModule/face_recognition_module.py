@@ -244,8 +244,8 @@ if __name__ == "__main__":
         wait_time= 1,
         period= 60,
         detector= "opencv",
-        model= "OpenFace",
-        distance= "euclidean"
+        model= "VGG-Face",
+        distance= "cosine"
 
     )
 

@@ -337,37 +337,39 @@ class Dashboard:
     def get_user(self, username):
 
         StateManager.get_instance().set_state('username', username)
-        actual_path = os.path.abspath(os.path.dirname(__file__))
-        image_path = os.path.join(actual_path, '..', 'InputModule', 'UserImages', f'{username}.png')
-        is_stored = True
-        try:
-            with open(image_path, "r") as file:
-                pass
-        except FileNotFoundError:
-            is_stored = False
+        if StateManager.get_instance().get_state('user_recognition'):
 
-        if not is_stored:
-            request = dict()
-            request['username'] = username
-            server_ip = StateManager.get_instance().get_state('server_ip')
-            server_port = StateManager.get_instance().get_state('server_port')
-            res = CommunicationManager.send(server_ip, server_port, "GET", request, "user")
-            if res is None or res == "":
-                self.terminal.write("Something went wrong")
-                return
-            elif res['status'] == 0:
-                image = base64.b64decode(res['image'].encode('utf-8'))
-                with open(image_path, "wb") as file:
-                    file.write(image)
-            elif res['status'] == -1:
-                self.terminal.write("User not exists")
-                self.terminal.write("Do you want to create a new user? [y/n]")
-                StateManager.get_instance().set_state('state', 'new_user')
-                VocalCommandModule.get_instance().say("L'utente non esiste, vuoi crearne uno nuovo?") # IT
-                return
-            else:
-                self.terminal.write("Something went wrong")
-                return
+            actual_path = os.path.abspath(os.path.dirname(__file__))
+            image_path = os.path.join(actual_path, '..', 'InputModule', 'UserImages', f'{username}.png')
+            is_stored = True
+            try:
+                with open(image_path, "r") as file:
+                    pass
+            except FileNotFoundError:
+                is_stored = False
+
+            if not is_stored:
+                request = dict()
+                request['username'] = username
+                server_ip = StateManager.get_instance().get_state('server_ip')
+                server_port = StateManager.get_instance().get_state('server_port')
+                res = CommunicationManager.send(server_ip, server_port, "GET", request, "user")
+                if res is None or res == "":
+                    self.terminal.write("Something went wrong")
+                    return
+                elif res['status'] == 0:
+                    image = base64.b64decode(res['image'].encode('utf-8'))
+                    with open(image_path, "wb") as file:
+                        file.write(image)
+                elif res['status'] == -1:
+                    self.terminal.write("User not exists")
+                    self.terminal.write("Do you want to create a new user? [y/n]")
+                    StateManager.get_instance().set_state('state', 'new_user')
+                    VocalCommandModule.get_instance().say("L'utente non esiste, vuoi crearne uno nuovo?") # IT
+                    return
+                else:
+                    self.terminal.write("Something went wrong")
+                    return
 
         StateManager.get_instance().set_state('state', 'aut')
 
@@ -428,18 +430,20 @@ class Dashboard:
                 if event.key == pygame.K_DOWN:
                     self.commands['down'] = False
 
-        if StateManager.get_instance().get_state('vocal_commands'):
+        if command is None and StateManager.get_instance().get_state('vocal_commands'):
             command = VocalCommandModule.get_instance().get_command()
             if command == "":
                 VocalCommandModule.get_instance().say("Non ho capito, riprova")  # IT
                 command = None
 
         if command is not None:
-            if command == "quit" or command == "esci":
+            if command == "quit" or command == "esci": # IT
                 StateManager.get_instance().set_state('end_path', True)
+                StateManager.get_instance().set_state('username', None)
                 self.end_path()
                 StateManager.get_instance().set_state('state', 'init')
-            elif command == "close" or command == "termina":
+                return 0
+            elif command == "close" or command == "termina": # IT
                 return -1
             if StateManager.get_instance().get_state('state') == 'get_user':
                 self.get_user(command)
@@ -471,21 +475,33 @@ class Dashboard:
                 self.show()
                 StateManager.get_instance().set_state('state', 'aut')
             elif state == 'aut':
-                username = FaceRecognitionModule.get_instance().verify_user()
-                if username is None:
-                    self.terminal.write("User not verified")
-                    self.show()
-                    self.terminal.write("Insert username")
-                    self.show()
-                    VocalCommandModule.get_instance().say("Utente non riconosciuto, inserisci il tuo username?") # IT
-                    StateManager.get_instance().set_state('state', 'get_user')
+                username = None
+                if StateManager.get_instance().get_state('user_recognition'):
+                    username = FaceRecognitionModule.get_instance().verify_user()
+                    if username is None:
+                        self.terminal.write("User not verified")
+                        self.show()
+                        self.terminal.write("Insert username")
+                        self.show()
+                        VocalCommandModule.get_instance().say("Utente non riconosciuto, inserisci il tuo username") # IT
+                        StateManager.get_instance().set_state('state', 'get_user')
+                        continue
+                    else:
+                        StateManager.get_instance().set_state('username', username)
                 else:
-                    self.terminal.write(f"Hi {username}")
-                    StateManager.get_instance().set_state('username', username)
-                    StateManager.get_instance().set_state('state', 'navigator')
-                    self.terminal.write("Where we go?")
-                    self.show()
-                    VocalCommandModule.get_instance().say(f"Ciao {username}, dove andiamo?") # IT
+                    username = StateManager.get_instance().get_state('username')
+                    if username is None:
+                        self.terminal.write("User recognition disabled")
+                        self.show()
+                        VocalCommandModule.get_instance().say("Inserisci il tuo username")  # IT
+                        StateManager.get_instance().set_state('state', 'get_user')
+                        continue
+
+                self.terminal.write(f"Hi {username}")
+                StateManager.get_instance().set_state('state', 'navigator')
+                self.terminal.write("Where we go?")
+                self.show()
+                VocalCommandModule.get_instance().say(f"Ciao {username}, dove andiamo?")  # IT
             else:
                 res = self.get_event()
                 if res == -1:

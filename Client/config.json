@@ -8,11 +8,11 @@
   "simulation": false,
   "vocal_commands": {
     "enable": true,
-    "mic_device": 0,
+    "mic_device": null,
     "stt_service": "google",
     "mic_timeout": 5
   },
-  "user_recognition": true,
+  "user_recognition": false,
   "history_collections": true,
   "face_recognition" : {
     "camera": 1,
@@ -21,8 +21,8 @@
     "wait_time": 1,
     "period": 60,
     "detector": "opencv",
-    "model": "OpenFace",
-    "distance": "euclidean"
+    "model": "VGG-Face",
+    "distance": "cosine"
   },
   "extern_gps_module": {
     "enable": false,
