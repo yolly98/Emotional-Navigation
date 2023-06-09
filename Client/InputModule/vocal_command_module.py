@@ -1,10 +1,10 @@
 import speech_recognition as sr
-import pyttsx3
+import os
+import asyncio
 from threading import Thread, Lock
 from pydub import AudioSegment
 from pydub.playback import play
-import os
-
+from edge_tts import VoicesManager, Communicate
 
 if os.name == 'posix':
     from ctypes import *
@@ -26,13 +26,15 @@ class VocalCommandModule:
     def __init__(self):
         self.stt_model = None
         self.v_rec = None
-        self.v_synt = None
         self.stt_service = None
         self.mic_device = None
         self.mic_timeout = 0
         self.command = None
         self.new_command = False
         self.rec_started = False
+        self.tts_voice = None
+        self.async_loop = None
+        self.tts_started = False
         self.lock = Lock()
 
     @staticmethod
@@ -43,9 +45,9 @@ class VocalCommandModule:
 
     def init(self, stt_service='google', mic_device=None, mic_timeout=5):
         self.v_rec = sr.Recognizer()
-        self.v_synt = pyttsx3.init()
-        self.v_synt.setProperty('rate', 150)
-        self.v_synt.setProperty('voice', 'italian')
+        self.async_loop = asyncio.get_event_loop_policy().get_event_loop()
+        voices = self.async_loop.run_until_complete((lambda: VoicesManager.create())())
+        self.tts_voice = voices.find(Gender="Female", Language="it")[0]['Name']
         self.stt_service = stt_service
         self.mic_device = mic_device
         self.mic_timeout = mic_timeout
@@ -88,8 +90,13 @@ class VocalCommandModule:
         return text
 
     def say(self, text):
-        t = Thread(target=self.synthesize_text, args=(text,), daemon=True)
-        t.start()
+        if text is None or text == "":
+            return
+        with self.lock:
+            if not self.tts_started:
+                t = Thread(target=self.synthesize_text, args=(text,), daemon=True)
+                t.start()
+                self.tts_started = True
 
     def start_command_recognizer(self):
         with self.lock:
@@ -99,13 +106,11 @@ class VocalCommandModule:
                 self.rec_started = True
 
     def synthesize_text(self, text):
-        if self.rec_started is True:
-            return
-        self.v_synt.say(text)
-        try:
-            self.v_synt.runAndWait()
-        except Exception:
-            pass
+        communicate = Communicate(text, self.tts_voice)
+        self.async_loop.run_until_complete((lambda: communicate.save(os.path.join(os.path.dirname(__file__), 'temp.mp3')))())
+        play(AudioSegment.from_mp3(os.path.join(os.path.dirname(__file__), 'temp.mp3')))
+        with self.lock:
+            self.tts_started = False
 
     def get_command(self):
         if not self.new_command:
@@ -128,4 +133,4 @@ if __name__ == '__main__':
         t.join()
         command = VocalCommandModule.get_instance().get_command()
         print(command)
-        VocalCommandModule.get_instance().synthesize_text(command)
+        VocalCommandModule.get_instance().say(command)

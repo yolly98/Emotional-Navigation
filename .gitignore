@@ -3,3 +3,4 @@ venv/
 Client/InputModule/UserImages/*.png
 Client/Monitor/*.png
 Client/Monitor/*.txt
+Client/InputModule/temp.mp3

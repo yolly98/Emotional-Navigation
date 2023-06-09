@@ -1,7 +1,6 @@
 deepface
 numpy
 SpeechRecognition
-pyttsx3
 pyaudio
 pygame
 pygame-textinput
@@ -21,3 +20,4 @@ soundfile
 torch
 psutil
 pydub
+edge-tts
