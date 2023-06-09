@@ -5,6 +5,8 @@ from threading import Thread, Lock
 from pydub import AudioSegment
 from pydub.playback import play
 from edge_tts import VoicesManager, Communicate
+import serial
+import time
 
 if os.name == 'posix':
     from ctypes import *
@@ -35,6 +37,7 @@ class VocalInOutModule:
         self.tts_voice = None
         self.async_loop = None
         self.tts_started = False
+        self.arduino = None
         self.lock = Lock()
 
     @staticmethod
@@ -43,7 +46,7 @@ class VocalInOutModule:
             VocalInOutModule.vocal_command_module = VocalInOutModule()
         return VocalInOutModule.vocal_command_module
 
-    def init(self, stt_service='google', mic_device=None, mic_timeout=5):
+    def init(self, stt_service='google', mic_device=None, mic_timeout=5, arduino_com=None):
         self.v_rec = sr.Recognizer()
         self.async_loop = asyncio.get_event_loop_policy().get_event_loop()
         voices = self.async_loop.run_until_complete((lambda: VoicesManager.create())())
@@ -51,6 +54,14 @@ class VocalInOutModule:
         self.stt_service = stt_service
         self.mic_device = mic_device
         self.mic_timeout = mic_timeout
+        if arduino_com is not None:
+            try:
+                self.arduino = serial.Serial(arduino_com, 9600)
+                self.arduino.write(b"OFF")
+                self.arduino.timeout = 1
+            except:
+                print("Failed serial connection with arduino")
+                self.arduino = None
 
     def recognize_command(self):
 
@@ -61,6 +72,8 @@ class VocalInOutModule:
         with sr.Microphone(device_index=device_index) as source:
             # self.v_rec.adjust_for_ambient_noise(source)
             print("Speak now...")
+            if self.arduino is not None:
+                self.arduino.write(b"ON")
             play(AudioSegment.from_wav(
                 os.path.join(
                     os.path.dirname(__file__),
@@ -74,6 +87,8 @@ class VocalInOutModule:
             except Exception as e:
                 print(f"Microphone error [{e}]")
                 self.say("Non ho capito, riprova") # IT
+                if self.arduino is not None:
+                    self.arduino.write(b"OFF")
                 self.rec_started = False
                 return
 
@@ -95,6 +110,8 @@ class VocalInOutModule:
             self.command = text
             self.new_command = True
             self.rec_started = False
+        if self.arduino is not None:
+            self.arduino.write(b"OFF")
         return text
 
     def say(self, text):
@@ -145,16 +162,32 @@ class VocalInOutModule:
             self.new_command = False
             return text
 
+    def check_pending_vcommand_rqst(self):
+        if self.arduino is None:
+            return
+        if self.arduino.inWaiting() > 0:
+            cmd = self.arduino.readline().decode().strip()
+            if cmd == "PENDING":
+                self.start_command_recognizer()
+
 
 if __name__ == '__main__':
 
-    VocalInOutModule.get_instance().init(stt_service='google', mic_device=None, mic_timeout=5)
-    while True:
+    VocalInOutModule.get_instance().init(stt_service='google', mic_device=None, mic_timeout=5, arduino_com='COM8')
+    if VocalInOutModule.get_instance().arduino is None:
+        while True:
 
-        # command = VocalCommandModule.get_instance().recognize_command()
-        t = Thread(target=VocalInOutModule.get_instance().recognize_command, args=(), daemon=True)
-        t.start()
-        t.join()
-        command = VocalInOutModule.get_instance().get_command()
-        print(command)
-        VocalInOutModule.get_instance().say(command)
+            # command = VocalCommandModule.get_instance().recognize_command()
+            t = Thread(target=VocalInOutModule.get_instance().recognize_command, args=(), daemon=True)
+            t.start()
+            t.join()
+            command = VocalInOutModule.get_instance().get_command()
+            print(command)
+            VocalInOutModule.get_instance().say(command)
+
+    else:
+        while True:
+            print("waiting ...")
+            VocalInOutModule.get_instance().check_pending_vcommand_rqst()
+            command = VocalInOutModule.get_instance().get_command()
+            VocalInOutModule.get_instance().say(command)

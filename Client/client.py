@@ -36,10 +36,11 @@ if __name__ == '__main__':
     VocalInOutModule.get_instance().init(
         stt_service=config['vocal_commands']['stt_service'],
         mic_device=config['vocal_commands']['mic_device'],
-        mic_timeout=config['vocal_commands']['mic_timeout']
+        mic_timeout=config['vocal_commands']['mic_timeout'],
+        arduino_com=config['vocal_commands']['arduino_com']
     )
 
-    print("VocalCommandModule configured")
+    print("VocalInOutModule configured")
 
     face_rec = config['face_recognition']
     FaceProcessingModule.get_instance().configure(
@@ -53,17 +54,10 @@ if __name__ == '__main__':
         distance=face_rec['distance']
     )
 
-    '''
-    if not config['user_recognition']:
-        StateManager.get_instance().set_state('state', 'navigator')
-        StateManager.get_instance().set_state('username', None)
-    else:
-        StateManager.get_instance().set_state('state', 'init')
-    '''
     StateManager.get_instance().set_state('user_recognition', config['user_recognition'])
     StateManager.get_instance().set_state('state', 'init')
 
-    print("FaceRecognitionModule configured")
+    print("FaceProcessingModule configured")
 
     gps_module = None
     if StateManager.get_instance().get_state('is_sim'):

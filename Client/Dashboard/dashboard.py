@@ -411,6 +411,7 @@ class Dashboard:
 
         command = None
 
+        VocalInOutModule.get_instance().check_pending_vcommand_rqst()
         events = pygame.event.get()
         for event in events:
 

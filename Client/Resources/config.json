@@ -10,7 +10,8 @@
     "enable": true,
     "mic_device": null,
     "stt_service": "google",
-    "mic_timeout": 5
+    "mic_timeout": 5,
+    "arduino_com": "COM8"
   },
   "user_recognition": false,
   "history_collections": true,
