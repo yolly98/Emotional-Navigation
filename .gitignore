@@ -2,5 +2,5 @@
 venv/
 Client/Resources/UserImages/*.png
 Client/Resources/MonitorData/*.txt
-CClient/Resources/MonitorSignal/*.png
+Client/Resources/MonitorSignal/*.png
 Client/Resources/temp.mp3
