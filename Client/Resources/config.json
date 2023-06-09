@@ -12,7 +12,7 @@
     "stt_service": "google",
     "mic_timeout": 5
   },
-  "user_recognition": false,
+  "user_recognition": true,
   "history_collections": true,
   "face_recognition" : {
     "camera": 1,

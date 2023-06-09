@@ -55,7 +55,7 @@ class FaceRecognitionModule:
             cv2.imshow("Your face", frame)
             key = cv2.waitKey(1)
             if key == ord("s"):
-                path = os.path.join(actual_path, 'UserImages', f'{username}.png')
+                path = os.path.join(actual_path, '..', 'Resources', 'UserImages', f'{username}.png')
                 cv2.imwrite(path, frame)
                 break
 
@@ -104,7 +104,7 @@ class FaceRecognitionModule:
             exit(1)
 
         actual_path = os.path.dirname(__file__)
-        user_images_dir = os.path.join(actual_path, "UserImages")
+        user_images_dir = os.path.join(actual_path, '..', 'Resources', 'UserImages')
 
         _, frame = video.read()
         img_path = os.path.join(user_images_dir, "temp.png")
@@ -238,13 +238,13 @@ if __name__ == "__main__":
 
     FaceRecognitionModule.get_instance().configure(
         camera=1,
-        max_attempts= 10,
-        emotion_samples= 3,
-        wait_time= 1,
-        period= 60,
-        detector= "opencv",
-        model= "VGG-Face",
-        distance= "cosine"
+        max_attempts=10,
+        emotion_samples=3,
+        wait_time=1,
+        period=60,
+        detector="opencv",
+        model="VGG-Face",
+        distance="cosine"
 
     )
 
@@ -254,6 +254,7 @@ if __name__ == "__main__":
     print("face detected")
     emotion = FaceRecognitionModule.get_instance().get_emotion()
     print(f'dominant emotion: {emotion}')
+    FaceRecognitionModule.get_instance().get_picture('default')
     username = FaceRecognitionModule.get_instance().verify_user()
     print(f'{username} recognized')
 

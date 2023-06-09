@@ -17,7 +17,7 @@ if __name__ == '__main__':
 
     # load configuration
     actual_path = os.path.dirname(__file__)
-    with open(os.path.join(actual_path, 'config.json'), 'r') as f:
+    with open(os.path.join(actual_path, 'Resources', 'config.json'), 'r') as f:
         config = json.load(f)
 
     print("loaded configuration")

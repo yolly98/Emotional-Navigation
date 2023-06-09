@@ -60,12 +60,20 @@ class VocalCommandModule:
         # get audio from microphone
         with sr.Microphone(device_index=device_index) as source:
             # self.v_rec.adjust_for_ambient_noise(source)
-            print("Parla ora...")
-            play(AudioSegment.from_wav(os.path.join(os.path.dirname(__file__), 'bip.wav')))
+            print("Speak now...")
+            play(AudioSegment.from_wav(
+                os.path.join(
+                    os.path.dirname(__file__),
+                    '..',
+                    'Resources',
+                    'bip.wav'
+                )
+            ))
             try:
                 audio = self.v_rec.listen(source, timeout=self.mic_timeout)
             except Exception as e:
                 print(f"Microphone error [{e}]")
+                self.say("Non ho capito, riprova") # IT
                 self.rec_started = False
                 return
 
@@ -107,8 +115,24 @@ class VocalCommandModule:
 
     def synthesize_text(self, text):
         communicate = Communicate(text, self.tts_voice)
-        self.async_loop.run_until_complete((lambda: communicate.save(os.path.join(os.path.dirname(__file__), 'temp.mp3')))())
-        play(AudioSegment.from_mp3(os.path.join(os.path.dirname(__file__), 'temp.mp3')))
+        self.async_loop.run_until_complete(
+            (lambda: communicate.save(
+                os.path.join(
+                    os.path.dirname(__file__),
+                    '..',
+                    'Resources',
+                    'temp.mp3'
+                ))
+             )()
+        )
+        play(AudioSegment.from_mp3(
+            os.path.join(
+                os.path.dirname(__file__),
+                '..',
+                'Resources',
+                'temp.mp3'
+            )
+        ))
         with self.lock:
             self.tts_started = False
 

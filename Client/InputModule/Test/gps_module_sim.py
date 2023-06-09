@@ -99,7 +99,7 @@ class GPSsim:
     def run(is_thread=True):
         route_path = os.path.dirname(__file__)
 
-        with open(os.path.join(route_path, 'gps-test.json'), 'r') as f:
+        with open(os.path.join(os.path.dirname(__file__), '..', '..', 'Resources', 'gps-test.json'), 'r') as f:
             gps_data = json.load(f)
 
         gps_data = GPSsim.prepare_test_path(gps_data)

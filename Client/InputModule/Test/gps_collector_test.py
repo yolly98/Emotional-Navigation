@@ -3,6 +3,7 @@ from flask_cors import CORS
 import json
 import geocoder
 from threading import Lock
+import os
 
 GPS_IP = "0.0.0.0"
 GPS_PORT = '4000'
@@ -33,10 +34,6 @@ class GPSCollector:
 app = GPSCollector.get_instance().get_app()
 
 
-@app.get('/gps')
-def get_gps():
-    return send_file('../send_GPS.html')
-
 @app.post('/gps-collector')
 def post_gps_collector():
     if request.json is None:
@@ -50,7 +47,7 @@ def post_gps_collector():
 
     with GPSCollector.get_instance().file_lock:
         try:
-            with open('gps-test.json', 'r') as f:
+            with open(os.path.join(os.path.dirname(__file__), '..', '..', 'Resources', 'gps-test.json'), 'r') as f:
                 gps_data = json.load(f)
                 f.close()
         except Exception:
@@ -68,7 +65,7 @@ def post_gps_collector():
         print(new_pos)
         gps_data['gps'].append(new_pos)
 
-        with open('gps-test.json', 'w') as f:
+        with open(os.path.join(os.path.dirname(__file__), '..', '..', 'Resources', 'gps-test.json'), 'w') as f:
             json.dump(gps_data, f, indent=4)
             f.close()
 

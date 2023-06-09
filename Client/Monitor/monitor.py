@@ -12,36 +12,36 @@ class Monitor:
     @staticmethod
     def clean(abs_path):
         try:
-            os.remove(os.path.join(abs_path, 'cpu_data.txt'))
+            os.remove(os.path.join(abs_path, '..', 'Resources', 'MonitorData', 'cpu_data.txt'))
         except:
             pass
         try:
-            os.remove(os.path.join(abs_path, 'mem_data.txt'))
+            os.remove(os.path.join(abs_path, '..', 'Resources', 'MonitorData', 'mem_data.txt'))
         except:
             pass
         try:
-            os.remove(os.path.join(abs_path, 'net_data.txt'))
+            os.remove(os.path.join(abs_path, '..', 'Resources', 'MonitorData', 'net_data.txt'))
         except:
             pass
         try:
-            os.remove(os.path.join(abs_path, 'cpu_usage.png'))
+            os.remove(os.path.join(abs_path, '..', 'Resources', 'MonitorSignal', 'cpu_usage.png'))
         except:
             pass
         try:
-            os.remove(os.path.join(abs_path, 'mem_usage.png'))
+            os.remove(os.path.join(abs_path, '..', 'Resources', 'MonitorSignal', 'mem_usage.png'))
         except:
             pass
         try:
-            os.remove(os.path.join(abs_path, 'net_usage.png'))
+            os.remove(os.path.join(abs_path, '..', 'Resources', 'MonitorSignal', 'net_usage.png'))
         except:
             pass
 
 
     @staticmethod
     def collect_resources_usage(abs_path):
-        with open(os.path.join(abs_path, 'cpu_data.txt'), 'a') as cpu_file, \
-                open(os.path.join(abs_path, 'mem_data.txt'), 'a') as mem_file, \
-                open(os.path.join(abs_path, 'net_data.txt'), 'a') as net_file:
+        with open(os.path.join(abs_path, '..', 'Resources', 'MonitorData', 'cpu_data.txt'), 'a') as cpu_file, \
+                open(os.path.join(abs_path, '..', 'Resources', 'MonitorData', 'mem_data.txt'), 'a') as mem_file, \
+                open(os.path.join(abs_path, '..', 'Resources', 'MonitorData', 'net_data.txt'), 'a') as net_file:
             while True:
                 if not StateManager.get_instance().get_state('monitor_thread'):
                     return
@@ -67,9 +67,9 @@ class Monitor:
 
         matplotlib.use("Agg") # set not interactive mode
 
-        with open(os.path.join(abs_path, 'cpu_data.txt'), 'r') as cpu_file, \
-                open(os.path.join(abs_path, 'mem_data.txt'), 'r') as mem_file, \
-                open(os.path.join(abs_path, 'net_data.txt'), 'r') as net_file:
+        with open(os.path.join(abs_path, '..', 'Resources', 'MonitorData', 'cpu_data.txt'), 'r') as cpu_file, \
+                open(os.path.join(abs_path, '..', 'Resources', 'MonitorData', 'mem_data.txt'), 'r') as mem_file, \
+                open(os.path.join(abs_path, '..', 'Resources', 'MonitorData', 'net_data.txt'), 'r') as net_file:
             cpu_data = cpu_file.readlines()
             mem_data = mem_file.readlines()
             net_data = net_file.readlines()
@@ -82,14 +82,14 @@ class Monitor:
         plt.title('CPU usage')
         plt.xlabel('Time (s)')
         plt.ylabel('Usage (%)')
-        plt.savefig(os.path.join(abs_path, 'cpu_usage.png'))
+        plt.savefig(os.path.join(abs_path, '..', 'Resources', 'MonitorSignal', 'cpu_usage.png'))
         plt.clf()
 
         plt.plot(mem_values)
         plt.title('Memory usage')
         plt.xlabel('Time (s)')
         plt.ylabel('Usage (%)')
-        plt.savefig(os.path.join(abs_path, 'mem_usage.png'))
+        plt.savefig(os.path.join(abs_path, '..', 'Resources', 'MonitorSignal', 'mem_usage.png'))
         plt.clf()
 
         net_sent_values = [values[0] for values in net_values]
@@ -100,7 +100,7 @@ class Monitor:
         plt.xlabel('Time (s)')
         plt.ylabel('Usage (bytes)')
         plt.legend()
-        plt.savefig(os.path.join(abs_path, 'net_usage.png'))
+        plt.savefig(os.path.join(abs_path, '..', 'Resources', 'MonitorSignal', 'net_usage.png'))
         plt.clf()
 
         print("plots creation completed")

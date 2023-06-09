@@ -342,7 +342,7 @@ class Dashboard:
         if StateManager.get_instance().get_state('user_recognition'):
 
             actual_path = os.path.abspath(os.path.dirname(__file__))
-            image_path = os.path.join(actual_path, '..', 'InputModule', 'UserImages', f'{username}.png')
+            image_path = os.path.join(actual_path, '..', 'Resources', 'UserImages', f'{username}.png')
             is_stored = True
             try:
                 with open(image_path, "r") as file:
@@ -377,14 +377,14 @@ class Dashboard:
 
     def new_user(self, res):
         res = res.lower()
-        if res == 'y' or res == 'yes' or res == 'sì':
+        if res == 'y' or res == 'yes' or res == 'sì' or res == 'confermo': # IT
             username = StateManager.get_instance().get_state('username')
             self.terminal.write("Press 's' to save a picture")
             self.show()
             FaceRecognitionModule.get_instance().get_picture(username)
             image = None
             actual_path = os.path.abspath(os.path.dirname(__file__))
-            image_path = os.path.join(actual_path, '..', 'InputModule', 'UserImages', f'{username}.png')
+            image_path = os.path.join(actual_path, '..', 'Resources', 'UserImages', f'{username}.png')
             with open(image_path, "rb") as file:
                 image = file.read()
 
