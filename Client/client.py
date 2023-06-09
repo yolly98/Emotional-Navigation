@@ -1,12 +1,12 @@
 from threading import Thread
 from Client.state_manager import StateManager
 from Client.Dashboard.dashboard import Dashboard
-from Client.InputModule.gps_manager import GPS
-from Client.InputModule.gps_extern_module import GPSExternModule
-from Client.InputModule.face_recognition_module import FaceRecognitionModule
-from Client.InputModule.vocal_command_module import VocalCommandModule
+from Client.InputModules.gps_manager import GPS
+from Client.InputModules.gps_extern_module import GPSExternModule
+from Client.InputModules.face_processing_module import FaceProcessingModule
+from Client.InputModules.vocal_inout_module import VocalInOutModule
 from Client.Monitor.monitor import Monitor
-from Client.InputModule.Test.gps_module_sim import GPSsim
+from Client.InputModules.Test.gps_module_sim import GPSsim
 import os
 import signal
 import json
@@ -33,7 +33,7 @@ if __name__ == '__main__':
 
     print("StateManager configured")
 
-    VocalCommandModule.get_instance().init(
+    VocalInOutModule.get_instance().init(
         stt_service=config['vocal_commands']['stt_service'],
         mic_device=config['vocal_commands']['mic_device'],
         mic_timeout=config['vocal_commands']['mic_timeout']
@@ -42,7 +42,7 @@ if __name__ == '__main__':
     print("VocalCommandModule configured")
 
     face_rec = config['face_recognition']
-    FaceRecognitionModule.get_instance().configure(
+    FaceProcessingModule.get_instance().configure(
         camera=face_rec['camera'],
         max_attempts=face_rec['max_attempts'],
         emotion_samples=face_rec['emotion_samples'],
@@ -96,7 +96,7 @@ if __name__ == '__main__':
 
     history_collector = None
     if config['history_collections']:
-        history_collector = Thread(target=FaceRecognitionModule.get_instance().run, args=(), daemon=False)
+        history_collector = Thread(target=FaceProcessingModule.get_instance().run, args=(), daemon=False)
         StateManager.get_instance().set_state('history_collector_thread', True)
         history_collector.start()
 

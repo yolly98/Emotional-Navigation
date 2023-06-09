@@ -6,8 +6,8 @@ from Client.Dashboard.View.terminal import Terminal
 from Client.Dashboard.View.face import Face
 from Client.communication_manager import CommunicationManager
 from Client.state_manager import StateManager
-from Client.InputModule.face_recognition_module import FaceRecognitionModule
-from Client.InputModule.vocal_command_module import VocalCommandModule
+from Client.InputModules.face_processing_module import FaceProcessingModule
+from Client.InputModules.vocal_inout_module import VocalInOutModule
 import pygame
 import sys
 import time
@@ -114,18 +114,18 @@ class Dashboard:
         path = None
         if res is None:
             self.terminal.write("Something went wrong")
-            VocalCommandModule.get_instance().say(f"Qualcosa è andato storto, non ho trovato {destination_name}, riprova")  # IT
+            VocalInOutModule.get_instance().say(f"Qualcosa è andato storto, non ho trovato {destination_name}, riprova")  # IT
             return
         elif res['status'] == 0:
             path = json.loads(res['path'])
             # print(json.dumps(path, indent=4)) # [Test]
         elif res['status'] == -1:
             self.terminal.write("Path not found")
-            VocalCommandModule.get_instance().say(f"Percorso non trovato per {destination_name}") # IT
+            VocalInOutModule.get_instance().say(f"Percorso non trovato per {destination_name}") # IT
             return
         else:
             self.terminal.write("Something went wrong")
-            VocalCommandModule.get_instance().say(f"Qualcosa è andato storto, riprova") # IT
+            VocalInOutModule.get_instance().say(f"Qualcosa è andato storto, riprova") # IT
             return
 
         path['points'] = polyline.decode(path['points'])
@@ -144,7 +144,7 @@ class Dashboard:
             self.terminal.write(f"Path found for {destination_name}")
             self.terminal.write(f"length:  {round(path['distance'] / 1000, 3)} km")
             self.terminal.write(f"estimated time: {math.floor((path['time']/1000)/60)} minutes {math.floor((path['time']/1000)%60)} seconds")
-            VocalCommandModule.get_instance().say(f"Ho trovato il percorso migliore per {destination_name}, andiamo!")  # IT
+            VocalInOutModule.get_instance().say(f"Ho trovato il percorso migliore per {destination_name}, andiamo!")  # IT
         else:
             residual_m += self.path_progress.get_residual_m()
             # print(f"residual m: {residual_m}") # [Test]
@@ -263,7 +263,7 @@ class Dashboard:
                         self.arrow.draw(self.win)
 
                     if 'vocal_indication' not in actual_way and remaining_m < 50:
-                        VocalCommandModule.get_instance().say(path['ways'][actual_way_index + 1]['text'])
+                        VocalInOutModule.get_instance().say(path['ways'][actual_way_index + 1]['text'])
                         actual_way['vocal_indication'] = False
                 else:
                     self.arrow.hide()
@@ -367,7 +367,7 @@ class Dashboard:
                     self.terminal.write("User not exists")
                     self.terminal.write("Do you want to create a new user? [y/n]")
                     StateManager.get_instance().set_state('state', 'new_user')
-                    VocalCommandModule.get_instance().say("L'utente non esiste, vuoi crearne uno nuovo?") # IT
+                    VocalInOutModule.get_instance().say("L'utente non esiste, vuoi crearne uno nuovo?") # IT
                     return
                 else:
                     self.terminal.write("Something went wrong")
@@ -381,7 +381,7 @@ class Dashboard:
             username = StateManager.get_instance().get_state('username')
             self.terminal.write("Press 's' to save a picture")
             self.show()
-            FaceRecognitionModule.get_instance().get_picture(username)
+            FaceProcessingModule.get_instance().get_picture(username)
             image = None
             actual_path = os.path.abspath(os.path.dirname(__file__))
             image_path = os.path.join(actual_path, '..', 'Resources', 'UserImages', f'{username}.png')
@@ -405,7 +405,7 @@ class Dashboard:
             StateManager.get_instance().set_state('state', 'navigator')
         else:
             self.terminal.write("Not valid command, press 'y' or 'n' to create a new user")
-            VocalCommandModule.get_instance().say("Comando non valido, si o no?") # IT
+            VocalInOutModule.get_instance().say("Comando non valido, si o no?") # IT
 
     def get_event(self):
 
@@ -425,7 +425,7 @@ class Dashboard:
                 if event.key == pygame.K_DOWN:
                     self.commands['down'] = True
                 if StateManager.get_instance().get_state('vocal_commands') and event.key == pygame.K_RSHIFT:
-                    VocalCommandModule.get_instance().start_command_recognizer()
+                    VocalInOutModule.get_instance().start_command_recognizer()
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_UP:
                     self.commands['up'] = False
@@ -433,9 +433,9 @@ class Dashboard:
                     self.commands['down'] = False
 
         if command is None and StateManager.get_instance().get_state('vocal_commands'):
-            command = VocalCommandModule.get_instance().get_command()
+            command = VocalInOutModule.get_instance().get_command()
             if command == "":
-                VocalCommandModule.get_instance().say("Non ho capito, riprova")  # IT
+                VocalInOutModule.get_instance().say("Non ho capito, riprova")  # IT
                 command = None
 
         if command is not None:
@@ -472,20 +472,20 @@ class Dashboard:
             if state == 'init':
                 self.terminal.write("Waiting a face ...")
                 self.show()
-                FaceRecognitionModule.get_instance().find_face()
+                FaceProcessingModule.get_instance().find_face()
                 self.terminal.write("Face detected")
                 self.show()
                 StateManager.get_instance().set_state('state', 'aut')
             elif state == 'aut':
                 username = None
                 if StateManager.get_instance().get_state('user_recognition'):
-                    username = FaceRecognitionModule.get_instance().verify_user()
+                    username = FaceProcessingModule.get_instance().verify_user()
                     if username is None:
                         self.terminal.write("User not verified")
                         self.show()
                         self.terminal.write("Insert username")
                         self.show()
-                        VocalCommandModule.get_instance().say("Utente non riconosciuto, inserisci il tuo username") # IT
+                        VocalInOutModule.get_instance().say("Utente non riconosciuto, inserisci il tuo username") # IT
                         StateManager.get_instance().set_state('state', 'get_user')
                         continue
                     else:
@@ -495,7 +495,7 @@ class Dashboard:
                     if username is None:
                         self.terminal.write("User recognition disabled")
                         self.show()
-                        VocalCommandModule.get_instance().say("Inserisci il tuo username")  # IT
+                        VocalInOutModule.get_instance().say("Inserisci il tuo username")  # IT
                         StateManager.get_instance().set_state('state', 'get_user')
                         continue
 
@@ -503,7 +503,7 @@ class Dashboard:
                 StateManager.get_instance().set_state('state', 'navigator')
                 self.terminal.write("Where we go?")
                 self.show()
-                VocalCommandModule.get_instance().say(f"Ciao {username}, dove andiamo?")  # IT
+                VocalInOutModule.get_instance().say(f"Ciao {username}, dove andiamo?")  # IT
             else:
                 res = self.get_event()
                 if res == -1:

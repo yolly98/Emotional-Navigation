@@ -7,7 +7,7 @@ import os
 import pandas
 
 
-class FaceRecognitionModule:
+class FaceProcessingModule:
 
     face_recognition_module = None
 
@@ -23,9 +23,9 @@ class FaceRecognitionModule:
 
     @staticmethod
     def get_instance():
-        if FaceRecognitionModule.face_recognition_module is None:
-            FaceRecognitionModule.face_recognition_module = FaceRecognitionModule()
-        return FaceRecognitionModule.face_recognition_module
+        if FaceProcessingModule.face_recognition_module is None:
+            FaceProcessingModule.face_recognition_module = FaceProcessingModule()
+        return FaceProcessingModule.face_recognition_module
 
     def configure(self, camera, max_attempts, emotion_samples, wait_time, period, detector, model, distance):
         self.camera = camera
@@ -236,7 +236,7 @@ class FaceRecognitionModule:
 
 if __name__ == "__main__":
 
-    FaceRecognitionModule.get_instance().configure(
+    FaceProcessingModule.get_instance().configure(
         camera=1,
         max_attempts=10,
         emotion_samples=3,
@@ -249,13 +249,13 @@ if __name__ == "__main__":
     )
 
     StateManager.get_instance().set_state('history_collector_thread', True)
-    FaceRecognitionModule.print_available_cameras()
-    FaceRecognitionModule.get_instance().find_face()
+    FaceProcessingModule.print_available_cameras()
+    FaceProcessingModule.get_instance().find_face()
     print("face detected")
-    emotion = FaceRecognitionModule.get_instance().get_emotion()
+    emotion = FaceProcessingModule.get_instance().get_emotion()
     print(f'dominant emotion: {emotion}')
-    FaceRecognitionModule.get_instance().get_picture('default')
-    username = FaceRecognitionModule.get_instance().verify_user()
+    FaceProcessingModule.get_instance().get_picture('default')
+    username = FaceProcessingModule.get_instance().verify_user()
     print(f'{username} recognized')
 
 

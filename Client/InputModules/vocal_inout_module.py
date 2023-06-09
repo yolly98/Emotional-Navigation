@@ -19,7 +19,7 @@ if os.name == 'posix':
     asound.snd_lib_error_set_handler(c_error_handler)
 
 
-class VocalCommandModule:
+class VocalInOutModule:
 
     vocal_command_module = None
 
@@ -39,9 +39,9 @@ class VocalCommandModule:
 
     @staticmethod
     def get_instance():
-        if VocalCommandModule.vocal_command_module is None:
-            VocalCommandModule.vocal_command_module = VocalCommandModule()
-        return VocalCommandModule.vocal_command_module
+        if VocalInOutModule.vocal_command_module is None:
+            VocalInOutModule.vocal_command_module = VocalInOutModule()
+        return VocalInOutModule.vocal_command_module
 
     def init(self, stt_service='google', mic_device=None, mic_timeout=5):
         self.v_rec = sr.Recognizer()
@@ -148,13 +148,13 @@ class VocalCommandModule:
 
 if __name__ == '__main__':
 
-    VocalCommandModule.get_instance().init(stt_service='google', mic_device=None, mic_timeout=5)
+    VocalInOutModule.get_instance().init(stt_service='google', mic_device=None, mic_timeout=5)
     while True:
 
         # command = VocalCommandModule.get_instance().recognize_command()
-        t = Thread(target=VocalCommandModule.get_instance().recognize_command, args=(), daemon=True)
+        t = Thread(target=VocalInOutModule.get_instance().recognize_command, args=(), daemon=True)
         t.start()
         t.join()
-        command = VocalCommandModule.get_instance().get_command()
+        command = VocalInOutModule.get_instance().get_command()
         print(command)
-        VocalCommandModule.get_instance().say(command)
+        VocalInOutModule.get_instance().say(command)
