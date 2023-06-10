@@ -7,6 +7,7 @@ from Client.InputModules.face_processing_module import FaceProcessingModule
 from Client.InputModules.vocal_inout_module import VocalInOutModule
 from Client.Monitor.monitor import Monitor
 from Client.InputModules.Test.gps_module_sim import GPSsim
+from Client.InputModules.arduino_button_module import ArduinoButton
 import os
 import signal
 import json
@@ -36,11 +37,12 @@ if __name__ == '__main__':
     VocalInOutModule.get_instance().init(
         stt_service=config['vocal_commands']['stt_service'],
         mic_device=config['vocal_commands']['mic_device'],
-        mic_timeout=config['vocal_commands']['mic_timeout'],
-        arduino_com=config['vocal_commands']['arduino_com']
+        mic_timeout=config['vocal_commands']['mic_timeout']
     )
 
     print("VocalInOutModule configured")
+
+    ArduinoButton.get_instance().init(config['arduino_com'])
 
     face_rec = config['face_recognition']
     FaceProcessingModule.get_instance().configure(
