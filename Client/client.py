@@ -70,20 +70,21 @@ if __name__ == '__main__':
 
     ext_gps_config = config['extern_gps_module']
     extern_gps_module = None
-    if ext_gps_config['enable']:
-        GPSExternModule.get_instance().config(
-            usb_port=ext_gps_config['usb_port'],
-            server_ip=ext_gps_config['server_ip'],
-            server_port=ext_gps_config['server_port'],
-            target_resource=ext_gps_config['target_resource'],
-            interval=ext_gps_config['interval']
+    if not config['simulation']:
+        if ext_gps_config['enable']:
+            GPSExternModule.get_instance().config(
+                usb_port=ext_gps_config['usb_port'],
+                server_ip=ext_gps_config['server_ip'],
+                server_port=ext_gps_config['server_port'],
+                target_resource=ext_gps_config['target_resource'],
+                interval=ext_gps_config['interval']
 
-        )
-        extern_gps_module = Thread(target=GPSExternModule.get_instance().run, args=(), daemon=True)
-        extern_gps_module.start()
-    else:
-        extern_gps_module = Thread(target=GPSsim.run, args=(), daemon=True)
-        extern_gps_module.start()
+            )
+            extern_gps_module = Thread(target=GPSExternModule.get_instance().run, args=(), daemon=True)
+            extern_gps_module.start()
+        else:
+            extern_gps_module = Thread(target=GPSsim.run, args=(), daemon=True)
+            extern_gps_module.start()
 
     print("GPSModule configured")
 

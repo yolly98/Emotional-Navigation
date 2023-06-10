@@ -262,7 +262,7 @@ class Dashboard:
                         self.arrow.set_speed(None)
                         self.arrow.draw(self.win)
 
-                    if 'vocal_indication' not in actual_way and remaining_m < 50:
+                    if 'vocal_indication' not in actual_way and remaining_m < 100:
                         VocalInOutModule.get_instance().say(path['ways'][actual_way_index + 1]['text'])
                         actual_way['vocal_indication'] = False
                 else:

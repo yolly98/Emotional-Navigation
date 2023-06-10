@@ -178,10 +178,6 @@ class GPS:
 app = GPS.get_instance().get_app()
 logging.getLogger('werkzeug').disabled = True
 
-@app.get('/gps')
-def get_gps():
-    return send_file('send_GPS.html')
-
 
 @app.post('/gps-collector')
 def post_gps():

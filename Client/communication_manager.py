@@ -17,6 +17,7 @@ class CommunicationManager:
                 response = post(connection_string, json=data)
         except exceptions.RequestException:
             print("Endpoint system unreachable")
+            print(f"ip: {ip}, port: {port}, resource: {resource}, data: {data}")
             return False
 
         if response.status_code != 200:
