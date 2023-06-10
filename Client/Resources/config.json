@@ -13,7 +13,7 @@
     "mic_timeout": 5,
     "arduino_com": "COM8"
   },
-  "user_recognition": false,
+  "user_recognition": true,
   "history_collections": true,
   "face_recognition" : {
     "camera": 1,

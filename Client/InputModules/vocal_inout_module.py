@@ -118,7 +118,7 @@ class VocalInOutModule:
         if text is None or text == "":
             return
         with self.lock:
-            if not self.tts_started:
+            if not self.tts_started and not self.rec_started:
                 t = Thread(target=self.synthesize_text, args=(text,), daemon=True)
                 t.start()
                 self.tts_started = True
