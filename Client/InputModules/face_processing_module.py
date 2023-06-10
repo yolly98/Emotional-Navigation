@@ -3,6 +3,7 @@ import time
 import cv2
 from Client.state_manager import StateManager
 from Client.communication_manager import CommunicationManager
+from Client.InputModules.arduino_button_module import ArduinoButton
 import os
 import pandas
 
@@ -50,15 +51,17 @@ class FaceProcessingModule:
             exit(1)
 
         actual_path = os.path.abspath(os.path.dirname(__file__))
+        ArduinoButton.get_instance().ledOff()
         while True:
             _, frame = video.read()
             cv2.imshow("Your face", frame)
             key = cv2.waitKey(1)
-            if key == ord("s"):
+            if key == ord("s") or ArduinoButton.get_instance().check_button_pressed():
                 path = os.path.join(actual_path, '..', 'Resources', 'UserImages', f'{username}.png')
                 cv2.imwrite(path, frame)
                 break
 
+        ArduinoButton.get_instance().ledOff()
         video.release()
         cv2.destroyAllWindows()
 
@@ -237,14 +240,15 @@ if __name__ == "__main__":
     FaceProcessingModule.get_instance().configure(
         camera=1,
         max_attempts=10,
-        emotion_samples=3,
+        emotion_samples=1,
         wait_time=1,
         period=60,
         detector="opencv",
         model="VGG-Face",
         distance="cosine"
-
     )
+
+    ArduinoButton.get_instance().init('COM8')
 
     FaceProcessingModule.print_available_cameras()
     FaceProcessingModule.get_instance().find_face()
