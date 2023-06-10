@@ -165,8 +165,6 @@ class GPS:
 
     def run_simulation(self):
         while True:
-            if not StateManager.get_instance().get_state('gps_module_thread'):
-                return
             res = GPS.get_hypothetical_position()
             if res is None:
                 continue

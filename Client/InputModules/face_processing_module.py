@@ -210,8 +210,6 @@ class FaceProcessingModule:
 
     def run(self):
         while True:
-            if not StateManager.get_instance().get_state('history_collector_thread'):
-                return
             time.sleep(self.period)
             state = StateManager.get_instance().get_state('state')
             username = StateManager.get_instance().get_state('username')
@@ -248,7 +246,6 @@ if __name__ == "__main__":
 
     )
 
-    StateManager.get_instance().set_state('history_collector_thread', True)
     FaceProcessingModule.print_available_cameras()
     FaceProcessingModule.get_instance().find_face()
     print("face detected")

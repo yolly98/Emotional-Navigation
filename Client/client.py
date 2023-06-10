@@ -61,10 +61,9 @@ if __name__ == '__main__':
 
     gps_module = None
     if StateManager.get_instance().get_state('is_sim'):
-        gps_module = Thread(target=GPS.get_instance().run_simulation, args=(), daemon=False)
+        gps_module = Thread(target=GPS.get_instance().run_simulation, args=(), daemon=True)
     else:
-        gps_module = Thread(target=GPS.get_instance().listener, args=(), daemon=False)
-    StateManager.get_instance().set_state('gps_module_thread', True)
+        gps_module = Thread(target=GPS.get_instance().listener, args=(), daemon=True)
     gps_module.start()
 
     ext_gps_config = config['extern_gps_module']
@@ -78,27 +77,24 @@ if __name__ == '__main__':
             interval=ext_gps_config['interval']
 
         )
-        extern_gps_module = Thread(target=GPSExternModule.get_instance().run, args=(), daemon=False)
-        StateManager.get_instance().set_state('extern_gps_module_thread', True)
+        extern_gps_module = Thread(target=GPSExternModule.get_instance().run, args=(), daemon=True)
         extern_gps_module.start()
     else:
-        extern_gps_module = Thread(target=GPSsim.run, args=(), daemon=False)
-        StateManager.get_instance().set_state('extern_gps_module_thread', True)
+        extern_gps_module = Thread(target=GPSsim.run, args=(), daemon=True)
         extern_gps_module.start()
 
     print("GPSModule configured")
 
     history_collector = None
     if config['history_collections']:
-        history_collector = Thread(target=FaceProcessingModule.get_instance().run, args=(), daemon=False)
-        StateManager.get_instance().set_state('history_collector_thread', True)
+        history_collector = Thread(target=FaceProcessingModule.get_instance().run, args=(), daemon=True)
         history_collector.start()
 
     print("HistoryCollector configured")
 
     monitor = None
     if config['monitor']:
-        monitor = Thread(target=Monitor.run, args=(), daemon=False)
+        monitor = Thread(target=Monitor.run, args=(), daemon=True)
         StateManager.get_instance().set_state('monitor_thread', True)
         monitor.start()
 
@@ -108,9 +104,6 @@ if __name__ == '__main__':
 
     Dashboard.get_instance().run()
 
-    StateManager.get_instance().set_state('gps_module_thread', False)
-    StateManager.get_instance().set_state('extern_gps_module_thread', False)
-    StateManager.get_instance().set_state('history_collector_thread', False)
     StateManager.get_instance().set_state('monitor_thread', False)
 
     print("App terminated")
@@ -118,4 +111,7 @@ if __name__ == '__main__':
     if monitor is not None:
         monitor.join()
 
-    os.kill(os.getpid(), signal.SIGINT)
+    try:
+        os.kill(os.getpid(), signal.SIGINT)
+    except:
+        pass

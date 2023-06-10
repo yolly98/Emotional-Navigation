@@ -28,9 +28,6 @@ class StateManager:
         self.status['username'] = None
         self.status['actual_emotion'] = 'neutral'
         self.status['vocal_commands'] = False
-        self.status['gps_module_thread'] = False
-        self.status['extern_gps_module_thread'] = False
-        self.status['history_collector_thread'] = False
         self.status['monitor_thread'] = False
 
     @staticmethod

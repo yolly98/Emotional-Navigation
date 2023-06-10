@@ -39,8 +39,7 @@ class GPSExternModule:
         time.sleep(1)
 
         while True:
-            if not StateManager.get_instance().get_state('extern_gps_module_thread'):
-                return
+
             line = gps_nmea_module.readline().decode('ascii', errors='replace')
 
             if line.startswith('$GPGGA'):
