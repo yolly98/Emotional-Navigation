@@ -11,7 +11,7 @@ class MapEngine:
         if destination_point is None:
             print(f'destination point for {destination} not found') # [Test]
             return None
-        paths = MapManager.get_path(source_point, destination_point, avoid_ways)
+        paths = MapManager.get_paths(source_point, destination_point, avoid_ways)
         return paths
 
     @staticmethod

@@ -120,7 +120,7 @@ class MapManager:
         plt.show()
 
     @staticmethod
-    def get_path(start_point, end_point, avid_ways):
+    def get_paths(start_point, end_point, avoid_ways):
 
         start_point = f'{start_point[0]},{start_point[1]}'
         end_point = f'{end_point[0]},{end_point[1]}'
@@ -164,7 +164,7 @@ class MapManager:
             path['max_speed'] = max_speed
             avoided = False
             for segment in instructions:
-                if segment['street_name'] in avid_ways:
+                if segment['street_name'] in avoid_ways:
                     avoided = True
                     break
             if avoided:
@@ -182,13 +182,13 @@ if __name__ == '__main__':
     print(MapManager.get_location_by_point(start_point))
     print(MapManager.get_location_by_point(end_point))
 
-    paths = MapManager.get_path(start_point, end_point, [])
+    paths = MapManager.get_paths(start_point, end_point, [])
     for i in range(0, len(paths)):
         print("---------------------------------------------------")
         print(json.dumps(paths[i], indent=4))
         MapManager.plot_path(paths[i])
 
-    paths = MapManager.get_path(start_point, end_point, ["Via Cavour",])
+    paths = MapManager.get_paths(start_point, end_point, ["Via Cavour", ])
     for i in range(0, len(paths)):
         print("---------------------------------------------------")
         print(json.dumps(paths[i], indent=4))
@@ -196,7 +196,7 @@ if __name__ == '__main__':
 
     point = MapManager.get_point_by_location('Via XXVIII Ottobre')
     point = MapManager.get_nearest_point(point)
-    paths = MapManager.get_path(start_point, point, [])
+    paths = MapManager.get_paths(start_point, point, [])
     for i in range(0, len(paths)):
         print("---------------------------------------------------")
         print(json.dumps(paths[i], indent=4))
