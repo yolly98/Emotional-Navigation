@@ -5,7 +5,7 @@ import pynmea2
 import time
 
 
-class GPSExternModule:
+class GPSExternalModule:
 
     gps_extern_module = None
 
@@ -18,9 +18,9 @@ class GPSExternModule:
 
     @staticmethod
     def get_instance():
-        if GPSExternModule.gps_extern_module is None:
-            GPSExternModule.gps_extern_module = GPSExternModule()
-        return GPSExternModule.gps_extern_module
+        if GPSExternalModule.gps_extern_module is None:
+            GPSExternalModule.gps_extern_module = GPSExternalModule()
+        return GPSExternalModule.gps_extern_module
 
     def config(self, usb_port, server_ip, server_port, target_resource, interval):
         self.usb_port = usb_port
@@ -71,7 +71,7 @@ class GPSExternModule:
 
 
 if __name__ == '__main__':
-    GPSExternModule.get_instance().config(
+    GPSExternalModule.get_instance().config(
         usb_port='COM16',
         server_ip='127.0.0.1',
         server_port='4000',
@@ -79,4 +79,4 @@ if __name__ == '__main__':
         interval=1
 
     )
-    GPSExternModule.get_instance().run(log=True)
+    GPSExternalModule.get_instance().run(log=True)

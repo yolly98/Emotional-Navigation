@@ -2,7 +2,7 @@ from threading import Thread
 from Client.state_manager import StateManager
 from Client.Dashboard.dashboard import Dashboard
 from Client.InputModules.gps_manager import GPS
-from Client.InputModules.gps_extern_module import GPSExternModule
+from Client.InputModules.gps_external_module import GPSExternalModule
 from Client.InputModules.face_processing_module import FaceProcessingModule
 from Client.InputModules.vocal_inout_module import VocalInOutModule
 from Client.Monitor.monitor import Monitor
@@ -72,7 +72,7 @@ if __name__ == '__main__':
     extern_gps_module = None
     if not config['simulation']:
         if ext_gps_config['enable']:
-            GPSExternModule.get_instance().config(
+            GPSExternalModule.get_instance().config(
                 usb_port=ext_gps_config['usb_port'],
                 server_ip=ext_gps_config['server_ip'],
                 server_port=ext_gps_config['server_port'],
@@ -80,7 +80,7 @@ if __name__ == '__main__':
                 interval=ext_gps_config['interval']
 
             )
-            extern_gps_module = Thread(target=GPSExternModule.get_instance().run, args=(), daemon=True)
+            extern_gps_module = Thread(target=GPSExternalModule.get_instance().run, args=(), daemon=True)
             extern_gps_module.start()
         else:
             extern_gps_module = Thread(target=GPSsim.run, args=(), daemon=True)
