@@ -3,7 +3,7 @@ import time
 import cv2
 from Client.state_manager import StateManager
 from Client.communication_manager import CommunicationManager
-from Client.InputModules.arduino_button_module import ArduinoButton
+from Client.InOutModules.arduino_button_module import ArduinoButton
 import os
 import pandas
 

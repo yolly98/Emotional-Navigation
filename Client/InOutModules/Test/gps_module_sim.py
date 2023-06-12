@@ -1,5 +1,5 @@
 from Client.communication_manager import CommunicationManager
-from Client.InputModules.gps_manager import GPS
+from Client.InOutModules.gps_manager import GPS
 import time
 import json
 import matplotlib.pyplot as plt

@@ -6,8 +6,8 @@ from Client.Dashboard.View.terminal import Terminal
 from Client.Dashboard.View.face import Face
 from Client.communication_manager import CommunicationManager
 from Client.state_manager import StateManager
-from Client.InputModules.face_processing_module import FaceProcessingModule
-from Client.InputModules.vocal_inout_module import VocalInOutModule
+from Client.InOutModules.face_processing_module import FaceProcessingModule
+from Client.InOutModules.vocal_inout_module import VocalInOutModule
 import pygame
 import sys
 import time

@@ -1,13 +1,13 @@
 from threading import Thread
 from Client.state_manager import StateManager
 from Client.Dashboard.dashboard import Dashboard
-from Client.InputModules.gps_manager import GPS
-from Client.InputModules.gps_external_module import GPSExternalModule
-from Client.InputModules.face_processing_module import FaceProcessingModule
-from Client.InputModules.vocal_inout_module import VocalInOutModule
+from Client.InOutModules.gps_manager import GPS
+from Client.InOutModules.gps_external_module import GPSExternalModule
+from Client.InOutModules.face_processing_module import FaceProcessingModule
+from Client.InOutModules.vocal_inout_module import VocalInOutModule
 from Client.Monitor.monitor import Monitor
-from Client.InputModules.Test.gps_module_sim import GPSsim
-from Client.InputModules.arduino_button_module import ArduinoButton
+from Client.InOutModules.Test.gps_module_sim import GPSsim
+from Client.InOutModules.arduino_button_module import ArduinoButton
 import os
 import signal
 import json

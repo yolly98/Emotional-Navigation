@@ -5,7 +5,7 @@ from threading import Thread, Lock
 from pydub import AudioSegment
 from pydub.playback import play
 from edge_tts import VoicesManager, Communicate
-from Client.InputModules.arduino_button_module import ArduinoButton
+from Client.InOutModules.arduino_button_module import ArduinoButton
 import time
 
 if os.name == 'posix':
