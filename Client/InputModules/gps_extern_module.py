@@ -1,6 +1,5 @@
 import serial
 from Client.communication_manager import CommunicationManager
-from Client.state_manager import StateManager
 from datetime import datetime
 import pynmea2
 import time
