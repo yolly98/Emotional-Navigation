@@ -1,7 +1,7 @@
 from flask import Flask, request
 from flask_cors import CORS
 from Server.Core.emotional_route_selector import EmotionalRouteSelector
-from Server.Persistence.mongo_history_manager import MongoHistoryManager
+from Server.Persistence.user_data_manager import UserDataManager
 from Server.Persistence.map_manager import MapManager
 import json
 
@@ -87,9 +87,9 @@ def get_user():
 
     received_json = request.json
     username = received_json['username']
-    MongoHistoryManager.get_instance().open_connection()
-    image = MongoHistoryManager.get_instance().get_user_image(username)
-    MongoHistoryManager.get_instance().close_connection()
+    UserDataManager.get_instance().open_connection()
+    image = UserDataManager.get_instance().get_user_image(username)
+    UserDataManager.get_instance().close_connection()
     if image is None:
         return {"status": -1, "image": None}
     else:
@@ -104,9 +104,9 @@ def post_user():
     received_json = request.json
     username = received_json['username']
     image = received_json['image']
-    MongoHistoryManager.get_instance().open_connection()
-    res = MongoHistoryManager.get_instance().create_user(username, image)
-    MongoHistoryManager.get_instance().close_connection()
+    UserDataManager.get_instance().open_connection()
+    res = UserDataManager.get_instance().create_user(username, image)
+    UserDataManager.get_instance().close_connection()
 
     if res:
         return {"status": 0}
@@ -125,9 +125,9 @@ def post_history():
     timestamp = received_json['timestamp']
     emotion = received_json['emotion']
 
-    MongoHistoryManager.get_instance().open_connection()
-    res = MongoHistoryManager.get_instance().store_sample(username, way, emotion, timestamp)
-    MongoHistoryManager.get_instance().close_connection()
+    UserDataManager.get_instance().open_connection()
+    res = UserDataManager.get_instance().store_sample(username, way, emotion, timestamp)
+    UserDataManager.get_instance().close_connection()
 
     if res:
         return {"status": 0}

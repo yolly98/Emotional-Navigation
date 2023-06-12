@@ -2,18 +2,18 @@ from datetime import datetime, timedelta
 from pymongo import MongoClient
 
 
-class MongoHistoryManager:
+class UserDataManager:
 
-    history_manager = None
+    user_data_manager = None
 
     def __init__(self):
         self.conn = None
 
     @staticmethod
     def get_instance():
-        if MongoHistoryManager.history_manager is None:
-            MongoHistoryManager.history_manager = MongoHistoryManager()
-        return MongoHistoryManager.history_manager
+        if UserDataManager.user_data_manager is None:
+            UserDataManager.user_data_manager = UserDataManager()
+        return UserDataManager.user_data_manager
 
     def open_connection(self):
         self.conn = MongoClient('mongodb://admin:password@localhost:27017/')
@@ -146,7 +146,7 @@ class MongoHistoryManager:
 
 
 if __name__ == '__main__':
-    history = MongoHistoryManager().get_instance()
+    history = UserDataManager().get_instance()
     history.open_connection()
     history.create_user("user0", '')
     history.store_sample("user0", "Via Alfonso", 'happy', datetime.now())

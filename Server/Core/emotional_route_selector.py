@@ -1,4 +1,4 @@
-from Server.Persistence.mongo_history_manager import MongoHistoryManager
+from Server.Persistence.user_data_manager import UserDataManager
 from Server.Core.map_engine import MapEngine
 import json
 
@@ -40,14 +40,14 @@ class EmotionalRouteSelector:
     def evaluate_path(path, username):
 
         # get all emotions related to the path from user's history
-        MongoHistoryManager.get_instance().open_connection()
+        UserDataManager.get_instance().open_connection()
         overall_balance = 0
         for way in path['ways']:
 
             way_name = way['street_name']
             if way_name == "":
                 continue
-            emotions = MongoHistoryManager.get_instance().get_emotions(username, way_name)
+            emotions = UserDataManager.get_instance().get_emotions(username, way_name)
 
             emotion_balance = 0
             for emotion in emotions:
@@ -69,7 +69,7 @@ class EmotionalRouteSelector:
             emotion_balance = emotion_balance * way['distance']
             overall_balance += emotion_balance
 
-        MongoHistoryManager.get_instance().close_connection()
+        UserDataManager.get_instance().close_connection()
         evaluated_path = path.copy()
         evaluated_path['overall_balance'] = overall_balance
 
@@ -81,26 +81,26 @@ if __name__ == "__main__":
     start_point = [42.33320246437533, 12.269394696130366]
     destination = 'Via Dalmazia, Viterbo'
 
-    MongoHistoryManager.get_instance().open_connection()
-    MongoHistoryManager.get_instance().create_user('test', '')
-    MongoHistoryManager.get_instance().close_connection()
+    UserDataManager.get_instance().open_connection()
+    UserDataManager.get_instance().create_user('test', '')
+    UserDataManager.get_instance().close_connection()
 
     path = EmotionalRouteSelector.get_path('test', start_point, destination)
     print(json.dumps(path, indent=4))
     MapEngine.plot_path(path)
 
-    MongoHistoryManager.get_instance().open_connection()
-    MongoHistoryManager.get_instance().store_sample('test', 'Via XX Settembre', 'sad', 0)
-    MongoHistoryManager.get_instance().store_sample('test', 'Via XX Settembre', 'sad', 0)
-    MongoHistoryManager.get_instance().store_sample('test', 'Via XX Settembre', 'disgust', 0)
-    MongoHistoryManager.get_instance().close_connection()
+    UserDataManager.get_instance().open_connection()
+    UserDataManager.get_instance().store_sample('test', 'Via XX Settembre', 'sad', 0)
+    UserDataManager.get_instance().store_sample('test', 'Via XX Settembre', 'sad', 0)
+    UserDataManager.get_instance().store_sample('test', 'Via XX Settembre', 'disgust', 0)
+    UserDataManager.get_instance().close_connection()
 
     path = EmotionalRouteSelector.get_path('test', start_point, destination)
     print(json.dumps(path, indent=4))
     MapEngine.plot_path(path)
 
-    MongoHistoryManager.get_instance().open_connection()
-    MongoHistoryManager.get_instance().delete_history_of_a_user('test')
-    MongoHistoryManager.get_instance().delete_user('test')
-    MongoHistoryManager.get_instance().close_connection()
+    UserDataManager.get_instance().open_connection()
+    UserDataManager.get_instance().delete_history_of_a_user('test')
+    UserDataManager.get_instance().delete_user('test')
+    UserDataManager.get_instance().close_connection()
 
