@@ -39,7 +39,7 @@ class Dashboard:
             self.win = pygame.display.set_mode((self.win_width, self.win_height))
 
         # set window title
-        pygame.display.set_caption('Smart Navigation')
+        pygame.display.set_caption('Emotional Navigation')
 
         # get the clock to manage the frame rate
         self.clock = pygame.time.Clock()
