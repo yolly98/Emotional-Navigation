@@ -1,11 +1,11 @@
 {
-  "default_lat": "42.3333569",
-  "default_lon": "12.2692692",
+  "default_lat": "43.72049915660226",
+  "default_lon": "10.38345076681462",
   "server_ip": "127.0.0.1",
   "server_port": "5000",
   "monitor": true,
   "fullscreen": false,
-  "simulation": false,
+  "simulation": true,
   "arduino_com": "COM8",
   "vocal_commands": {
     "enable": true,
@@ -30,7 +30,6 @@
     "usb_port": "COM12",
     "server_ip": "127.0.0.1",
     "server_port": "6000",
-    "target_resource": "gps-collector",
     "interval": 1
   }
 

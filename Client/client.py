@@ -76,7 +76,7 @@ if __name__ == '__main__':
                 usb_port=ext_gps_config['usb_port'],
                 server_ip=ext_gps_config['server_ip'],
                 server_port=ext_gps_config['server_port'],
-                target_resource=ext_gps_config['target_resource'],
+                target_resource='gps-collector',
                 interval=ext_gps_config['interval']
 
             )
