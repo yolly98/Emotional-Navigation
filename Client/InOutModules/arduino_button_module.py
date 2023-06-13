@@ -14,9 +14,9 @@ class ArduinoButton:
             ArduinoButton.arduino_button = ArduinoButton()
         return ArduinoButton.arduino_button
 
-    def init(self, arduino_com):
+    def init(self, arduino_usb):
         try:
-            self.serial = serial.Serial(arduino_com, 9600)
+            self.serial = serial.Serial(arduino_usb, 9600)
             self.serial.write(b"OFF")
             self.serial.timeout = 1
             print("Arduino button successfully connected")

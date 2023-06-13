@@ -46,7 +46,7 @@ if __name__ == '__main__':
 
     print("VocalInOutModule configured")
 
-    ArduinoButton.get_instance().init(config['arduino_com'])
+    ArduinoButton.get_instance().init(config['arduino_usb'])
 
     face_rec = config['face_recognition']
     FaceProcessingModule.get_instance().configure(
