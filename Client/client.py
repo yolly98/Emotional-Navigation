@@ -61,14 +61,14 @@ if __name__ == '__main__':
 
     print("FaceProcessingModule configured")
 
+    ext_gps_config = config['extern_gps_module']
     gps_module = None
     if StateManager.get_instance().get_state('is_sim'):
         gps_module = Thread(target=GPS.get_instance().run_simulation, args=(), daemon=True)
     else:
-        gps_module = Thread(target=GPS.get_instance().listener, args=(), daemon=True)
+        gps_module = Thread(target=GPS.get_instance().listener, args=(ext_gps_config['server_port'],), daemon=True)
     gps_module.start()
 
-    ext_gps_config = config['extern_gps_module']
     extern_gps_module = None
     if not config['simulation']:
         if ext_gps_config['enable']:
@@ -83,7 +83,7 @@ if __name__ == '__main__':
             extern_gps_module = Thread(target=GPSExternalModule.get_instance().run, args=(), daemon=True)
             extern_gps_module.start()
         else:
-            extern_gps_module = Thread(target=GPSsim.run, args=(), daemon=True)
+            extern_gps_module = Thread(target=GPSsim.run, args=(ext_gps_config['server_ip'], ext_gps_config['server_port']), daemon=True)
             extern_gps_module.start()
 
     print("GPSModule configured")

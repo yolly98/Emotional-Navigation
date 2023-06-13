@@ -9,9 +9,6 @@ from datetime import datetime
 import math
 import logging
 
-GPS_IP = "0.0.0.0"
-GPS_PORT = '6000'
-
 
 class GPS:
 
@@ -31,8 +28,8 @@ class GPS:
     def get_app(self):
         return self.app
 
-    def listener(self):
-        self.app.run(host=GPS_IP, port=GPS_PORT, debug=False, threaded=True)
+    def listener(self, port):
+        self.app.run(host='0.0.0.0', port=port, debug=False, threaded=True)
 
     @staticmethod
     def calculate_distance(Point1, Point2):  # in m

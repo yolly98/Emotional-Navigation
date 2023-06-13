@@ -96,7 +96,7 @@ class GPSsim:
         plt.show()
 
     @staticmethod
-    def run(is_thread=True):
+    def run(ip, port, is_thread=True):
         route_path = os.path.dirname(__file__)
 
         with open(os.path.join(os.path.dirname(__file__), '..', '..', 'Resources', 'gps-test.json'), 'r') as f:
@@ -113,8 +113,8 @@ class GPSsim:
             request['pos'] = gps_data['gps'][i]['pos']
             request['datetime'] = gps_data['gps'][i]['datetime']
             CommunicationManager.send(
-                ip='127.0.0.1',
-                port='6000',
+                ip=ip,
+                port=port,
                 type='POST',
                 data=request,
                 resource='gps-collector'
@@ -124,4 +124,4 @@ class GPSsim:
 
 
 if __name__ == '__main__':
-    GPSsim.run(is_thread=False)
+    GPSsim.run('127.0.0.1', '6000', is_thread=False)

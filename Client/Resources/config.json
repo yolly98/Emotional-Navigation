@@ -13,7 +13,7 @@
     "stt_service": "google",
     "mic_timeout": 5
   },
-  "user_recognition": true,
+  "user_recognition": false,
   "history_collections": true,
   "face_recognition" : {
     "camera": 1,
@@ -27,7 +27,7 @@
   },
   "extern_gps_module": {
     "enable": false,
-    "usb_port": "COM16",
+    "usb_port": "COM12",
     "server_ip": "127.0.0.1",
     "server_port": "6000",
     "target_resource": "gps-collector",
