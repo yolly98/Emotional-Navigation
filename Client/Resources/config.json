@@ -5,7 +5,7 @@
   "server_port": "5000",
   "monitor": true,
   "fullscreen": false,
-  "simulation": true,
+  "simulation": "sim1",
   "arduino_com": "COM8",
   "vocal_commands": {
     "enable": true,
@@ -26,7 +26,6 @@
     "distance": "cosine"
   },
   "extern_gps_module": {
-    "enable": false,
     "usb_port": "COM12",
     "server_ip": "127.0.0.1",
     "server_port": "6000",

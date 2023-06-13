@@ -23,8 +23,12 @@ if __name__ == '__main__':
 
     print("loaded configuration")
 
+    if config['simulation'] == 'sim0':
+        simulation = True
+    else:
+        simulation = False
     StateManager.get_instance().sim_init(
-        config['simulation'],
+        simulation,
         [float(config['default_lat']), float(config['default_lon'])]
     )
     StateManager.get_instance().set_state('server_ip', config['server_ip'])
@@ -63,15 +67,15 @@ if __name__ == '__main__':
 
     ext_gps_config = config['extern_gps_module']
     gps_module = None
-    if StateManager.get_instance().get_state('is_sim'):
+    if simulation:
         gps_module = Thread(target=GPS.get_instance().run_simulation, args=(), daemon=True)
     else:
         gps_module = Thread(target=GPS.get_instance().listener, args=(ext_gps_config['server_port'],), daemon=True)
     gps_module.start()
 
     extern_gps_module = None
-    if not config['simulation']:
-        if ext_gps_config['enable']:
+    if not simulation:
+        if config['simulation'] == 'nosim':
             GPSExternalModule.get_instance().config(
                 usb_port=ext_gps_config['usb_port'],
                 server_ip=ext_gps_config['server_ip'],
@@ -82,11 +86,14 @@ if __name__ == '__main__':
             )
             extern_gps_module = Thread(target=GPSExternalModule.get_instance().run, args=(), daemon=True)
             extern_gps_module.start()
-        else:
+        elif config['simulation'] == 'sim1':
             extern_gps_module = Thread(target=GPSsim.run, args=(ext_gps_config['server_ip'], ext_gps_config['server_port']), daemon=True)
             extern_gps_module.start()
+        else:
+            print("Unknown simulation mode")
+            exit(1)
 
-    print("GPSModule configured")
+    print(f"GPSModule configured [{config['simulation']}]")
 
     history_collector = None
     if config['history_collections']:
