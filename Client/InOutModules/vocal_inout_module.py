@@ -6,6 +6,7 @@ from pydub import AudioSegment
 from pydub.playback import play
 from edge_tts import VoicesManager, Communicate
 from Client.InOutModules.arduino_button_module import ArduinoButton
+from Client.Monitor.monitor import Monitor
 import time
 
 if os.name == 'posix':
@@ -81,6 +82,7 @@ class VocalInOutModule:
                 self.rec_started = False
                 return
 
+        start_time = time.time()
         # Recognize audio by using Google or Whisper
         text = None
         try:
@@ -100,6 +102,8 @@ class VocalInOutModule:
             self.new_command = True
             self.rec_started = False
         ArduinoButton.get_instance().ledOff()
+
+        Monitor.get_instance().collect_measure('vocal_in', time.time() - start_time)
         return text
 
     def say(self, text):
@@ -119,6 +123,7 @@ class VocalInOutModule:
                 self.rec_started = True
 
     def synthesize_text(self, text):
+        start_time = time.time()
         communicate = Communicate(text, self.tts_voice)
         self.async_loop.run_until_complete(
             (lambda: communicate.save(
@@ -140,6 +145,8 @@ class VocalInOutModule:
         ))
         with self.lock:
             self.tts_started = False
+
+        Monitor.get_instance().collect_measure('vocal_out', time.time() - start_time)
 
     def get_command(self):
         if not self.new_command:

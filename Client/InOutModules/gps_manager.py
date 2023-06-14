@@ -2,13 +2,14 @@ from math import radians, sin, cos, asin, atan2, degrees
 import time
 from Client.state_manager import StateManager
 from Client.communication_manager import CommunicationManager
+from Client.Monitor.monitor import Monitor
 from flask import Flask, request, send_file
 from flask_cors import CORS
 import json
 from datetime import datetime
 import math
 import logging
-
+import time
 
 class GPS:
 
@@ -181,6 +182,8 @@ def post_gps():
     if request.json is None:
         return {'error': 'No JSON request received'}, 500
 
+
+    start_time = time.time()
     received_json = request.json
     lat = received_json['pos'][0]
     lon = received_json['pos'][1]
@@ -231,7 +234,7 @@ def post_gps():
 
     GPS.get_actual_way()
 
-
+    Monitor.get_instance().collect_measure('gps_manager', time.time() - start_time)
     return {"status": 0}
 
 

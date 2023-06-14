@@ -4,6 +4,7 @@ import cv2
 from Client.state_manager import StateManager
 from Client.communication_manager import CommunicationManager
 from Client.InOutModules.arduino_button_module import ArduinoButton
+from Client.Monitor.monitor import Monitor
 import os
 import pandas
 
@@ -214,6 +215,7 @@ class FaceProcessingModule:
     def run(self):
         while True:
             time.sleep(self.period)
+            start_time = time.time()
             state = StateManager.get_instance().get_state('state')
             username = StateManager.get_instance().get_state('username')
             if username is not None and state == 'navigator':
@@ -233,6 +235,7 @@ class FaceProcessingModule:
                     server_ip = StateManager.get_instance().get_state('server_ip')
                     server_port = StateManager.get_instance().get_state('server_port')
                     CommunicationManager.send(server_ip, server_port, 'POST', request, 'history')
+            Monitor.get_instance().collect_measure('history_collector', time.time() - start_time)
 
 
 if __name__ == "__main__":

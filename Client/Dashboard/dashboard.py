@@ -8,6 +8,7 @@ from Client.communication_manager import CommunicationManager
 from Client.state_manager import StateManager
 from Client.InOutModules.face_processing_module import FaceProcessingModule
 from Client.InOutModules.vocal_inout_module import VocalInOutModule
+from Client.Monitor.monitor import Monitor
 import pygame
 import sys
 import time
@@ -506,10 +507,12 @@ class Dashboard:
                 self.show()
                 VocalInOutModule.get_instance().say(f"Ciao {username}, dove andiamo?")  # IT
             else:
+                start_time = time.time()
                 res = self.get_event()
                 if res == -1:
                     return
                 self.show()
+                Monitor.get_instance().collect_measure('dashboard', time.time() - start_time)
                 self.wait()
 
 

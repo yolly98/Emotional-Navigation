@@ -5,7 +5,7 @@
   "server_port": "5000",
   "monitor": true,
   "fullscreen": false,
-  "simulation": "sim0",
+  "simulation": "sim1",
   "arduino_usb": "COM8",
   "vocal_commands": {
     "enable": true,

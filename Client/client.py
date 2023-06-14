@@ -104,7 +104,7 @@ if __name__ == '__main__':
 
     monitor = None
     if config['monitor']:
-        monitor = Thread(target=Monitor.run, args=(), daemon=True)
+        monitor = Thread(target=Monitor.get_instance().run, args=(), daemon=True)
         StateManager.get_instance().set_state('monitor_thread', True)
         monitor.start()
 
