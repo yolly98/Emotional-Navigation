@@ -1,5 +1,5 @@
-#define BUTTON 2
-#define LED 3
+#define BUTTON 3
+#define LED 2
 
 bool started = false;
 
