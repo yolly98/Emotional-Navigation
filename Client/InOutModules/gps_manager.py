@@ -159,7 +159,7 @@ class GPS:
             return {'last_pos_index': last_pos_index, 'last_pos': new_pos}
 
         # [Test]
-        print(f"GPS pos: {new_pos}")
+        # print(f"GPS pos: {new_pos}")
 
     def run_simulation(self):
         while True:

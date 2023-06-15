@@ -17,7 +17,10 @@ void loop() {
 
   if (buttonState == HIGH && !started) {
     started = true;
-    Serial.println("PENDING");
+    Serial.println("PRESSED");
+  }
+  else if(buttonState == LOW) {
+    started = false;
   }
 
   if (Serial.available()) {
@@ -27,7 +30,6 @@ void loop() {
     }
     else if (cmd == "OFF"){
       digitalWrite(LED, LOW);
-      started = false;
     }
  }
  delay(100);

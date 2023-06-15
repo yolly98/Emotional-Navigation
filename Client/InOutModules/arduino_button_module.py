@@ -43,7 +43,7 @@ class ArduinoButton:
             return False
         if self.serial.inWaiting() > 0:
             cmd = self.serial.readline().decode().strip()
-            if cmd == "PENDING":
+            if cmd == "PRESSED":
                 return True
         else:
             return False
