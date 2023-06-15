@@ -111,16 +111,18 @@ class VocalInOutModule:
             return
         with self.lock:
             if not self.tts_started and not self.rec_started:
+                self.tts_started = True
                 t = Thread(target=self.synthesize_text, args=(text,), daemon=True)
                 t.start()
-                self.tts_started = True
 
     def start_command_recognizer(self):
         with self.lock:
-            if not self.rec_started:
+            if not self.tts_started and not self.rec_started:
+                self.rec_started = True
                 t = Thread(target=self.recognize_command, args=(), daemon=True)
                 t.start()
-                self.rec_started = True
+            else:
+                ArduinoButton.get_instance().ledOff()
 
     def synthesize_text(self, text):
         start_time = time.time()
