@@ -115,7 +115,6 @@ class MapManager:
 
         ax.scatter(lons, lats, c='white', alpha=1, s=3)
         fig.set_facecolor('black')
-        ax.set_title("Path", color='white')
         ax.axis('off')
         plt.show()
 
