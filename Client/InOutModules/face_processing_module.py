@@ -236,8 +236,9 @@ class FaceProcessingModule:
                     server_ip = StateManager.get_instance().get_state('server_ip')
                     server_port = StateManager.get_instance().get_state('server_port')
                     CommunicationManager.send(server_ip, server_port, 'POST', request, 'history')
+                    Monitor.get_instance().collect_measure('emotions', f"{emotion}, {pos[0]}, {pos[1]}")
+                    
             Monitor.get_instance().collect_measure('history_collector', time.time() - start_time)
-            Monitor.get_instance().collect_measure('emotions', f"{emotion}, {pos[0]}, {pos[1]}")
 
 
 if __name__ == "__main__":
