@@ -106,14 +106,15 @@ class MapManager:
                 print(f"calculation {progress}%", end="\r")
 
             if last_point is not None:
-                ax.plot([point[0], last_point[0]], [point[1], last_point[1]], c='violet', alpha=1, linewidth=1)
+                ax.plot([point[1], last_point[1]], [point[0], last_point[0]], c='violet', alpha=1, linewidth=1)
 
-            lats.append(float(point[1]))
-            lons.append(float(point[0]))
+            lats.append(float(point[0]))
+            lons.append(float(point[1]))
             last_point = point
             i += 1
 
         ax.scatter(lons, lats, c='white', alpha=1, s=3)
+        ax.scatter(lons[len(lons) - 1], lats[len(lats) - 1], s=100, marker='*', color='yellow')
         fig.set_facecolor('black')
         ax.axis('off')
         plt.show()

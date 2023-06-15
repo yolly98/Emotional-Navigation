@@ -78,8 +78,8 @@ class EmotionalRouteSelector:
 
 if __name__ == "__main__":
 
-    start_point = [42.33320246437533, 12.269394696130366]
-    destination = 'Via Dalmazia, Viterbo'
+    start_point = [42.332047177395246, 12.264483264442843]
+    destination = 'Via Magenta, Ronciglione'
 
     UserDataManager.get_instance().open_connection()
     UserDataManager.get_instance().create_user('test', '')
@@ -90,9 +90,9 @@ if __name__ == "__main__":
     MapEngine.plot_path(path)
 
     UserDataManager.get_instance().open_connection()
-    UserDataManager.get_instance().store_sample('test', 'Via XX Settembre', 'sad', 0)
-    UserDataManager.get_instance().store_sample('test', 'Via XX Settembre', 'sad', 0)
-    UserDataManager.get_instance().store_sample('test', 'Via XX Settembre', 'disgust', 0)
+    UserDataManager.get_instance().store_sample('test', 'Strada Provinciale Ronciglionese', 'sad', 0)
+    UserDataManager.get_instance().store_sample('test', 'Strada Provinciale Ronciglionese', 'sad', 0)
+    UserDataManager.get_instance().store_sample('test', 'Strada Provinciale Ronciglionese', 'angry', 0)
     UserDataManager.get_instance().close_connection()
 
     path = EmotionalRouteSelector.get_path('test', start_point, destination)
