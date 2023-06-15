@@ -227,7 +227,7 @@ def post_gps():
         res = GPS.get_hypothetical_position() # get the position in witch I should be
         hypothetical_position = res['last_pos']
         distance = GPS.calculate_distance(new_pos, hypothetical_position)
-        if distance < 30:
+        if distance < 40:
             StateManager.get_instance().set_state('last_pos_index', res['last_pos_index'])
         else:
             # [Test]
