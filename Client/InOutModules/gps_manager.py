@@ -163,6 +163,7 @@ class GPS:
 
     def run_simulation(self):
         while True:
+            start_time = time.time()
             res = GPS.get_hypothetical_position()
             if res is None:
                 continue
@@ -170,6 +171,8 @@ class GPS:
             StateManager.get_instance().set_state('last_pos', res['last_pos'])
             GPS.get_actual_way()
 
+            Monitor.get_instance().collect_measure('gps_manager', time.time() - start_time)
+            Monitor.get_instance().collect_measure('gps_coords', f"{res['last_pos'][0]}, {res['last_pos'][1]}")
             time.sleep(self.sim_period)
 
 
@@ -231,10 +234,12 @@ def post_gps():
             # [Test]
             print("position outside the path")
             StateManager.get_instance().set_state('path', None)
+            Monitor.get_instance().collect_measure('path_recalculations', f"{new_pos[0]}, {new_pos[1]}")
 
     GPS.get_actual_way()
 
     Monitor.get_instance().collect_measure('gps_manager', time.time() - start_time)
+    Monitor.get_instance().collect_measure('gps_coords', f"{lat}, {lon}")
     return {"status": 0}
 
 

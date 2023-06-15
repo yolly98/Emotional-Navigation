@@ -222,6 +222,7 @@ class FaceProcessingModule:
 
                 emotion = self.get_emotion()
                 way = StateManager.get_instance().get_state('actual_way')
+                pos = StateManager.get_instance().get_state('last_pos')
                 timestamp = time.time()
                 if not (emotion and username and way and timestamp and not way['street_name'] == ''):
                     pass
@@ -236,6 +237,7 @@ class FaceProcessingModule:
                     server_port = StateManager.get_instance().get_state('server_port')
                     CommunicationManager.send(server_ip, server_port, 'POST', request, 'history')
             Monitor.get_instance().collect_measure('history_collector', time.time() - start_time)
+            Monitor.get_instance().collect_measure('emotions', f"{emotion}, {pos[0]}, {pos[1]}")
 
 
 if __name__ == "__main__":
