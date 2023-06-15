@@ -34,7 +34,7 @@ class Dashboard:
         self.win_height = 600
 
         # create the window
-        if StateManager.get_instance().get_state('fullscreen'):
+        if StateManager.get_instance().get_config('fullscreen'):
             self.win = pygame.display.set_mode((self.win_width, self.win_height), pygame.FULLSCREEN)
         else:
             self.win = pygame.display.set_mode((self.win_width, self.win_height))
@@ -109,8 +109,8 @@ class Dashboard:
         request['source_coord'] = StateManager.get_instance().get_state('last_pos')
         # print(request)
 
-        server_ip = StateManager.get_instance().get_state('server_ip')
-        server_port = StateManager.get_instance().get_state('server_port')
+        server_ip = StateManager.get_instance().get_config('server_ip')
+        server_port = StateManager.get_instance().get_config('server_port')
         res = CommunicationManager.send(server_ip, server_port, "GET", request, "path")
         path = None
         if res is None:
@@ -195,7 +195,7 @@ class Dashboard:
                 path_km = StateManager.get_instance().get_state('travelled_km')
 
                 # needed for simulation
-                if StateManager.get_instance().get_state('is_sim'):
+                if StateManager.get_instance().get_config('is_sim'):
                     t = time.time() - self.old_timestamp
                     avg_speed = (self.player_car.get_speed() + self.old_car_speed) / 2
                     traveled_km = (avg_speed / 3600) * t
@@ -207,7 +207,7 @@ class Dashboard:
                     StateManager.get_instance().set_state('travelled_km', path_km)
 
                 # get gps position
-                if not StateManager.get_instance().get_state('is_sim'):
+                if not StateManager.get_instance().get_config('is_sim'):
                     self.player_car.set_speed(StateManager.get_instance().get_state('speed'))
 
                 # draw remaining meters before turn right or left
@@ -262,7 +262,7 @@ class Dashboard:
                         self.arrow.set_speed(None)
                         self.arrow.draw(self.win)
 
-                    if 'vocal_indication' not in actual_way and remaining_m < 100:
+                    if 'vocal_indication' not in actual_way and remaining_m < StateManager.get_instance().get_config('warning_distance'):
                         VocalInOutModule.get_instance().say(path['ways'][actual_way_index + 1]['text'])
                         actual_way['vocal_indication'] = False
                 else:
@@ -353,8 +353,8 @@ class Dashboard:
             if not is_stored:
                 request = dict()
                 request['username'] = username
-                server_ip = StateManager.get_instance().get_state('server_ip')
-                server_port = StateManager.get_instance().get_state('server_port')
+                server_ip = StateManager.get_instance().get_config('server_ip')
+                server_port = StateManager.get_instance().get_config('server_port')
                 res = CommunicationManager.send(server_ip, server_port, "GET", request, "user")
                 if res is None or res == "":
                     self.terminal.write("Something went wrong")
@@ -391,8 +391,8 @@ class Dashboard:
             request = dict()
             request['username'] = username
             request['image'] = base64.b64encode(image).decode('utf-8')
-            server_ip = StateManager.get_instance().get_state('server_ip')
-            server_port = StateManager.get_instance().get_state('server_port')
+            server_ip = StateManager.get_instance().get_config('server_ip')
+            server_port = StateManager.get_instance().get_config('server_port')
             res = CommunicationManager.send(server_ip, server_port, "POST", request, "user")
             if res is None or res == "" or res['status'] < 0:
                 self.terminal.write("Something went wrong")
@@ -425,7 +425,7 @@ class Dashboard:
                     self.commands['up'] = True
                 if event.key == pygame.K_DOWN:
                     self.commands['down'] = True
-                if StateManager.get_instance().get_state('vocal_commands') and event.key == pygame.K_RSHIFT:
+                if StateManager.get_instance().get_config('vocal_commands') and event.key == pygame.K_RSHIFT:
                     VocalInOutModule.get_instance().start_command_recognizer()
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_UP:
@@ -433,7 +433,7 @@ class Dashboard:
                 if event.key == pygame.K_DOWN:
                     self.commands['down'] = False
 
-        if command is None and StateManager.get_instance().get_state('vocal_commands'):
+        if command is None and StateManager.get_instance().get_config('vocal_commands'):
             command = VocalInOutModule.get_instance().get_command()
             if command == "":
                 VocalInOutModule.get_instance().say("Non ho capito, riprova")  # IT

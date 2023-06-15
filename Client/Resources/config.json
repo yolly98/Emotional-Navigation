@@ -5,8 +5,10 @@
   "server_port": "5000",
   "monitor": true,
   "fullscreen": false,
-  "simulation": "sim0",
+  "simulation": "sim1",
   "arduino_usb": "COM8",
+  "out_path_threshold": 40,
+  "warning_distance": 80,
   "vocal_commands": {
     "enable": true,
     "mic_device": null,
@@ -14,7 +16,7 @@
     "mic_timeout": 5
   },
   "user_recognition": false,
-  "history_collections": false,
+  "history_collections": true,
   "face_recognition" : {
     "camera": 1,
     "max_attempts": 10,

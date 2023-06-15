@@ -31,10 +31,12 @@ if __name__ == '__main__':
         simulation,
         [float(config['default_lat']), float(config['default_lon'])]
     )
-    StateManager.get_instance().set_state('server_ip', config['server_ip'])
-    StateManager.get_instance().set_state('server_port', config['server_port'])
-    StateManager.get_instance().set_state('fullscreen', config['fullscreen'])
-    StateManager.get_instance().set_state('vocal_commands', config['vocal_commands']['enable'])
+    StateManager.get_instance().set_config('server_ip', config['server_ip'])
+    StateManager.get_instance().set_config('server_port', config['server_port'])
+    StateManager.get_instance().set_config('fullscreen', config['fullscreen'])
+    StateManager.get_instance().set_config('vocal_commands', config['vocal_commands']['enable'])
+    StateManager.get_instance().set_config('out_path_threshold', config['out_path_threshold'])
+    StateManager.get_instance().set_config('warning_distance', config['warning_distance'])
 
     print("StateManager configured")
 

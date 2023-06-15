@@ -233,8 +233,8 @@ class FaceProcessingModule:
                     request['way'] = way['street_name']
                     request['timestamp'] = timestamp
                     request['emotion'] = emotion
-                    server_ip = StateManager.get_instance().get_state('server_ip')
-                    server_port = StateManager.get_instance().get_state('server_port')
+                    server_ip = StateManager.get_instance().get_config('server_ip')
+                    server_port = StateManager.get_instance().get_config('server_port')
                     CommunicationManager.send(server_ip, server_port, 'POST', request, 'history')
                     Monitor.get_instance().collect_measure('emotions', f"{emotion}, {pos[0]}, {pos[1]}")
                     

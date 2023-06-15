@@ -86,8 +86,8 @@ class GPS:
                     StateManager.get_instance().set_state('end_path', True)
                     return
         else:
-            server_ip = StateManager.get_instance().get_state('server_ip')
-            server_port = StateManager.get_instance().get_state('server_port')
+            server_ip = StateManager.get_instance().get_config('server_ip')
+            server_port = StateManager.get_instance().get_config('server_port')
             server_request = {"coord": StateManager.get_instance().get_state('last_pos')}
             res = CommunicationManager.send(server_ip, server_port, 'GET', server_request, 'way')
             if res['status'] == 0 and res['address'] is not None:
@@ -227,7 +227,7 @@ def post_gps():
         res = GPS.get_hypothetical_position() # get the position in witch I should be
         hypothetical_position = res['last_pos']
         distance = GPS.calculate_distance(new_pos, hypothetical_position)
-        if distance < 40:
+        if distance < StateManager.get_instance().get_config('out_path_threshold'):
             StateManager.get_instance().set_state('last_pos_index', res['last_pos_index'])
         else:
             # [Test]

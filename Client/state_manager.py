@@ -8,10 +8,15 @@ class StateManager:
     state_manager = None
 
     def __init__(self):
+        self.config = dict()
         self.status = dict()
-        self.status['fullscreen'] = False
-        self.status['server_ip'] = None
-        self.status['server_port'] = None
+        self.config['fullscreen'] = False
+        self.config['server_ip'] = None
+        self.config['server_port'] = None
+        self.config['is_sim'] = True
+        self.config['vocal_commands'] = False
+        self.config['out_path_threshold'] = None
+        self.config['warning_distance'] = None
         self.status['path'] = None
         self.status['end_path'] = True
         self.status['path_destination'] = None
@@ -21,13 +26,11 @@ class StateManager:
         self.status['actual_way'] = None
         self.status['travelled_km'] = 0
         self.status['speed'] = 0
-        self.status['is_sim'] = True
         # using RLock, many thread can read the state in the same time, but only one can write in the same time
         self.lock = Lock()
         self.status['state'] = None
         self.status['username'] = None
         self.status['actual_emotion'] = 'neutral'
-        self.status['vocal_commands'] = False
         self.status['monitor_thread'] = False
 
     @staticmethod
@@ -37,7 +40,7 @@ class StateManager:
         return StateManager.state_manager
 
     def sim_init(self, sim, default_pos=None):
-        self.status['is_sim'] = sim
+        self.config['is_sim'] = sim
         if sim:
             self.status['last_pos'] = default_pos
 
@@ -54,9 +57,18 @@ class StateManager:
         self.status['remaining_m'] = path['ways'][0]['distance']
         self.status['end_path'] = False
 
+    def set_config(self, key, value):
+        self.config[key] = value
+
     def set_state(self, key, value):
         with self.lock:
             self.status[key] = value
+
+    def get_config(self, key):
+        if key in self.config:
+            return copy(self.config[key])
+        else:
+            return None
 
     def get_state(self, key):
         with self.lock:
