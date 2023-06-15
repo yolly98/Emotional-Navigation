@@ -63,7 +63,6 @@ class VocalInOutModule:
         # get audio from microphone
         with sr.Microphone(device_index=device_index) as source:
             # self.v_rec.adjust_for_ambient_noise(source)
-            print("Speak now...")
             ArduinoButton.get_instance().ledOn()
             play(AudioSegment.from_wav(
                 os.path.join(
@@ -73,6 +72,7 @@ class VocalInOutModule:
                     'bip.wav'
                 )
             ))
+            print("Speak now...")
             try:
                 audio = self.v_rec.listen(source, timeout=self.mic_timeout)
             except Exception as e:
