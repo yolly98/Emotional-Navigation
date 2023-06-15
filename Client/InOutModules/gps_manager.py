@@ -144,22 +144,22 @@ class GPS:
                 lon1 = float(p1[1])
                 lat2 = float(p2[0])
                 lon2 = float(p2[1])
-                d = distance / 1000
+                d = distance
 
-                R = 6371  # Earth radius in km
+                R = 6371000  # Earth radius
                 lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
                 bearing = atan2(sin(lon2 - lon1) * cos(lat2),
                                 cos(lat1) * sin(lat2) - sin(lat1) * cos(lat2) * cos(lon2 - lon1))
                 lat3 = asin(sin(lat1) * cos(d / R) + cos(lat1) * sin(d / R) * cos(bearing))
                 lon3 = lon1 + atan2(sin(bearing) * sin(d / R) * cos(lat1), cos(d / R) - sin(lat1) * sin(lat3))
 
-                p3 = [float(round(degrees(lat3), 7)), float(round(degrees(lon3), 7))]
+                p3 = [float(degrees(lat3)), float(degrees(lon3))]
                 new_pos = p3
 
             return {'last_pos_index': last_pos_index, 'last_pos': new_pos}
 
         # [Test]
-        # print(f"GPS pos: {new_pos}")
+        print(f"GPS pos: {new_pos}")
 
     def run_simulation(self):
         while True:
@@ -207,7 +207,6 @@ def post_gps():
         # period = 1# [Test]
         if not period == 0:
             speed = (distance / period) * 3600
-            # speed = math.floor((StateManager.get_instance().get_state('speed') + speed ) /2)
             # print(f"period: {period}, distance: {distance}, speed: {speed}")
             StateManager.get_instance().set_state('last_time', gps_time)
             StateManager.get_instance().set_state('travelled_km', travelled_km)
@@ -225,16 +224,16 @@ def post_gps():
     if path is None:
         pass
     else:
-        res = GPS.get_hypothetical_position()
+        res = GPS.get_hypothetical_position() # get the position in witch I should be
         hypothetical_position = res['last_pos']
         distance = GPS.calculate_distance(new_pos, hypothetical_position)
-        if distance < 10:
+        if distance < 30:
             StateManager.get_instance().set_state('last_pos_index', res['last_pos_index'])
         else:
             # [Test]
-            print("position outside the path")
+            print(f"position outside the path  [{distance}]")
             StateManager.get_instance().set_state('path', None)
-            Monitor.get_instance().collect_measure('path_recalculations', f"{new_pos[0]}, {new_pos[1]}")
+            Monitor.get_instance().collect_measure('path_recalculations', f"{hypothetical_position[0]}, {hypothetical_position[1]}")
 
     GPS.get_actual_way()
 

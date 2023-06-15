@@ -47,7 +47,7 @@ class StateManager:
         self.status['path'] = path
         self.status['last_pos_index'] = 0
         self.status['travelled_km'] = 0
-        self.status['last_pos'] = path['points'][0]
+        # self.status['last_pos'] = path['points'][0]
         self.status['actual_way_index'] = 0
         self.status['actual_way'] = path['ways'][0]
         if 'max_speed' not in self.status['actual_way']:

@@ -14,7 +14,7 @@
     "mic_timeout": 5
   },
   "user_recognition": false,
-  "history_collections": true,
+  "history_collections": false,
   "face_recognition" : {
     "camera": 1,
     "max_attempts": 10,
