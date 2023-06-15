@@ -3,8 +3,8 @@ from pymongo import MongoClient
 
 if __name__ == "__main__":
     mongo_client = MongoClient('mongodb://admin:password@localhost:27017/')
-    mongo_client.drop_database('smart_navigation')
-    mongodb = mongo_client['smart_navigation']
+    mongo_client.drop_database('emotional_navigation')
+    mongodb = mongo_client['emotional_navigation']
     collection = mongodb['user']
     collection = mongodb['history']
 

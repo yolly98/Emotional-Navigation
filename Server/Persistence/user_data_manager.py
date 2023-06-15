@@ -37,7 +37,7 @@ class UserDataManager:
             'emotion': emotion,
             'timestamp': timestamp
         }
-        db = self.conn['smart_navigation'].history
+        db = self.conn['emotional_navigation'].history
         try:
             db.insert_one(sample)
         except Exception as e:
@@ -50,7 +50,7 @@ class UserDataManager:
         if self.conn is None:
             print("Closed mongo connection")
             return []
-        db = self.conn['smart_navigation'].history
+        db = self.conn['emotional_navigation'].history
         samples = db.find(
             {
                 '$and': [
@@ -72,7 +72,7 @@ class UserDataManager:
         if self.conn is None:
             print("Closed mongo connection")
             return False
-        db = self.conn['smart_navigation'].history
+        db = self.conn['emotional_navigation'].history
         try:
             db.delete_many({'username': username})
         except Exception as e:
@@ -86,7 +86,7 @@ class UserDataManager:
         if self.conn is None:
             print("Closed mongo connection")
             return False
-        db = self.conn['smart_navigation'].history
+        db = self.conn['emotional_navigation'].history
         try:
             db.delete_many(
                 {
@@ -107,7 +107,7 @@ class UserDataManager:
         if self.conn is None:
             print("Closed mongo connection")
             return False
-        db = self.conn['smart_navigation'].user
+        db = self.conn['emotional_navigation'].user
         user = {
             "username": username,
             "image": image
@@ -125,7 +125,7 @@ class UserDataManager:
         if self.conn is None:
             print("Closed mongo connection")
             return False
-        db = self.conn['smart_navigation'].user
+        db = self.conn['emotional_navigation'].user
         try:
             db.delete_one({'username': username})
         except Exception as e:
@@ -138,7 +138,7 @@ class UserDataManager:
         if self.conn is None:
             print("Closed mongo connection")
             return None
-        db = self.conn['smart_navigation'].user
+        db = self.conn['emotional_navigation'].user
         user = db.find_one({'username': username})
         if user is None:
             return None

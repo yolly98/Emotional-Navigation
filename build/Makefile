@@ -1,7 +1,7 @@
 DATASET = https://download.geofabrik.de/europe/italy/centro-latest.osm.pbf
-MONGO_IMAGE = mongo_smart_navigation
-GRAPHHOPPER_IMAGE = graphhopper_smart_navigation
-NOMINATIM_IMAGE = nominatim_smart_navigation
+MONGO_IMAGE = mongo_emotional_navigation
+GRAPHHOPPER_IMAGE = graphhopper_emotional_navigation
+NOMINATIM_IMAGE = nominatim_emotional_navigation
 
 all: run
 
