@@ -90,6 +90,7 @@ class GPSsim:
             i += 1
 
         ax.scatter(lons, lats, c='white', alpha=1, s=3)
+        ax.scatter(lons[len(lons) - 1], lats[len(lats) - 1], c='yellow', s=100, marker='*')
         fig.set_facecolor('black')
         ax.set_title("Path")
         ax.axis('off')

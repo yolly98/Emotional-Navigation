@@ -182,8 +182,8 @@ class Monitor:
         plt.clf()
 
         fig, ax = plt.subplots()
-        ax.plot(gps_coords_x_values, gps_coords_y_values, c='white', linewidth=1)
-        ax.scatter(gps_coords_x_values[len(gps_coords_x_values) - 1], gps_coords_y_values[len(gps_manager_y_values) - 1], marker='*', s=100, c='white')
+        ax.plot(gps_coords_y_values, gps_coords_x_values, c='white', linewidth=1)
+        ax.scatter(gps_coords_y_values[len(gps_coords_y_values) - 1], gps_coords_x_values[len(gps_manager_x_values) - 1], marker='*', s=100, c='white')
         for sample in emotions_values:
             emotion = sample[0]
             lat = float(sample[1])
@@ -195,12 +195,12 @@ class Monitor:
                 color = "yellow"
             else:
                 color = "red"
-            ax.scatter(lat, lon, marker='o', s=100, c=color)
+            ax.scatter(lon, lat, marker='o', s=100, c=color)
 
         for sample in path_recalculations_values:
             lat = sample[0]
             lon = sample[1]
-            ax.scatter(lat, lon, marker='v', s=100, c='violet')
+            ax.scatter(lon, lat, marker='v', s=100, c='violet')
         ax.axis('off')
         fig.set_facecolor('black')
         plt.savefig(os.path.join(self.abs_path, '..', 'Resources', 'MonitorSignal', 'path_result.png'))

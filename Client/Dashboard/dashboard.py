@@ -190,7 +190,7 @@ class Dashboard:
             street_rect.midtop = (self.street_width / 2, 10)
             self.win.blit(street_surface, street_rect)
 
-            if StateManager.get_instance().get_state('path') is not None:
+            if path is not None:
 
                 path_km = StateManager.get_instance().get_state('travelled_km')
 
@@ -217,7 +217,6 @@ class Dashboard:
                 self.win.blit(m_surface, m_rect)
 
                 #draw arrival time
-                path = StateManager.get_instance().get_state('path')
                 travelled_m = StateManager.get_instance().get_state('travelled_km') * 1000
                 all_remaining_m = path['distance'] - travelled_m
                 remaining_time = (path['time'] / path['distance']) * all_remaining_m
