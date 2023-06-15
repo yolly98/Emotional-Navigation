@@ -181,7 +181,6 @@ if __name__ == '__main__':
 
     else:
         while True:
-            print("waiting ...")
             VocalInOutModule.get_instance().check_pending_vcommand_rqst()
             command = VocalInOutModule.get_instance().get_command()
             VocalInOutModule.get_instance().say(command)
