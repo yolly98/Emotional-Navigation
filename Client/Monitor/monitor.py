@@ -35,8 +35,6 @@ class Monitor:
             if not file.name == '.gitkeep':
                 os.remove(file)
 
-
-
     def collect_resources_usage(self):
         with open(os.path.join(self.abs_path, '..', 'Resources', 'MonitorData', 'cpu_data.txt'), 'a') as cpu_file, \
                 open(os.path.join(self.abs_path, '..', 'Resources', 'MonitorData', 'mem_data.txt'), 'a') as mem_file, \
@@ -109,7 +107,6 @@ class Monitor:
         cpu_x_values = [float(line.split(',')[1]) for line in cpu_data]
         mem_x_values = [float(line.split(',')[1]) for line in mem_data]
         net_x_values = [float(line.split(',')[2]) for line in net_data]
-
 
         old_net = None
         i = 0
