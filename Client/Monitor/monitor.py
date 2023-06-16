@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import matplotlib
 import os
+from copy import copy
 from Client.state_manager import StateManager
 
 
@@ -103,6 +104,17 @@ class Monitor:
         cpu_values = [float(value) for value in cpu_data]
         mem_values = [float(value) for value in mem_data]
         net_values = [[float(value) for value in line.split(',')] for line in net_data]
+
+        old_net = None
+        residual_net = copy(net_values[0])
+        for sample in net_values:
+            sample[0] = sample[0] - residual_net[0]
+            sample[1] = sample[1] - residual_net[1]
+            last_net = copy(sample)
+            if old_net is not None:
+                sample[0] = sample[0] - old_net[0]
+                sample[1] = sample[1] - old_net[1]
+            old_net = last_net
 
         dashboard_y_values = [float(line.split(',')[0]) for line in dashboard_data]
         history_collector_y_values = [float(line.split(',')[0]) for line in history_collector_data]
