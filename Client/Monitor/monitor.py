@@ -50,9 +50,9 @@ class Monitor:
                 bytes_recv = psutil.net_io_counters().bytes_recv
 
                 # print(f'wirting cpu: {cpu_percent}, mem: {mem_percent}, byte sent: {bytes_sent}, byte recv: {bytes_recv}')
-                cpu_file.write(str(cpu_percent) + '\n')
-                mem_file.write(str(mem_percent) + '\n')
-                net_file.write(str(bytes_sent) + ',' + str(bytes_recv) + '\n')
+                cpu_file.write(str(cpu_percent) + ', ' + str(time.time() - self.start_time) + '\n')
+                mem_file.write(str(mem_percent) + ', ' + str(time.time() - self.start_time) + '\n')
+                net_file.write(str(bytes_sent) + ',' + str(bytes_recv) + ', ' + str(time.time() - self.start_time) + '\n')
 
                 cpu_file.flush()
                 mem_file.flush()
@@ -101,20 +101,29 @@ class Monitor:
             emotions_data = emotions_file.readlines()
             path_recalculations_data = path_recalculations_file.readlines()
 
-        cpu_values = [float(value) for value in cpu_data]
-        mem_values = [float(value) for value in mem_data]
-        net_values = [[float(value) for value in line.split(',')] for line in net_data]
+        cpu_y_values = [float(line.split(',')[0]) for line in cpu_data]
+        mem_y_values = [float(line.split(',')[0]) for line in mem_data]
+        net_sent_values = [float(line.split(',')[0]) for line in net_data]
+        net_recv_values = [float(line.split(',')[1]) for line in net_data]
+
+        cpu_x_values = [float(line.split(',')[1]) for line in cpu_data]
+        mem_x_values = [float(line.split(',')[1]) for line in mem_data]
+        net_x_values = [float(line.split(',')[2]) for line in net_data]
+
 
         old_net = None
-        residual_net = copy(net_values[0])
-        for sample in net_values:
-            sample[0] = sample[0] - residual_net[0]
-            sample[1] = sample[1] - residual_net[1]
+        i = 0
+        for sample in zip(net_sent_values, net_recv_values):
             last_net = copy(sample)
             if old_net is not None:
-                sample[0] = sample[0] - old_net[0]
-                sample[1] = sample[1] - old_net[1]
+                net_sent_values[i] = sample[0] - old_net[0]
+                net_recv_values[i] = sample[1] - old_net[1]
+            else:
+                net_sent_values[i] = 0
+                net_recv_values[i] = 0
+            print(net_sent_values[i], net_recv_values[i])
             old_net = last_net
+            i += 1
 
         dashboard_y_values = [float(line.split(',')[0]) for line in dashboard_data]
         history_collector_y_values = [float(line.split(',')[0]) for line in history_collector_data]
@@ -133,24 +142,22 @@ class Monitor:
         emotions_values = [[value for value in line.split(',')] for line in emotions_data]
         path_recalculations_values = [[float(value) for value in line.split(',')] for line in path_recalculations_data]
 
-        plt.plot(cpu_values)
+        plt.plot(cpu_x_values, cpu_y_values)
         plt.title('CPU usage')
         plt.xlabel('Time (s)')
         plt.ylabel('Usage (%)')
         plt.savefig(os.path.join(self.abs_path, '..', 'Resources', 'MonitorSignal', 'cpu_usage.png'))
         plt.clf()
 
-        plt.plot(mem_values)
+        plt.plot(mem_x_values, mem_y_values)
         plt.title('Memory usage')
         plt.xlabel('Time (s)')
         plt.ylabel('Usage (%)')
         plt.savefig(os.path.join(self.abs_path, '..', 'Resources', 'MonitorSignal', 'mem_usage.png'))
         plt.clf()
 
-        net_sent_values = [values[0] for values in net_values]
-        net_recv_values = [values[1] for values in net_values]
-        plt.plot(net_sent_values, label='Sent')
-        plt.plot(net_recv_values, label='Received')
+        plt.plot(net_x_values, net_sent_values, label='Sent')
+        plt.plot(net_x_values, net_recv_values, label='Received')
         plt.title('Network usage')
         plt.xlabel('Time (s)')
         plt.ylabel('Usage (bytes)')
