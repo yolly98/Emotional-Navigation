@@ -52,7 +52,6 @@ class FaceProcessingModule:
             exit(1)
 
         actual_path = os.path.abspath(os.path.dirname(__file__))
-        ArduinoButton.get_instance().ledOff()
         while True:
             _, frame = video.read()
             cv2.imshow("Your face", frame)
@@ -62,7 +61,6 @@ class FaceProcessingModule:
                 cv2.imwrite(path, frame)
                 break
 
-        ArduinoButton.get_instance().ledOff()
         video.release()
         cv2.destroyAllWindows()
 

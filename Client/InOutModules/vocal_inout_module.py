@@ -38,6 +38,7 @@ class VocalInOutModule:
         self.tts_voice = None
         self.async_loop = None
         self.tts_started = False
+        self.pending_vocal_command = False
         self.lock = Lock()
 
     @staticmethod
@@ -82,6 +83,7 @@ class VocalInOutModule:
                 self.rec_started = False
                 return
 
+        ArduinoButton.get_instance().ledOff()
         start_time = time.time()
         # Recognize audio by using Google or Whisper
         text = None
@@ -101,7 +103,6 @@ class VocalInOutModule:
             self.command = text
             self.new_command = True
             self.rec_started = False
-        ArduinoButton.get_instance().ledOff()
 
         Monitor.get_instance().collect_measure('vocal_in', time.time() - start_time)
         return text
@@ -118,11 +119,12 @@ class VocalInOutModule:
     def start_command_recognizer(self):
         with self.lock:
             if not self.tts_started and not self.rec_started:
+                self.pending_vocal_command = False
                 self.rec_started = True
                 t = Thread(target=self.recognize_command, args=(), daemon=True)
                 t.start()
-            else:
-                ArduinoButton.get_instance().ledOff()
+            elif not self.pending_vocal_command:
+                self.pending_vocal_command = True
 
     def synthesize_text(self, text):
         start_time = time.time()
@@ -160,7 +162,7 @@ class VocalInOutModule:
             return text
 
     def check_pending_vcommand_rqst(self):
-        if ArduinoButton.get_instance().check_button_pressed():
+        if self.pending_vocal_command or ArduinoButton.get_instance().check_button_pressed():
             self.start_command_recognizer()
 
 
