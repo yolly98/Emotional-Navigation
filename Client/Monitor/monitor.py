@@ -118,7 +118,6 @@ class Monitor:
             else:
                 net_sent_values[i] = 0
                 net_recv_values[i] = 0
-            print(net_sent_values[i], net_recv_values[i])
             old_net = last_net
             i += 1
 
