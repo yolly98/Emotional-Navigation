@@ -7,7 +7,7 @@
   "fullscreen": false,
   "simulation": "sim1",
   "arduino_usb": "COM8",
-  "out_path_threshold": 40,
+  "out_path_threshold": 25,
   "warning_distance": 80,
   "vocal_commands": {
     "enable": true,
@@ -16,7 +16,7 @@
     "mic_timeout": 5
   },
   "user_recognition": false,
-  "history_collections": true,
+  "history_collections": false,
   "face_recognition" : {
     "camera": 1,
     "max_attempts": 5,

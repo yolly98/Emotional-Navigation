@@ -233,11 +233,15 @@ class Monitor:
                 target == 'path_recalculations':
 
             abs_path = os.path.dirname(__file__)
-            with open(os.path.join(abs_path, '..', 'Resources', 'MonitorData', f'{target}_data.txt'), 'a') as file:
+            try:
+                with open(os.path.join(abs_path, '..', 'Resources', 'MonitorData', f'{target}_data.txt'), 'a') as file:
 
-                file.write(str(measure) + ', ' + str(time.time() - self.start_time) + '\n')
-                file.flush()
-                file.close()
+                    file.write(str(measure) + ', ' + str(time.time() - self.start_time) + '\n')
+                    file.flush()
+                    file.close()
+            except Exception as e:
+                print(f"I/O Exception {e}")
+                pass
         else:
             print("Unknown target")
 
