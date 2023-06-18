@@ -44,7 +44,7 @@ class Dashboard:
 
         # get the clock to manage the frame rate
         self.clock = pygame.time.Clock()
-        self.update_win_rate = 60
+        self.update_win_rate = StateManager.get_instance().get_config('dashboard_fps')
 
         # set block dimension (is the 'pixel' of the simulation)
         self.block_size = 10

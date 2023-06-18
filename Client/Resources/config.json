@@ -3,6 +3,7 @@
   "default_lon": "10.38345076681462",
   "server_ip": "127.0.0.1",
   "server_port": "5000",
+  "dashboard_fps": 20,
   "monitor": true,
   "fullscreen": false,
   "simulation": "sim1",
@@ -19,7 +20,7 @@
   "history_collections": false,
   "face_recognition" : {
     "camera": 1,
-    "max_attempts": 5,
+    "max_attempts": 10,
     "emotion_samples": 1,
     "wait_time": 1,
     "period": 60,
@@ -33,6 +34,4 @@
     "server_port": "6000",
     "interval": 1
   }
-
-
 }

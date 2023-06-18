@@ -13,6 +13,7 @@ class StateManager:
         self.config['fullscreen'] = False
         self.config['server_ip'] = None
         self.config['server_port'] = None
+        self.config['dashboard_fps'] = 30
         self.config['is_sim'] = True
         self.config['vocal_commands'] = False
         self.config['out_path_threshold'] = None

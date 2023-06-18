@@ -33,6 +33,7 @@ if __name__ == '__main__':
     )
     StateManager.get_instance().set_config('server_ip', config['server_ip'])
     StateManager.get_instance().set_config('server_port', config['server_port'])
+    StateManager.get_instance().set_config('dashboard_fps', config['dashboard_fps'])
     StateManager.get_instance().set_config('fullscreen', config['fullscreen'])
     StateManager.get_instance().set_config('vocal_commands', config['vocal_commands']['enable'])
     StateManager.get_instance().set_config('out_path_threshold', config['out_path_threshold'])
