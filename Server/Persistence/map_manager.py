@@ -1,14 +1,3 @@
-'''
-https://github.com/IsraelHikingMap/graphhopper-docker-image-push
-docker run --name graphhopper -d -p 8989:8989 israelhikingmap/graphhopper --url https://download.geofabrik.de/europe/italy/centro-latest.osm.pbf --host 0.0.0.0
-https://github.com/mediagis/nominatim-docker
-docker run -d \
-  -e PBF_URL=https://download.geofabrik.de/europe/italy/centro-latest.osm.pbf \
-  -p 8080:8080 \
-  --name nominatim \
-  mediagis/nominatim:4.2
-'''
-
 import requests
 import matplotlib.pyplot as plt
 import math
