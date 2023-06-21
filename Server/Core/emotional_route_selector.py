@@ -1,6 +1,7 @@
 from Server.Persistence.user_data_manager import UserDataManager
 from Server.Core.map_engine import MapEngine
 import json
+import math
 
 # emotion values for balance
 ANGRY = -5
@@ -31,7 +32,11 @@ class EmotionalRouteSelector:
         # search the best emotional path
         best_path = None
         for evaluated_path in evaluated_paths:
-            if best_path is None or best_path['overall_balance'] < evaluated_path['overall_balance']:
+            # print(json.dumps(paths[i], indent=4))
+            print(f"length: {evaluated_path['distance'] / 1000} km | duration: {math.floor(evaluated_path['time'] / 60000)} minutes")
+            if best_path is None or \
+                    best_path['overall_balance'] < evaluated_path['overall_balance'] or \
+                    (best_path['overall_balance'] == evaluated_path['overall_balance'] and best_path['time'] > evaluated_path['time']):
                 best_path = evaluated_path
 
         return best_path

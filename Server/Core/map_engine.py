@@ -1,6 +1,6 @@
 from Server.Persistence.map_manager import MapManager
 import json
-
+import math
 
 class MapEngine:
 
@@ -25,16 +25,17 @@ class MapEngine:
 
 if __name__ == "__main__":
 
-    start_point = [42.415832, 12.106822]
-    destination = 'Monumento ai caduti, Viterbo'
+    start_point = [42.332047177395246, 12.264483264442843]
+    destination = 'Via Magenta, Ronciglione'
 
     paths = MapEngine.calculate_path(start_point, destination, [])
     for i in range(0, len(paths)):
         print("---------------------------------------------------")
-        print(json.dumps(paths[i], indent=4))
+        # print(json.dumps(paths[i], indent=4))
+        print(f"length: {paths[i]['distance'] / 1000} km | duration: {math.floor(paths[i]['time'] / 60000)} minutes")
         MapManager.plot_path(paths[i])
 
-    paths = MapEngine.calculate_path(start_point, destination, ["Via Giuseppe Mazzini", ])
+    paths = MapEngine.calculate_path(start_point, destination, ["Strada Cimina", ])
     for i in range(0, len(paths)):
         print("---------------------------------------------------")
         print(json.dumps(paths[i], indent=4))
