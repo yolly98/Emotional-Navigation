@@ -32,11 +32,11 @@ class ArduinoButton:
 
     def ledOn(self):
         if self.serial is not None:
-            self.serial.write(b"ON")
+            self.serial.write(b"ON\n")
 
     def ledOff(self):
         if self.serial is not None:
-            self.serial.write(b"OFF")
+            self.serial.write(b"OFF\n")
 
     def check_button_pressed(self):
         if self.serial is None:
@@ -47,3 +47,15 @@ class ArduinoButton:
                 return True
         else:
             return False
+
+if __name__ == '__main__':
+    usb_port = input('insert usb port:')
+    ArduinoButton.get_instance().init(usb_port)
+    while True:
+        if ArduinoButton.get_instance().check_button_pressed():
+            print('PRESSED')
+        command = input('insert command (ON/OFF):')
+        if command == 'ON':
+            ArduinoButton.get_instance().ledOn()
+        elif command == 'OFF':
+            ArduinoButton.get_instance().ledOff()
