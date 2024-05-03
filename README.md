@@ -1,4 +1,12 @@
+<p align="center">
+  <img src="doc/img/logo.png" alt="IA-Logo" height="64px"/>
+</p>
+
+
 # Emotional Navigation
+
+University Project for "Industral Applications" course (MSc Computer Engineering @ University of Pisa).
+## Overview
 
 This project aims to propose an innovation in the field of in-car driving assistants such
 as Google Map or Waze. The idea is to introduce human emotions as input into path
@@ -9,10 +17,7 @@ was designed to collect for each user the emotions felt while driving, these emo
 then used to construct an emotional path score, that is, a measure of how much the path
 might be enjoyed.
 
-## Overview
-
-Implemented in Python as a client-server system system with the goal of providing directions while driving and building a unique user experience based on emotions.
-Specifically, the requirements and functionality of the application are as follows.
+The requirements and functionalities of the application are as follows.
 
  * Must be able to **geolocate** the user on the road and **provide directions** if a destination has been set
  * The route is **automatically recalculated** whenever the user deviates from the route that was established
@@ -22,30 +27,30 @@ Specifically, the requirements and functionality of the application are as follo
  * The system periodically detects the user's emotions and associates them with the stretch of road being traveled, these tuples (emotion, road, timestamp) will compose the user's **emotional history**
  * Whenever a path has to be constructed from the current location to a destination, that path has to be **evaluated through the emotional history**, if the route is evaluated negatively (because it is composed of roads not liked by the user) a better rated path is chosen that does not bring too much delay
  * The client module must **interact** with the user **vocally**
- * The system initiates speech recognition if the user presses a specially designed button
+ * The system initiates **speech recognition** if the user presses a specially designed button
 
 
 ## Related Works
 The following open-source projects were used to build the prototype:
-* Deepface: It is a project written in python that encapsulates state-of-the-art models for face detection and face recognition, also includes an emotion recognition
+* **Deepface**: It is a project written in python that encapsulates state-of-the-art models for face detection and face recognition, also includes an emotion recognition
 model.
 https://github.com/serengil/deepface
-* OpenStretMap: It is a project that proposes to be an open source alternative to
+* **OpenStretMap**: It is a project that proposes to be an open source alternative to
 digital maps, it has a large community behind it that keeps it updated with data of
 streets, monuments, stores and more.
 https://www.openstreetmap.org/about
-* Graphhopper: It is a routing engine with REST API that can calculate paths
+* **Graphhopper**: It is a routing engine with REST API that can calculate paths
 based on OpenStreetMap data efficiently.
 https://github.com/graphhopper/graphhopper
-* Nominatim: It is a tool that can provide, via REST API, geocoding and reverse
+* **Nominatim**: It is a tool that can provide, via REST API, geocoding and reverse
 geocoding services by exploiting OpneStreetMap data.
 https://github.com/osm-search/Nominatim
-* Edge-TTS: Python module that allows you to exploit Microsoft Edge’s online Textto-Speech service.
+* **Edge-TTS**: Python module that allows you to exploit Microsoft Edge’s online Textto-Speech service.
 https://github.com/rany2/edge-tts
-* SpeechRecognition: Python module that encapsulates various Speech-to-Text
+* **SpeechRecognition**: Python module that encapsulates various Speech-to-Text
 services such as CMU Sphinx, Whisper and Google.
 https://github.com/Uberi/speech_recognition#readme
-* PyGame: Python module for game building, in this prototype it was used for
+* **PyGame**: Python module for game building, in this prototype it was used for
 creating the user dashboard
 https://github.com/pygame/pygame
 
@@ -55,19 +60,6 @@ https://github.com/pygame/pygame
 <p align="center">
   <img loading='lazy' src="doc/img/architecture.drawio.png" alt="" width="80%"/>
 </p>
-
-## The Server State Machine
-
-<p align="center">
-  <img loading='lazy' src="doc/img/cloud-fsm.drawio.png" alt="" width="60%"/>
-</p>
-
-## The Client State Machine
-
-<p align="center">
-  <img loading='lazy' src="doc/img/client-fsm.drawio.png" alt="" width="60%"/>
-</p>
-
 
 ## The GUI
 
@@ -190,51 +182,20 @@ python3 -m Cleint.client
 
 ```
 Emotional Navigation
-├── README.md
 ├── arduino_module.ino
 ├── build
-│   ├── Makefile
-│   └── initialization.py
 ├── requirements.txt
 ├── Client
 │   ├── Dashboard
-│   │   ├── View
-│   │   │   ├── alert.py
-│   │   │   ├── arrow.py
-│   │   │   ├── car.py
-│   │   │   ├── face.py
-│   │   │   ├── path_progress.py
-│   │   │   └── terminal.py
-│   │   └── dashboard.py
 │   ├── InOutModules
-│   │   ├── Test
-│   │   │   ├── gps_collector_test.py
-│   │   │   └── gps_module_sim.py
-│   │   ├── arduino_button_module.py
-│   │   ├── face_processing_module.py
-│   │   ├── gps_external_module.py
-│   │   ├── gps_manager.py
-│   │   └── vocal_inout_module.py
 │   ├── Monitor
-│   │   └── monitor.py
 │   ├── Resources
-│   │   ├── MonitorData
-│   │   ├── MonitorSignal
-│   │   ├── UserImages
-│   │   ├── bip.wav
-│   │   ├── config.json
-│   │   ├── gps-test.json
-│   │   └── temp.mp3
 │   ├── client.py
 │   ├── communication_manager.py
 │   └── state_manager.py
 └── Server
     ├── Core
-    │   ├── emotional_route_selector.py
-    │   └── map_engine.py
     ├── Persistence
-    │   ├── map_manager.py
-    │   └── user_data_manager.py
     ├── listener.py
     └── server.py
 
